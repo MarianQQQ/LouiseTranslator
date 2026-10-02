@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Louise Translator — Discreet Desktop Translator for Windows</title>
+  <meta name="description" content="Keyboard-first instant desktop translator for Windows. Powered by DeepL Neural AI and Google Fallback, crafted in pure Rust and Slint UI.">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <!-- Fonts: JetBrains Mono & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #090a0c;
+      --card-bg: #101010;
+      --card-inner: #161616;
+      --field-bg: #1c1c1c;
+      --border: #282828;
+      --border-subtle: #202020;
+      --border-focus: #f1ffff;
+      --text: #f1ffff;
+      --text-muted: #888888;
+      --text-dim: #555555;
+      --cyan: #00c0f0;
+      --cyan-hover: #38bdf8;
+      --cyan-glow: rgba(0, 192, 240, 0.28);
+      --green: #2ea043;
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* Ambient Canvas */
+    #ambient-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.55;
+    }
+
+    /* Subtle rotating Heptapod background watermark */
+    .heptapod-bg {
+      position: fixed;
+      right: 5vw;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48vw;
+      height: 48vw;
+      max-width: 720px;
+      max-height: 720px;
+      background: url('assets/heptapod_circle.svg') center/contain no-repeat;
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 0;
+      animation: slowRotate 240s linear infinite;
+    }
+
+    @keyframes slowRotate {
+      from { transform: translateY(-50%) rotate(0deg); }
+      to { transform: translateY(-50%) rotate(360deg); }
+    }
+
+    /* Viewport Outer Frame (Fits 100vh, zero vertical scrollbar) */
+    .viewport {
+      position: relative;
+      z-index: 1;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(12px, 2vh, 24px) clamp(20px, 3vw, 40px);
+    }
+
+    /* Centered Inner Container with Max Width */
+    .container {
+      width: 100%;
+      max-width: 1220px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: clamp(8px, 1.5vh, 20px);
+    }
+
+    /* 1. Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 46px;
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .logo-ring {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
+
+    .logo-ring img {
+      width: 20px;
+      height: 20px;
+    }
+
+    .brand-title {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .version-tag {
+      font-size: 0.68rem;
+      padding: 2px 7px;
+      background: rgba(0, 192, 240, 0.12);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 192, 240, 0.3);
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    .header-center {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-gh {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 7px 14px;
+      border-radius: 7px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-gh:hover {
+      background: #1c1d24;
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    /* 2. Main Content Layout */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1.08fr;
+      gap: clamp(24px, 4vw, 56px);
+      align-items: center;
+      width: 100%;
+      min-height: 0;
+    }
+
+    /* Left Column: Hero Information */
+    .hero-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: clamp(10px, 1.8vh, 18px);
+      max-width: 540px;
+    }
+
+    .sub-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .hero-title {
+      font-size: clamp(2rem, 3.2vw, 2.85rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+      color: #fff;
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, #00c0f0 0%, #38bdf8 55%, #e0f2fe 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: clamp(0.88rem, 1.1vw, 0.98rem);
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+
+    /* Specs Cards */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 2px 0;
+    }
+
+    .spec-card {
+      background: rgba(17, 18, 22, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .spec-card:hover {
+      border-color: rgba(0, 192, 240, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .spec-val {
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .spec-lbl {
+      font-size: 0.68rem;
+      color: var(--text-dim);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Single Large Download Button */
+    .cta-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      background: linear-gradient(135deg, #00c0f0 0%, #0095c7 100%);
+      color: #041017;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 16px 32px;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px var(--cyan-glow), inset 0 1px 0 rgba(255,255,255,0.45);
+      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      cursor: pointer;
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+    }
+
+    .btn-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 38px rgba(0, 192, 240, 0.5);
+      background: linear-gradient(135deg, #28d5ff 0%, #00aae3 100%);
+    }
+
+    .btn-download .btn-sub {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 500;
+      opacity: 0.85;
+      margin-top: 3px;
+    }
+
+    /* Right Column: 100% Authentic Louise Window Simulator */
+    .showcase-wrapper {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      perspective: 1200px;
+      width: 100%;
+    }
+
+    .app-window {
+      width: 100%;
+      max-width: 485px;
+      background: #101010;
+      border: 1px solid #282828;
+      border-radius: 10px;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.9), 0 0 1px rgba(255, 255, 255, 0.12);
+      display: flex;
+      flex-direction: column;
+      transform-style: preserve-3d;
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s;
+      padding: 10px;
+      gap: 8px;
+      position: relative;
+    }
+
+    .app-window:hover {
+      border-color: #383838;
+      box-shadow: 0 32px 85px rgba(0, 0, 0, 0.95);
+    }
+
+    /* Titlebar */
+    .win-titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 32px;
+      background: #1c1c1c;
+      border: 1px solid #282828;
+      border-radius: 6px;
+      padding: 0 8px;
+    }
+
+    .win-title-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.82rem;
+      color: #f1ffff;
+    }
+
+    .app-titlebar-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 3px;
+      object-fit: contain;
+    }
+
+    .win-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #888888;
+      font-size: 0.82rem;
+    }
+
+    .win-ctrl-icon {
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .win-ctrl-icon:hover {
+      color: #f1ffff;
+    }
+
+    /* STRICTLY SYMMETRIC Top Language Dropdowns Row */
+    .lang-row {
+      display: grid;
+      grid-template-columns: 1fr 38px 1fr;
+      gap: 8px;
+      align-items: center;
+      width: 100%;
+    }
+
+    .lang-pill-btn {
+      background: #1c1c1c;
+      border: 1px solid #282828;
+      border-radius: 8px;
+      height: 38px;
+      padding: 0 10px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #f1ffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      min-width: 0;
+    }
+
+    .lang-pill-btn.static {
+      cursor: default;
+      background: #1c1c1c;
+      border-color: #282828;
+    }
+
+    .lang-pill-btn:not(.static):hover {
+      border-color: #3c3c3c;
+      background: #222222;
+    }
+
+    .flag-svg {
+      width: 19px;
+      height: 13px;
+      border-radius: 2px;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16);
+      display: inline-block;
+      flex-shrink: 0;
+      vertical-align: middle;
+      overflow: hidden;
+    }
+
+    .swap-btn {
+      background: #1c1c1c;
+      border: 1px solid #282828;
+      border-radius: 8px;
+      height: 38px;
+      width: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888888;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.15s;
+    }
+
+    .swap-btn:hover {
+      color: #f1ffff;
+      border-color: #f1ffff;
+      background: #242424;
+    }
+
+    /* Field Sections */
+    .field-section {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #777777;
+      text-transform: uppercase;
+      padding: 0 2px;
+    }
+
+    .engine-tag {
+      color: #888888;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      text-transform: none;
+      transition: opacity 0.2s, color 0.2s;
+    }
+
+    .text-container {
+      background: #1c1c1c;
+      border: 1px solid #282828;
+      border-radius: 7px;
+      padding: 10px 12px;
+      transition: border-color 0.15s;
+    }
+
+    .text-container:focus-within {
+      border-color: #f1ffff;
+    }
+
+    .text-area-real {
+      width: 100%;
+      height: 72px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #f1ffff;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.45;
+      resize: none;
+    }
+
+    .text-area-real::placeholder {
+      color: #555555;
+    }
+
+    .dst-output-real {
+      height: 72px;
+      color: #f1ffff;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.45;
+      overflow-y: auto;
+      user-select: text;
+      transition: opacity 0.15s;
+    }
+
+    /* Bottom Action Bar */
+    .action-row {
+      display: grid;
+      grid-template-columns: 88px 1fr 88px;
+      gap: 8px;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .btn-action-sec {
+      background: #1c1c1c;
+      border: 1px solid #282828;
+      color: #d4d4d8;
+      border-radius: 7px;
+      height: 38px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-action-sec:hover {
+      background: #252525;
+      color: #f1ffff;
+      border-color: #383838;
+    }
+
+    .btn-action-sec.active {
+      background: rgba(46, 160, 67, 0.2);
+      color: #4ade80;
+      border-color: rgba(46, 160, 67, 0.4);
+    }
+
+    .btn-action-pri {
+      background: #f1ffff;
+      color: #101010;
+      border: 1px solid #f1ffff;
+      border-radius: 7px;
+      height: 38px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.84rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(241, 255, 255, 0.08);
+      transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .btn-action-pri:hover {
+      background: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(241, 255, 255, 0.18);
+    }
+
+    .btn-action-pri.active {
+      background: #d0e0e0;
+      color: #101010;
+    }
+
+    /* Target Language Dropdown Menu (Scrollable with crisp list) */
+    .dropdown-menu {
+      position: absolute;
+      top: 86px;
+      right: 12px;
+      background: #161616;
+      border: 1px solid #282828;
+      border-radius: 8px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.9);
+      display: none;
+      flex-direction: column;
+      z-index: 50;
+      width: 195px;
+      max-height: 275px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
+
+    .dropdown-menu::-webkit-scrollbar {
+      width: 5px;
+    }
+    .dropdown-menu::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .dropdown-menu::-webkit-scrollbar-thumb {
+      background: #282828;
+      border-radius: 3px;
+    }
+
+    .dropdown-menu.show {
+      display: flex;
+    }
+
+    .dropdown-item {
+      padding: 7px 12px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #d4d4d8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .dropdown-item:hover {
+      background: #242424;
+      color: #f1ffff;
+    }
+
+    .dropdown-item.active {
+      background: #2c2c2c;
+      color: #f1ffff;
+      font-weight: 600;
+    }
+
+    /* 3. Footer */
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 38px;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    .quote {
+      font-style: italic;
+      color: var(--text-muted);
+      letter-spacing: -0.01em;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-links a:hover {
+      color: var(--cyan);
+    }
+
+    /* Responsive Overrides */
+    @media (max-width: 960px) {
+      html, body {
+        overflow-y: auto;
+        height: auto;
+      }
+      .viewport {
+        height: auto;
+        min-height: 100vh;
+        padding: 20px;
+      }
+      main {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        padding: 24px 0;
+      }
+      .hero-info {
+        max-width: 100%;
+        text-align: center;
+        align-items: center;
+      }
+      .specs-grid {
+        width: 100%;
+      }
+      .cta-row {
+        justify-content: center;
+      }
+      .heptapod-bg {
+        display: none;
+      }
+      footer {
+        flex-direction: column;
+        height: auto;
+        padding: 16px 0;
+        gap: 8px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Canvas Background -->
+  <canvas id="ambient-canvas"></canvas>
+
+  <!-- Rotating Heptapod Watermark -->
+  <div class="heptapod-bg"></div>
+
+  <div class="viewport">
+    <div class="container">
+      
+      <!-- 1. Header -->
+      <header>
+        <a href="https://github.com/MarianQQQ/LouiseTranslator" class="brand">
+          <div class="logo-ring">
+            <img src="assets/app_icon.ico" onerror="this.src='assets/app-icon.png'" alt="Louise Icon">
+          </div>
+          <div class="brand-title">
+            Louise Translator
+            <span class="version-tag">v1.0.0</span>
+          </div>
+        </a>
+
+        <div class="header-center">
+          <div class="badge-pill">
+            <span class="dot"></span>
+            DeepL Neural AI ⚡ + Google Fallback
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <a href="https://github.com/MarianQQQ/LouiseTranslator" target="_blank" class="btn-gh">
+            <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
+            </svg>
+            GitHub Star
+          </a>
+        </div>
+      </header>
+
+      <!-- 2. Main Content Grid -->
+      <main>
+        
+        <!-- Left Column: Story & Download -->
+        <div class="hero-info">
+          <div class="sub-tag">
+            <span>🌌</span> Inspired by Dr. Louise Banks (Arrival)
+          </div>
+
+          <h1 class="hero-title">
+            Language isn't a barrier.<br>
+            It's an <span>instant bridge.</span>
+          </h1>
+
+          <p class="hero-desc">
+            Discreet, keyboard-first desktop translator for Windows. Summoned directly under your mouse with zero window flicker; disappeared into the system tray when done.
+          </p>
+
+          <!-- Specs Metrics -->
+          <div class="specs-grid">
+            <div class="spec-card">
+              <div class="spec-val">~60 MB</div>
+              <div class="spec-lbl">RAM Footprint</div>
+            </div>
+            <div class="spec-card">
+              <div class="spec-val">&lt; 15 ms</div>
+              <div class="spec-lbl">Cold Summon</div>
+            </div>
+            <div class="spec-card">
+              <div class="spec-val">100% DPAPI</div>
+              <div class="spec-lbl">Local Privacy</div>
+            </div>
+          </div>
+
+          <!-- Centered Direct Download Button -->
+          <div class="cta-row">
+            <a href="https://github.com/MarianQQQ/LouiseTranslator/releases/download/v1.0.0/Louise.Translator.exe" class="btn-download">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <div>
+                <span>Download for Windows (.exe)</span>
+                <span class="btn-sub">Louise.Translator.exe • Free & Portable • v1.0.0</span>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Right Column: 1-to-1 Louise Window Replica -->
+        <div class="showcase-wrapper">
+          <div class="app-window" id="appMock">
+            
+            <!-- Window Titlebar with Original Translator Icon -->
+            <div class="win-titlebar">
+              <div class="win-title-left">
+                <img src="assets/app_icon.ico" onerror="this.src='assets/app-icon.png'" class="app-titlebar-icon" alt="Louise Icon">
+                <span>Louise Translator</span>
+              </div>
+              <div class="win-controls">
+                <span class="win-ctrl-icon" title="About / Shortcuts">?</span>
+                <span class="win-ctrl-icon" title="Settings">⚙</span>
+                <span class="win-ctrl-icon" title="Close to tray">✕</span>
+              </div>
+            </div>
+
+            <!-- Strictly Symmetric Language Selectors Row -->
+            <div class="lang-row">
+              <div class="lang-pill-btn static" id="srcLangBtn" title="Auto-detect source language">
+                <span id="srcLangContent" style="display:inline-flex; align-items:center; gap:8px;">
+                  <svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#181a22"/><circle cx="10.5" cy="7" r="4.5" fill="none" stroke="#8b949e" stroke-width="1.1"/><ellipse cx="10.5" cy="7" rx="2.2" ry="4.5" fill="none" stroke="#8b949e" stroke-width="0.9"/><line x1="6" y1="7" x2="15" y2="7" stroke="#8b949e" stroke-width="0.9"/></svg>
+                  <span>Auto-detect</span>
+                </span>
+              </div>
+
+              <div class="swap-btn" id="btnSwap" title="Auto-detect source">
+                <span>⇆</span>
+              </div>
+
+              <div class="lang-pill-btn" id="dstLangBtn" title="Select target language">
+                <span id="dstLangContent" style="display:inline-flex; align-items:center; gap:8px;">
+                  <svg viewBox="0 0 21 14" class="flag-svg"><rect width="7" height="14" fill="#009246"/><rect x="7" width="7" height="14" fill="#ffffff"/><rect x="14" width="7" height="14" fill="#ce2b37"/></svg>
+                  <span>Italian</span>
+                </span>
+                <span style="font-size: 0.7rem; color: #717782;">▾</span>
+              </div>
+            </div>
+
+            <!-- Target Language Dropdown Menu (Populated dynamically) -->
+            <div class="dropdown-menu" id="dropdownMenu"></div>
+
+            <!-- SOURCE Section -->
+            <div class="field-section">
+              <div class="field-header">
+                <span>SOURCE</span>
+              </div>
+              <div class="text-container">
+                <textarea class="text-area-real" id="srcInput" placeholder="Type text here or select on screen...">Language is the first weapon drawn in a conflict, or the first hand extended in understanding.</textarea>
+              </div>
+            </div>
+
+            <!-- TRANSLATION Section -->
+            <div class="field-section">
+              <div class="field-header">
+                <span>TRANSLATION</span>
+                <span class="engine-tag" id="engineTag">Google</span>
+              </div>
+              <div class="text-container">
+                <div class="dst-output-real" id="dstOutput">Il linguaggio è la prima arma impugnata in un conflitto, o la prima mano tesa alla comprensione.</div>
+              </div>
+            </div>
+
+            <!-- Bottom Action Buttons Bar -->
+            <div class="action-row">
+              <button class="btn-action-sec" id="btnCopy" title="Copy translated text to clipboard">
+                Copy
+              </button>
+
+              <button class="btn-action-pri" id="btnReplace" title="Simulates in-place text replacement in your active app">
+                Paste as replacement
+              </button>
+
+              <button class="btn-action-sec" id="btnClear" title="Clear input and output">
+                Clear
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </main>
+
+      <!-- 3. Footer -->
+      <footer>
+        <div class="quote">
+          «If you could see your whole life from start to finish, would you change things?» — Dr. Louise Banks
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/MarianQQQ/LouiseTranslator" target="_blank">GitHub Repository</a>
+          <span>•</span>
+          <a href="https://github.com/MarianQQQ/LouiseTranslator/releases" target="_blank">Releases</a>
+          <span>•</span>
+          <a href="https://github.com/MarianQQQ/LouiseTranslator/blob/main/LICENSE" target="_blank">MIT License</a>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <script>
+    // Vector SVG Flags matching Louise Translator Slint FlagBadge
+    const flagSvgs = {
+      it: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="7" height="14" fill="#009246"/><rect x="7" width="7" height="14" fill="#ffffff"/><rect x="14" width="7" height="14" fill="#ce2b37"/></svg>`,
+      uk: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="7" fill="#0057b7"/><rect y="7" width="21" height="7" fill="#ffd700"/></svg>`,
+      en: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#012169"/><path d="M0,0 L21,14 M21,0 L0,14" stroke="#ffffff" stroke-width="2.5"/><path d="M0,0 L21,14 M21,0 L0,14" stroke="#c8102e" stroke-width="1.2"/><rect x="8.5" width="4" height="14" fill="#ffffff"/><rect y="5" width="21" height="4" fill="#ffffff"/><rect x="9.5" width="2" height="14" fill="#c8102e"/><rect y="6" width="21" height="2" fill="#c8102e"/></svg>`,
+      pl: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="7" fill="#ffffff"/><rect y="7" width="21" height="7" fill="#dc143c"/></svg>`,
+      de: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#111111"/><rect y="4.66" width="21" height="4.66" fill="#dd0000"/><rect y="9.33" width="21" height="4.67" fill="#ffce00"/></svg>`,
+      fr: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="7" height="14" fill="#002395"/><rect x="7" width="7" height="14" fill="#ffffff"/><rect x="14" width="7" height="14" fill="#ed2939"/></svg>`,
+      es: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="3.5" fill="#aa151b"/><rect y="3.5" width="21" height="7" fill="#f1bf00"/><rect y="10.5" width="21" height="3.5" fill="#aa151b"/></svg>`,
+      pt: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="8.4" height="14" fill="#046a38"/><rect x="8.4" width="12.6" height="14" fill="#da291c"/><circle cx="8.4" cy="7" r="2.8" fill="#ffd700"/></svg>`,
+      nl: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#ae1c28"/><rect y="4.66" width="21" height="4.66" fill="#ffffff"/><rect y="9.33" width="21" height="4.67" fill="#21468b"/></svg>`,
+      cs: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="7" fill="#ffffff"/><rect y="7" width="21" height="7" fill="#d7141a"/><polygon points="0,0 9.5,7 0,14" fill="#11457e"/></svg>`,
+      sk: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#ffffff"/><rect y="4.66" width="21" height="4.66" fill="#0b4ea2"/><rect y="9.33" width="21" height="4.67" fill="#ee1c25"/></svg>`,
+      ro: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="7" height="14" fill="#002b7f"/><rect x="7" width="7" height="14" fill="#fcd116"/><rect x="14" width="7" height="14" fill="#ce1126"/></svg>`,
+      hu: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#ce2939"/><rect y="4.66" width="21" height="4.66" fill="#ffffff"/><rect y="9.33" width="21" height="4.67" fill="#477050"/></svg>`,
+      tr: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#e30a17"/><circle cx="8" cy="7" r="3.8" fill="#ffffff"/><circle cx="9.2" cy="7" r="3" fill="#e30a17"/><polygon points="12,7 13.5,6.2 13,7.8 14.2,6.7 12.8,7.3" fill="#ffffff"/></svg>`,
+      el: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#0d5eaf"/><rect y="1.55" width="21" height="1.55" fill="#ffffff"/><rect y="4.65" width="21" height="1.55" fill="#ffffff"/><rect y="7.75" width="21" height="1.55" fill="#ffffff"/><rect y="10.85" width="21" height="1.55" fill="#ffffff"/><rect width="7" height="7" fill="#0d5eaf"/><rect x="2.6" width="1.8" height="7" fill="#ffffff"/><rect y="2.6" width="7" height="1.8" fill="#ffffff"/></svg>`,
+      bg: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#ffffff"/><rect y="4.66" width="21" height="4.66" fill="#00966e"/><rect y="9.33" width="21" height="4.67" fill="#d62612"/></svg>`,
+      sv: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#006aa7"/><rect x="6" width="3" height="14" fill="#fecc00"/><rect y="5.5" width="21" height="3" fill="#fecc00"/></svg>`,
+      no: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#ba0c2f"/><rect x="5.5" width="4" height="14" fill="#ffffff"/><rect y="5" width="21" height="4" fill="#ffffff"/><rect x="6.5" width="2" height="14" fill="#00205b"/><rect y="6" width="21" height="2" fill="#00205b"/></svg>`,
+      da: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#c60c30"/><rect x="6" width="2.6" height="14" fill="#ffffff"/><rect y="5.7" width="21" height="2.6" fill="#ffffff"/></svg>`,
+      fi: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#ffffff"/><rect x="5.5" width="3.5" height="14" fill="#003580"/><rect y="5.25" width="21" height="3.5" fill="#003580"/></svg>`,
+      lt: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#fdb913"/><rect y="4.66" width="21" height="4.66" fill="#006a44"/><rect y="9.33" width="21" height="4.67" fill="#c1272d"/></svg>`,
+      lv: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="5.6" fill="#9e3039"/><rect y="5.6" width="21" height="2.8" fill="#ffffff"/><rect y="8.4" width="21" height="5.6" fill="#9e3039"/></svg>`,
+      et: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#0072ce"/><rect y="4.66" width="21" height="4.66" fill="#000000"/><rect y="9.33" width="21" height="4.67" fill="#ffffff"/></svg>`,
+      ja: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#ffffff"/><circle cx="10.5" cy="7" r="4.2" fill="#bc002d"/></svg>`,
+      zh: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#de2910"/><polygon points="4,2 4.6,3.8 3,2.7 5,2.7 3.4,3.8" fill="#ffde00"/></svg>`,
+      ko: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#ffffff"/><circle cx="10.5" cy="7" r="3.5" fill="#c60c30"/><path d="M7,7 A3.5,3.5 0 0,0 14,7 Z" fill="#003478"/></svg>`,
+      ar: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#006c35"/><line x1="5" y1="7" x2="16" y2="7" stroke="#ffffff" stroke-width="1.8"/></svg>`,
+      he: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#ffffff"/><rect y="1.8" width="21" height="1.8" fill="#0038b8"/><rect y="10.4" width="21" height="1.8" fill="#0038b8"/><polygon points="10.5,4.6 12.6,8.2 8.4,8.2" fill="none" stroke="#0038b8" stroke-width="0.8"/><polygon points="10.5,9 12.6,5.4 8.4,5.4" fill="none" stroke="#0038b8" stroke-width="0.8"/></svg>`,
+      hi: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#ff9933"/><rect y="4.66" width="21" height="4.66" fill="#ffffff"/><rect y="9.33" width="21" height="4.67" fill="#138808"/><circle cx="10.5" cy="7" r="1.8" fill="none" stroke="#000080" stroke-width="0.8"/></svg>`,
+      ru: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#ffffff"/><rect y="4.66" width="21" height="4.66" fill="#0039a6"/><rect y="9.33" width="21" height="4.67" fill="#d52b1e"/></svg>`
+    };
+
+    // Full List of 30 Languages Supported by Louise Translator
+    const languages = [
+      { code: 'it', name: 'Italian' },
+      { code: 'uk', name: 'Ukrainian' },
+      { code: 'en', name: 'English' },
+      { code: 'pl', name: 'Polish' },
+      { code: 'de', name: 'German' },
+      { code: 'fr', name: 'French' },
+      { code: 'es', name: 'Spanish' },
+      { code: 'pt', name: 'Portuguese' },
+      { code: 'nl', name: 'Dutch' },
+      { code: 'cs', name: 'Czech' },
+      { code: 'sk', name: 'Slovak' },
+      { code: 'ro', name: 'Romanian' },
+      { code: 'hu', name: 'Hungarian' },
+      { code: 'tr', name: 'Turkish' },
+      { code: 'el', name: 'Greek' },
+      { code: 'bg', name: 'Bulgarian' },
+      { code: 'sv', name: 'Swedish' },
+      { code: 'no', name: 'Norwegian' },
+      { code: 'da', name: 'Danish' },
+      { code: 'fi', name: 'Finnish' },
+      { code: 'lt', name: 'Lithuanian' },
+      { code: 'lv', name: 'Latvian' },
+      { code: 'et', name: 'Estonian' },
+      { code: 'ja', name: 'Japanese' },
+      { code: 'zh', name: 'Chinese' },
+      { code: 'ko', name: 'Korean' },
+      { code: 'ar', name: 'Arabic' },
+      { code: 'he', name: 'Hebrew' },
+      { code: 'hi', name: 'Hindi' },
+      { code: 'ru', name: 'Russian' }
+    ];
+
+    let targetLang = 'it';
+    const srcInput = document.getElementById('srcInput');
+    const dstOutput = document.getElementById('dstOutput');
+    const dstLangBtn = document.getElementById('dstLangBtn');
+    const dstLangContent = document.getElementById('dstLangContent');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    const engineTag = document.getElementById('engineTag');
+    const btnCopy = document.getElementById('btnCopy');
+    const btnReplace = document.getElementById('btnReplace');
+    const btnClear = document.getElementById('btnClear');
+    const btnSwap = document.getElementById('btnSwap');
+
+    // Populate Target Dropdown Menu with Full 30 Languages & SVG Flag Badges
+    function renderDropdown() {
+      dropdownMenu.innerHTML = languages.map(lang => `
+        <div class="dropdown-item ${lang.code === targetLang ? 'active' : ''}" data-code="${lang.code}">
+          ${flagSvgs[lang.code] || ''}
+          <span>${lang.name}</span>
+        </div>
+      `).join('');
+
+      dropdownMenu.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          targetLang = item.dataset.code;
+          updateTargetPill();
+          dropdownMenu.classList.remove('show');
+          renderDropdown();
+          performLiveTranslation();
+        });
+      });
+    }
+
+    function updateTargetPill() {
+      const current = languages.find(l => l.code === targetLang) || languages[0];
+      dstLangContent.innerHTML = `
+        ${flagSvgs[current.code] || ''}
+        <span>${current.name}</span>
+      `;
+    }
+
+    // Toggle Dropdown
+    dstLangBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdownMenu.classList.toggle('show');
+    });
+
+    document.addEventListener('click', () => {
+      dropdownMenu.classList.remove('show');
+    });
+
+    // Initialize Dropdown
+    renderDropdown();
+    updateTargetPill();
+
+    // REAL LIVE GOOGLE TRANSLATE API WITH DEBOUNCE
+    let debounceTimer;
+    srcInput.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      const text = srcInput.value.trim();
+      if (!text) {
+        dstOutput.innerText = "";
+        return;
+      }
+      engineTag.innerText = "Translating...";
+      engineTag.style.opacity = "0.6";
+      dstOutput.style.opacity = "0.5";
+
+      debounceTimer = setTimeout(() => {
+        performLiveTranslation();
+      }, 350);
+    });
+
+    async function performLiveTranslation() {
+      const text = srcInput.value.trim();
+      if (!text) {
+        dstOutput.innerText = "";
+        engineTag.innerText = "Google";
+        engineTag.style.opacity = "1";
+        dstOutput.style.opacity = "1";
+        return;
+      }
+
+      // Check default phrase for pristine presentation
+      if (text.startsWith("Language is the first weapon") && targetLang === 'it') {
+        dstOutput.innerText = "Il linguaggio è la prima arma impugnata in un conflitto, o la prima mano tesa alla comprensione.";
+        dstOutput.style.opacity = "1";
+        engineTag.innerText = "Google";
+        engineTag.style.opacity = "1";
+        return;
+      }
+
+      try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Network response not ok");
+        const data = await res.json();
+        let translated = "";
+        if (Array.isArray(data) && Array.isArray(data[0])) {
+          for (const part of data[0]) {
+            if (part && part[0]) translated += part[0];
+          }
+        }
+        dstOutput.innerText = translated || "Translation complete.";
+        engineTag.innerText = "Google";
+      } catch (err) {
+        // Fallback for offline/blocked network
+        dstOutput.innerText = text;
+        engineTag.innerText = "Google";
+      } finally {
+        dstOutput.style.opacity = "1";
+        engineTag.style.opacity = "1";
+      }
+    }
+
+    // Copy Button Interaction
+    btnCopy.addEventListener('click', () => {
+      const textToCopy = dstOutput.innerText.trim();
+      if (!textToCopy) return;
+      navigator.clipboard.writeText(textToCopy);
+      btnCopy.classList.add('active');
+      btnCopy.innerText = 'Copied! ✓';
+      setTimeout(() => {
+        btnCopy.classList.remove('active');
+        btnCopy.innerText = 'Copy';
+      }, 1500);
+    });
+
+    // Paste as Replacement Simulation
+    btnReplace.addEventListener('click', () => {
+      const textToReplace = dstOutput.innerText.trim();
+      if (!textToReplace) return;
+      btnReplace.classList.add('active');
+      btnReplace.innerText = 'Injected into active app! ✓';
+      setTimeout(() => {
+        btnReplace.classList.remove('active');
+        btnReplace.innerText = 'Paste as replacement';
+      }, 1400);
+    });
+
+    // Clear Button (wipes fields and lets user type anything for real live translation)
+    btnClear.addEventListener('click', () => {
+      srcInput.value = '';
+      dstOutput.innerText = '';
+      srcInput.placeholder = 'Type anything here in any language...';
+      srcInput.focus();
+      engineTag.innerText = 'Google';
+    });
+
+    // Swap / Cycle Languages Button
+    btnSwap.addEventListener('click', () => {
+      if (targetLang === 'it') {
+        targetLang = 'uk';
+      } else if (targetLang === 'uk') {
+        targetLang = 'en';
+      } else {
+        targetLang = 'it';
+      }
+      updateTargetPill();
+      renderDropdown();
+      performLiveTranslation();
+    });
+
+    // 2. 3D Perspective Tilt on Mouse Movement
+    const appMock = document.getElementById('appMock');
+    document.addEventListener('mousemove', (e) => {
+      if (window.innerWidth < 960) return;
+      const xAxis = (window.innerWidth / 2 - e.pageX) / 55;
+      const yAxis = (window.innerHeight / 2 - e.pageY) / 55;
+      appMock.style.transform = `rotateY(${-xAxis}deg) rotateX(${yAxis}deg)`;
+    });
+
+    document.addEventListener('mouseleave', () => {
+      appMock.style.transform = 'rotateY(0deg) rotateX(0deg)';
+    });
+
+    // 3. Canvas Ambient Particles
+    const canvas = document.getElementById('ambient-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    for (let i = 0; i < 42; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: Math.random() * 1.5 + 0.5,
+        dx: (Math.random() - 0.5) * 0.2,
+        dy: (Math.random() - 0.5) * 0.2,
+        alpha: Math.random() * 0.45 + 0.1
+      });
+    }
+
+    function renderCanvas() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.x += p.dx;
+        p.y += p.dy;
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(241, 255, 255, ${p.alpha * 0.45})`;
+        ctx.fill();
+      });
+      requestAnimationFrame(renderCanvas);
+    }
+    renderCanvas();
+  </script>
+</body>
+</html>
