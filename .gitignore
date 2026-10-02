@@ -1,0 +1,14 @@
+/target
+*.exe
+*.zip
+*.log
+*.txt
+preview_*.png
+test_*.png
+backup_*/
+config.json
+REGRESSION_CHECKLIST.md
+dev.bat
+tools/
+.DS_Store
+Thumbs.db

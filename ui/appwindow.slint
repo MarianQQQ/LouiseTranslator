@@ -1,0 +1,3234 @@
+import { ScrollView } from "std-widgets.slint";
+
+// Vector globe icon for Auto-detect
+component GlobeIcon inherits Path {
+    in property <color> icon-color: #f1ffff;
+    width: 14px;
+    height: 14px;
+    stroke: root.icon-color;
+    stroke-width: 1.3px;
+    viewbox-x: 0; viewbox-y: 0; viewbox-width: 14; viewbox-height: 14;
+    MoveTo { x: 7; y: 1; } LineTo { x: 12; y: 4; } LineTo { x: 13; y: 7; } LineTo { x: 12; y: 10; }
+    LineTo { x: 7; y: 13; } LineTo { x: 2; y: 10; } LineTo { x: 1; y: 7; } LineTo { x: 2; y: 4; }
+    Close {}
+    MoveTo { x: 1; y: 7; } LineTo { x: 13; y: 7; }
+    MoveTo { x: 7; y: 1; } LineTo { x: 7; y: 13; }
+}
+
+// Full-color vector flags for ALL supported languages
+component FlagBadge inherits Rectangle {
+    in property <string> code: "uk";
+    width: 22px;
+    height: 15px;
+    border-radius: 3px;
+    border-width: 1px;
+    border-color: #ffffff25;
+    clip: true;
+
+    if root.code == "auto": Rectangle {
+        background: #1c1c1c;
+        GlobeIcon {
+            x: (parent.width - self.width) / 2;
+            y: (parent.height - self.height) / 2;
+            icon-color: #f1ffff;
+        }
+    }
+    if root.code == "uk": VerticalLayout {
+        spacing: 0px; padding: 0px;
+        Rectangle { background: #0057b7; height: 50%; }
+        Rectangle { background: #ffd700; height: 50%; }
+    }
+    if root.code == "pl": VerticalLayout {
+        spacing: 0px; padding: 0px;
+        Rectangle { background: #ffffff; height: 50%; }
+        Rectangle { background: #dc143c; height: 50%; }
+    }
+    if root.code == "de": VerticalLayout {
+        spacing: 0px; padding: 0px;
+        Rectangle { background: #111111; height: 33.3%; }
+        Rectangle { background: #dd0000; height: 33.3%; }
+        Rectangle { background: #ffce00; height: 33.4%; }
+    }
+    if root.code == "fr": HorizontalLayout {
+        spacing: 0px; padding: 0px;
+        Rectangle { background: #002395; width: 33.3%; }
+        Rectangle { background: #ffffff; width: 33.3%; }
+        Rectangle { background: #ed2939; width: 33.4%; }
+    }
+    if root.code == "it": HorizontalLayout {
+        spacing: 0px; padding: 0px;
+        Rectangle { background: #009246; width: 33.3%; }
+        Rectangle { background: #ffffff; width: 33.3%; }
+        Rectangle { background: #ce2b37; width: 33.4%; }
+    }
+    if root.code == "es": VerticalLayout {
+        spacing: 0px; padding: 0px;
+        Rectangle { background: #aa151b; height: 25%; }
+        Rectangle { background: #f1bf00; height: 50%; }
+        Rectangle { background: #aa151b; height: 25%; }
+    }
+    if root.code == "en": Rectangle {
+        background: #012169;
+        Path {
+            width: 100%; height: 100%;
+            stroke: #ffffff; stroke-width: 2.4px;
+            viewbox-x: 0; viewbox-y: 0; viewbox-width: 22; viewbox-height: 15;
+            MoveTo { x: 0; y: 0; } LineTo { x: 22; y: 15; }
+            MoveTo { x: 22; y: 0; } LineTo { x: 0; y: 15; }
+        }
+        Path {
+            width: 100%; height: 100%;
+            stroke: #c8102e; stroke-width: 1.1px;
+            viewbox-x: 0; viewbox-y: 0; viewbox-width: 22; viewbox-height: 15;
+            MoveTo { x: 0; y: 0; } LineTo { x: 22; y: 15; }
+            MoveTo { x: 22; y: 0; } LineTo { x: 0; y: 15; }
+        }
+        Rectangle { x: (parent.width - 5px) / 2; width: 5px; height: 100%; background: #ffffff; }
+        Rectangle { y: (parent.height - 5px) / 2; width: 100%; height: 5px; background: #ffffff; }
+        Rectangle { x: (parent.width - 2.5px) / 2; width: 2.5px; height: 100%; background: #c8102e; }
+        Rectangle { y: (parent.height - 2.5px) / 2; width: 100%; height: 2.5px; background: #c8102e; }
+    }
+    if root.code == "pt": HorizontalLayout {
+        spacing: 0px;
+        Rectangle { background: #046a38; width: 40%; }
+        Rectangle { background: #da291c; width: 60%; }
+    }
+    if root.code == "nl": VerticalLayout {
+        spacing: 0px;
+        Rectangle { background: #ae1c28; height: 33.3%; }
+        Rectangle { background: #ffffff; height: 33.3%; }
+        Rectangle { background: #21468b; height: 33.4%; }
+    }
+    if root.code == "cs": Rectangle {
+        background: #ffffff;
+        Rectangle { y: parent.height / 2; height: 50%; width: 100%; background: #d7141a; }
+        Path {
+            width: 10px; height: 15px; fill: #11457e;
+            viewbox-x: 0; viewbox-y: 0; viewbox-width: 10; viewbox-height: 15;
+            MoveTo { x: 0; y: 0; } LineTo { x: 10; y: 7.5; } LineTo { x: 0; y: 15; } Close {}
+        }
+    }
+    if root.code == "sk": VerticalLayout {
+        spacing: 0px;
+        Rectangle { background: #ffffff; height: 33.3%; }
+        Rectangle { background: #0b4ea2; height: 33.3%; }
+        Rectangle { background: #ee1c25; height: 33.4%; }
+    }
+    if root.code == "ro": HorizontalLayout {
+        spacing: 0px;
+        Rectangle { background: #002b7f; width: 33.3%; }
+        Rectangle { background: #fcd116; width: 33.3%; }
+        Rectangle { background: #ce1126; width: 33.4%; }
+    }
+    if root.code == "hu": VerticalLayout {
+        spacing: 0px;
+        Rectangle { background: #ce2939; height: 33.3%; }
+        Rectangle { background: #ffffff; height: 33.3%; }
+        Rectangle { background: #477050; height: 33.4%; }
+    }
+    if root.code == "tr": Rectangle {
+        background: #e30a17;
+        Text { text: "C*"; color: #ffffff; font-size: 8px; font-weight: 700;
+            horizontal-alignment: center; vertical-alignment: center; }
+    }
+    if root.code == "el": Rectangle {
+        background: #0d5eaf;
+        Rectangle { width: 9px; height: 9px; background: #0d5eaf;
+            Rectangle { x: 3.5px; width: 2px; height: 100%; background: #ffffff; }
+            Rectangle { y: 3.5px; height: 2px; width: 100%; background: #ffffff; }
+        }
+        Rectangle { y: 2px; height: 2px; width: 100%; background: #ffffff; }
+        Rectangle { y: 6px; height: 2px; width: 100%; background: #ffffff; }
+        Rectangle { y: 10px; height: 2px; width: 100%; background: #ffffff; }
+    }
+    if root.code == "bg": VerticalLayout {
+        spacing: 0px;
+        Rectangle { background: #ffffff; height: 33.3%; }
+        Rectangle { background: #00966e; height: 33.3%; }
+        Rectangle { background: #d62612; height: 33.4%; }
+    }
+    if root.code == "sv": Rectangle {
+        background: #006aa7;
+        Rectangle { x: 6px; width: 3px; height: 100%; background: #fecc00; }
+        Rectangle { y: 6px; height: 3px; width: 100%; background: #fecc00; }
+    }
+    if root.code == "no": Rectangle {
+        background: #ba0c2f;
+        Rectangle { x: 5px; width: 4px; height: 100%; background: #ffffff; }
+        Rectangle { y: 5px; height: 4px; width: 100%; background: #ffffff; }
+        Rectangle { x: 6px; width: 2px; height: 100%; background: #00205b; }
+        Rectangle { y: 6px; height: 2px; width: 100%; background: #00205b; }
+    }
+    if root.code == "da": Rectangle {
+        background: #c60c30;
+        Rectangle { x: 6px; width: 2.5px; height: 100%; background: #ffffff; }
+        Rectangle { y: 6px; height: 2.5px; width: 100%; background: #ffffff; }
+    }
+    if root.code == "fi": Rectangle {
+        background: #ffffff;
+        Rectangle { x: 5px; width: 4px; height: 100%; background: #003580; }
+        Rectangle { y: 5px; height: 4px; width: 100%; background: #003580; }
+    }
+    if root.code == "lt": VerticalLayout {
+        spacing: 0px;
+        Rectangle { background: #fdb913; height: 33.3%; }
+        Rectangle { background: #006a44; height: 33.3%; }
+        Rectangle { background: #c1272d; height: 33.4%; }
+    }
+    if root.code == "lv": VerticalLayout {
+        spacing: 0px;
+        Rectangle { background: #9e3039; height: 40%; }
+        Rectangle { background: #ffffff; height: 20%; }
+        Rectangle { background: #9e3039; height: 40%; }
+    }
+    if root.code == "et": VerticalLayout {
+        spacing: 0px;
+        Rectangle { background: #0072ce; height: 33.3%; }
+        Rectangle { background: #000000; height: 33.3%; }
+        Rectangle { background: #ffffff; height: 33.4%; }
+    }
+    if root.code == "ja": Rectangle {
+        background: #ffffff;
+        Rectangle {
+            width: 8px; height: 8px; border-radius: 4px; background: #bc002d;
+            x: (parent.width - self.width) / 2; y: (parent.height - self.height) / 2;
+        }
+    }
+    if root.code == "zh": Rectangle {
+        background: #de2910;
+        Text { x: 2px; y: 0px; text: "★"; color: #ffde00; font-size: 8px; }
+    }
+    if root.code == "ko": Rectangle {
+        background: #ffffff;
+        Rectangle {
+            width: 7px; height: 7px; border-radius: 3.5px; background: #c60c30;
+            x: (parent.width - self.width) / 2; y: (parent.height - self.height) / 2;
+        }
+    }
+    if root.code == "ar": Rectangle {
+        background: #006c35;
+        Text { text: "—"; color: #ffffff; font-size: 8px;
+            horizontal-alignment: center; vertical-alignment: center; }
+    }
+    if root.code == "he": Rectangle {
+        background: #ffffff;
+        Rectangle { y: 2px; height: 2px; width: 100%; background: #0038b8; }
+        Rectangle { y: 11px; height: 2px; width: 100%; background: #0038b8; }
+        Text { text: "✡"; color: #0038b8; font-size: 7px;
+            horizontal-alignment: center; vertical-alignment: center; }
+    }
+    if root.code == "hi": VerticalLayout {
+        spacing: 0px;
+        Rectangle { background: #ff9933; height: 33.3%; }
+        Rectangle {
+            background: #ffffff; height: 33.3%;
+            Rectangle {
+                width: 4px; height: 4px; border-radius: 2px; background: #000080;
+                x: (parent.width - self.width) / 2; y: (parent.height - self.height) / 2;
+            }
+        }
+        Rectangle { background: #138808; height: 33.4%; }
+    }
+    if root.code == "ru": VerticalLayout {
+        spacing: 0px;
+        Rectangle { background: #ffffff; height: 33.3%; }
+        Rectangle { background: #0039a6; height: 33.3%; }
+        Rectangle { background: #d52b1e; height: 33.4%; }
+    }
+}
+
+// Vector icons
+component SwapIcon inherits Path {
+    in property <color> icon-color: #a1a1aa;
+    width: 14px; height: 10px;
+    stroke: root.icon-color; stroke-width: 1.5px;
+    viewbox-x: 0; viewbox-y: 0; viewbox-width: 14; viewbox-height: 10;
+    // Top arrow: left to right
+    MoveTo { x: 1; y: 2.5; } LineTo { x: 13; y: 2.5; } LineTo { x: 9.5; y: 0; }
+    MoveTo { x: 13; y: 2.5; } LineTo { x: 9.5; y: 5; }
+    // Bottom arrow: right to left
+    MoveTo { x: 13; y: 7.5; } LineTo { x: 1; y: 7.5; } LineTo { x: 4.5; y: 10; }
+    MoveTo { x: 1; y: 7.5; } LineTo { x: 4.5; y: 5; }
+}
+
+component ChevronDown inherits Path {
+    in property <color> icon-color: #71717a;
+    width: 8px; height: 5px;
+    stroke: root.icon-color; stroke-width: 1.4px;
+    viewbox-x: 0; viewbox-y: 0; viewbox-width: 8; viewbox-height: 5;
+    MoveTo { x: 1; y: 1; } LineTo { x: 4; y: 4; } LineTo { x: 7; y: 1; }
+}
+
+component CloseIcon inherits Path {
+    in property <color> icon-color: #888894;
+    width: 10px; height: 10px;
+    stroke: root.icon-color; stroke-width: 1.5px;
+    viewbox-x: 0; viewbox-y: 0; viewbox-width: 10; viewbox-height: 10;
+    MoveTo { x: 1; y: 1; } LineTo { x: 9; y: 9; }
+    MoveTo { x: 9; y: 1; } LineTo { x: 1; y: 9; }
+}
+
+
+// Header window button (? and ⚙)
+component WindowBtn inherits Rectangle {
+    in property <color> hover-bg: #ffffff14;
+    in property <color> active-bg: #ffffff20;
+    callback clicked();
+    width: 22px; height: 22px; border-radius: 11px;
+    background: ta.pressed ? active-bg : (ta.has-hover ? hover-bg : transparent);
+
+    animate background { duration: 100ms; }
+
+    ta := TouchArea {
+        width: 100%;
+        height: 100%;
+        clicked => { root.clicked(); }
+        mouse-cursor: pointer;
+    }
+}
+
+// Dedicated close-to-tray button with rounded hover state
+component CloseButton inherits Rectangle {
+    callback clicked();
+    width: 22px;
+    height: 22px;
+    border-radius: 11px;
+    background: ta.pressed ? #be123c : (ta.has-hover ? #e11d48 : transparent);
+    animate background { duration: 80ms; }
+
+    CloseIcon {
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+        icon-color: ta.has-hover ? #ffffff : #a1a1aa;
+    }
+
+    ta := TouchArea {
+        width: 100%;
+        height: 100%;
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+
+// Language selector button (centered and balanced)
+component LangTabButton inherits Rectangle {
+    in property <string> text: "Українська";
+    in property <string> lang-code: "uk";
+    in property <bool> is-open: false;
+    callback clicked();
+
+    height: 38px;
+    background: is-open ? #262626 : (ta.pressed ? #161616 : ta.has-hover ? #222222 : #1c1c1c);
+    border-color: is-open ? #f1ffff : (ta.has-hover ? #3c3c3c : #282828);
+    border-width: 1px;
+    border-radius: 8px;
+
+    animate background { duration: 100ms; }
+    animate border-color { duration: 100ms; }
+
+    ta := TouchArea {
+        clicked => { root.clicked(); }
+        mouse-cursor: pointer;
+    }
+
+    HorizontalLayout {
+        padding-left: 10px;
+        padding-right: 10px;
+        spacing: 8px;
+        alignment: center;
+
+        VerticalLayout {
+            alignment: center;
+            width: 22px;
+            FlagBadge {
+                code: root.lang-code;
+            }
+        }
+
+        VerticalLayout {
+            alignment: center;
+            Text {
+                text: root.text;
+                color: ta.has-hover ? #f1ffff : #d4d4d8;
+                font-size: 11px;
+                font-family: "JetBrains Mono";
+                font-weight: 600;
+                vertical-alignment: center;
+                overflow: elide;
+            }
+        }
+
+        VerticalLayout {
+            alignment: center;
+            ChevronDown {
+                icon-color: ta.has-hover ? #f1ffff : #71717a;
+            }
+        }
+    }
+}
+
+// Language list item
+component LangListItem inherits Rectangle {
+    in property <string> name;
+    in property <string> code;
+    in property <bool> is-selected;
+    callback clicked(string);
+
+    height: 30px;
+    background: ta.pressed ? #262626 : (ta.has-hover ? #202020 : (is-selected ? #181818 : transparent));
+    border-radius: 5px;
+
+    ta := TouchArea {
+        clicked => { root.clicked(root.code); }
+        mouse-cursor: pointer;
+    }
+
+    HorizontalLayout {
+        padding-left: 8px; padding-right: 18px; spacing: 8px;
+
+        Rectangle {
+            width: 22px;
+            FlagBadge {
+                y: (parent.height - self.height) / 2;
+                code: root.code;
+            }
+        }
+
+        Text {
+            text: root.name;
+            color: root.is-selected ? #f1ffff : (ta.has-hover ? #f1ffff : #b4b4b8);
+            font-size: 11px;
+            font-family: "JetBrains Mono";
+            font-weight: root.is-selected ? 700 : 400;
+            vertical-alignment: center;
+            overflow: elide;
+        }
+    }
+}
+
+// Unified action button
+component ActionButton inherits Rectangle {
+    in property <string> text;
+    in property <bool> is-primary: false;
+    callback clicked();
+
+    background: is-primary ?
+        (ta.pressed ? #d0e0e0 : (ta.has-hover ? #ffffff : #f1ffff)) :
+        (ta.pressed ? #141414 : (ta.has-hover ? #252525 : #1c1c1c));
+    border-color: is-primary ?
+        #f1ffff :
+        (ta.has-hover ? #383838 : #282828);
+    border-width: 1px;
+    border-radius: 7px;
+
+    animate background { duration: 100ms; }
+    animate border-color { duration: 100ms; }
+
+    ta := TouchArea {
+        clicked => { root.clicked(); }
+        mouse-cursor: pointer;
+    }
+
+    Text {
+        text: root.text;
+        color: is-primary ? #101010 : (ta.has-hover ? #f1ffff : #d4d4d8);
+        font-size: 11px;
+        font-family: "JetBrains Mono";
+        font-weight: is-primary ? 700 : 600;
+        vertical-alignment: center;
+        horizontal-alignment: center;
+    }
+}
+
+// Vector gear icon
+component GearIcon inherits Path {
+    in property <color> icon-color: #888894;
+    width: 13px; height: 13px;
+    stroke: root.icon-color;
+    stroke-width: 1.2px;
+    viewbox-x: 0; viewbox-y: 0; viewbox-width: 16; viewbox-height: 16;
+    MoveTo { x: 8; y: 1; } LineTo { x: 9.5; y: 1; } LineTo { x: 10; y: 3; }
+    LineTo { x: 12; y: 2; } LineTo { x: 13; y: 3; } LineTo { x: 12; y: 5; }
+    LineTo { x: 13.5; y: 6.5; } LineTo { x: 15; y: 6.5; } LineTo { x: 15; y: 9.5; }
+    LineTo { x: 13.5; y: 9.5; } LineTo { x: 12; y: 11; } LineTo { x: 13; y: 13; }
+    LineTo { x: 12; y: 14; } LineTo { x: 10; y: 13; } LineTo { x: 9.5; y: 15; }
+    LineTo { x: 6.5; y: 15; } LineTo { x: 6; y: 13; } LineTo { x: 4; y: 14; }
+    LineTo { x: 3; y: 13; } LineTo { x: 4; y: 11; } LineTo { x: 2.5; y: 9.5; }
+    LineTo { x: 1; y: 9.5; } LineTo { x: 1; y: 6.5; } LineTo { x: 2.5; y: 6.5; }
+    LineTo { x: 4; y: 5; } LineTo { x: 3; y: 3; } LineTo { x: 4; y: 2; }
+    LineTo { x: 6; y: 3; } LineTo { x: 6.5; y: 1; } Close {}
+    MoveTo { x: 8; y: 6; } LineTo { x: 10; y: 8; } LineTo { x: 8; y: 10; } LineTo { x: 6; y: 8; } Close {}
+}
+
+// Smooth toggle switch
+component ToggleSwitch inherits Rectangle {
+    in-out property <bool> checked: false;
+    callback toggled(bool);
+
+    width: 38px;
+    height: 22px;
+    border-radius: 11px;
+    background: root.checked ? #2a2a2a : #181818;
+    border-color: root.checked ? #f1ffff : #333333;
+    border-width: 1.2px;
+
+    animate background { duration: 150ms; }
+    animate border-color { duration: 150ms; }
+
+    ta := TouchArea {
+        clicked => {
+            root.checked = !root.checked;
+            root.toggled(root.checked);
+        }
+        mouse-cursor: pointer;
+    }
+
+    thumb := Rectangle {
+        width: 14px;
+        height: 14px;
+        border-radius: 7px;
+        background: root.checked ? #f1ffff : #666666;
+        x: root.checked ? (parent.width - self.width - 3.5px) : 3.5px;
+        y: (parent.height - self.height) / 2;
+
+        animate x { duration: 150ms; easing: ease-out; }
+        animate background { duration: 150ms; }
+    }
+}
+
+// Settings row
+component SettingItem inherits Rectangle {
+    in property <string> title;
+    in property <string> subtitle;
+    in-out property <bool> checked: false;
+    callback toggled(bool);
+
+    height: 52px;
+    background: #1c1c1c;
+    border-color: #282828;
+    border-width: 1px;
+    border-radius: 8px;
+
+    HorizontalLayout {
+        padding-left: 14px;
+        padding-right: 14px;
+        alignment: space-between;
+
+        VerticalLayout {
+            spacing: 3px;
+            alignment: center;
+
+            Text {
+                text: root.title;
+                color: #f1ffff;
+                font-family: "JetBrains Mono";
+                font-size: 11px;
+                font-weight: 600;
+            }
+
+            Text {
+                text: root.subtitle;
+                color: #888888;
+                font-family: "JetBrains Mono";
+                font-size: 10px;
+            }
+        }
+
+        VerticalLayout {
+            alignment: center;
+            ToggleSwitch {
+                checked <=> root.checked;
+                toggled(v) => { root.toggled(v); }
+            }
+        }
+    }
+}
+
+// Priority language pill toggle component
+component PrioLangBadge inherits Rectangle {
+    in property <string> code: "";
+    in property <string> lang-name: "";
+    in property <bool> is-active: false;
+    callback clicked(string);
+
+    width: 80px; height: 28px;
+    border-radius: 6px;
+    background: is-active ? #282828 : #1a1a1a;
+    border-color: is-active ? #f1ffff : #333333;
+    border-width: 1px;
+    animate background { duration: 100ms; }
+    animate border-color { duration: 100ms; }
+
+    ta := TouchArea {
+        clicked => { root.clicked(root.code); }
+        mouse-cursor: pointer;
+    }
+
+    HorizontalLayout {
+        padding-left: 6px; padding-right: 6px; spacing: 5px; alignment: start;
+        Rectangle {
+            width: 18px;
+            FlagBadge {
+                code: root.code;
+                y: (parent.height - self.height) / 2;
+                width: 18px; height: 12px;
+            }
+        }
+        Text {
+            text: root.lang-name;
+            color: is-active ? #f1ffff : #777777;
+            font-size: 10px;
+            font-family: "JetBrains Mono";
+            font-weight: is-active ? 700 : 400;
+            vertical-alignment: center;
+            overflow: elide;
+        }
+    }
+}
+
+// Helper component for help shortcut row
+component HelpRow inherits Rectangle {
+    in property <string> key: "";
+    in property <string> desc: "";
+    height: 18px;
+    background: transparent;
+    HorizontalLayout {
+        spacing: 0px;
+        Rectangle {
+            width: 130px;
+            Text {
+                text: root.key;
+                color: #f1ffff; font-family: "JetBrains Mono"; font-size: 10px; font-weight: 700;
+                vertical-alignment: center;
+            }
+        }
+        Text {
+            text: root.desc;
+            color: #888888; font-family: "JetBrains Mono"; font-size: 10px;
+            vertical-alignment: center; overflow: elide;
+        }
+    }
+}
+
+// Helper component for bullet item in help overlay
+component HelpBullet inherits Rectangle {
+    in property <string> text: "";
+    height: 18px;
+    background: transparent;
+    HorizontalLayout {
+        spacing: 6px;
+        Text {
+            text: "•"; color: #555555; font-family: "JetBrains Mono"; font-size: 10px;
+            width: 10px; vertical-alignment: center;
+        }
+        Text {
+            text: root.text;
+            color: #888888; font-family: "JetBrains Mono"; font-size: 10px;
+            vertical-alignment: center; overflow: elide;
+        }
+    }
+}
+
+// Helper component for preset shortcut buttons
+component PresetShortcutBtn inherits Rectangle {
+    in property <string> label: "";
+    callback clicked();
+    height: 22px;
+    border-radius: 4px;
+    background: ta.has-hover ? #282828 : #181818;
+    border-color: ta.has-hover ? #444444 : #252525;
+    border-width: 1px;
+
+    ta := TouchArea {
+        clicked => { root.clicked(); }
+        mouse-cursor: pointer;
+    }
+
+    HorizontalLayout {
+        padding-left: 6px;
+        padding-right: 6px;
+        alignment: center;
+        Text {
+            text: root.label;
+            color: #888888;
+            font-family: "JetBrains Mono";
+            font-size: 10px;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+}
+
+export component AppWindow inherits Window {
+    width: 500px;
+    height: 540px;
+    title: "Louise Translator";
+    background: transparent;
+    no-frame: true;
+
+    // Floating Toast Banner notification
+    in-out property <bool> show-toast: false;
+    in-out property <string> toast-text: "";
+    in-out property <string> toast-type: "warning"; // "warning", "error", "success", "info"
+
+    // Custom shortcuts
+    in-out property <string> active-custom-tab: "translate"; // "translate" or "toggle_window"
+    in-out property <string> custom-translate-shortcut: "";
+    in-out property <bool> enable-custom-translate: false;
+    in-out property <string> custom-window-shortcut: "";
+    in-out property <bool> enable-custom-window: false;
+    in-out property <bool> is-recording-custom: false;
+    in-out property <bool> is-recording-translate: false;
+    in-out property <bool> is-recording-window: false;
+    in-out property <string> live-recording-text: "";
+    in-out property <string> pending-combo: "";
+
+    // Backward compatibility
+    in-out property <string> custom-shortcut: "";
+    in-out property <bool> enable-custom-shortcut: false;
+    in-out property <string> custom-action: "translate";
+
+    // Core state properties
+    in-out property <string> src-text: "";
+    in-out property <string> dst-text: "";
+    in-out property <string> src-lang: "auto";
+    in-out property <string> dst-lang: "uk";
+    in-out property <string> src-lang-label: "Автовизначення";
+    in-out property <string> dst-lang-label: "Українська";
+    in-out property <bool> is-loading: false;
+    in-out property <string> status-text: "";
+    in-out property <string> detected-lang-label: "";
+
+    always-on-top: root.pin-on-top;
+    in-out property <bool> show-src-picker: false;
+    in-out property <bool> show-dst-picker: false;
+    in-out property <bool> show-settings: false;
+    in-out property <bool> show-help: false;
+
+    // Settings
+    in-out property <bool> popup-mode: true;
+    in-out property <bool> pin-on-top: true;
+    in-out property <bool> auto-copy: false;
+    in-out property <bool> close-on-paste: true;
+    in-out property <bool> enable-alt-c: true;
+    in-out property <bool> enable-alt-x: true;
+    in-out property <int> settings-tab: 0;
+
+    // Context menu popup
+    in-out property <bool> show-ctx-menu: false;
+    in-out property <length> ctx-x: 0px;
+    in-out property <length> ctx-y: 0px;
+    in-out property <bool> ctx-for-src: true;
+
+    // UI language
+    in-out property <string> ui-lang: "uk";
+
+    // Priority languages (up to 6 slots)
+    in-out property <string> prio1: "";
+    in-out property <string> prio2: "";
+    in-out property <string> prio3: "";
+    in-out property <string> prio4: "";
+    in-out property <string> prio5: "";
+    in-out property <string> prio6: "";
+
+    in-out property <bool> autostart: false;
+    in-out property <bool> use-deepl: true;
+    in-out property <string> deepl-key: "";
+    in-out property <string> engine-label: "DeepL ⚡";
+    in-out property <string> deepl-quota-text: "";
+    in-out property <float> deepl-quota-percent: 1.0;
+    in-out property <bool> deepl-quota-loading: false;
+
+    // Callbacks
+    callback refresh-deepl-quota();
+    callback translate-requested();
+    callback swap-languages();
+    callback copy-requested();
+    callback paste-back-requested();
+    callback clear-requested();
+    callback hide-to-tray();
+    callback start-window-drag();
+    callback window-drag-moved();
+    callback end-window-drag();
+    callback shortcuts-changed(bool, bool);
+    callback select-src-lang(string);
+    callback select-dst-lang(string);
+    callback settings-changed(bool, bool, bool, bool);
+    callback status-clear-requested();
+    callback priority-lang-toggled(string);
+    callback dismiss-toast();
+    callback custom-translate-changed(string);
+    callback custom-translate-toggled(bool);
+    callback custom-window-changed(string);
+    callback custom-window-toggled(bool);
+    callback custom-shortcut-changed(string);
+    callback custom-shortcut-toggled(bool);
+    callback custom-action-changed(string);
+    callback ui-lang-changed(string);
+    callback autostart-toggled(bool);
+    callback deepl-settings-changed(bool, string);
+    callback ctx-copy-requested(bool);
+    callback ctx-paste-requested();
+    callback recording-state-changed(bool);
+
+    // Mapping Cyrillic keys (Ukrainian/Russian layouts) to physical Latin keys
+    pure function cyrillic-to-latin(ch: string) -> string {
+        if ch == "й" || ch == "Й" { return "Q"; }
+        if ch == "ц" || ch == "Ц" { return "W"; }
+        if ch == "у" || ch == "У" { return "E"; }
+        if ch == "к" || ch == "К" { return "R"; }
+        if ch == "е" || ch == "Е" { return "T"; }
+        if ch == "н" || ch == "Н" { return "Y"; }
+        if ch == "г" || ch == "Г" { return "U"; }
+        if ch == "ш" || ch == "Ш" { return "I"; }
+        if ch == "щ" || ch == "Щ" { return "O"; }
+        if ch == "з" || ch == "З" { return "P"; }
+        if ch == "ф" || ch == "Ф" { return "A"; }
+        if ch == "і" || ch == "І" || ch == "ы" || ch == "Ы" { return "S"; }
+        if ch == "в" || ch == "В" { return "D"; }
+        if ch == "а" || ch == "А" { return "F"; }
+        if ch == "п" || ch == "П" || ch == "ґ" || ch == "Ґ" { return "G"; }
+        if ch == "р" || ch == "Р" { return "H"; }
+        if ch == "о" || ch == "О" { return "J"; }
+        if ch == "л" || ch == "Л" { return "K"; }
+        if ch == "д" || ch == "Д" { return "L"; }
+        if ch == "я" || ch == "Я" { return "Z"; }
+        if ch == "ч" || ch == "Ч" { return "X"; }
+        if ch == "с" || ch == "С" { return "C"; }
+        if ch == "м" || ch == "М" { return "V"; }
+        if ch == "и" || ch == "И" { return "B"; }
+        if ch == "т" || ch == "Т" { return "N"; }
+        if ch == "ь" || ch == "Ь" { return "M"; }
+        return "";
+    }
+
+    // Normalize any key regardless of active input language layout
+    pure function normalize-key(ch: string) -> string {
+        let cyr = root.cyrillic-to-latin(ch);
+        if cyr != "" { return cyr; }
+        if ch == " " { return "Space"; }
+        if ch == Key.F1 { return "F1"; }
+        if ch == Key.F2 { return "F2"; }
+        if ch == Key.F3 { return "F3"; }
+        if ch == Key.F4 { return "F4"; }
+        if ch == Key.F5 { return "F5"; }
+        if ch == Key.F6 { return "F6"; }
+        if ch == Key.F7 { return "F7"; }
+        if ch == Key.F8 { return "F8"; }
+        if ch == Key.F9 { return "F9"; }
+        if ch == Key.F10 { return "F10"; }
+        if ch == Key.F11 { return "F11"; }
+        if ch == Key.F12 { return "F12"; }
+        if ch == "a" || ch == "A" || ch == "\u{0001}" { return "A"; }
+        if ch == "b" || ch == "B" || ch == "\u{0002}" { return "B"; }
+        if ch == "c" || ch == "C" || ch == "\u{0003}" { return "C"; }
+        if ch == "d" || ch == "D" || ch == "\u{0004}" { return "D"; }
+        if ch == "e" || ch == "E" || ch == "\u{0005}" { return "E"; }
+        if ch == "f" || ch == "F" || ch == "\u{0006}" { return "F"; }
+        if ch == "g" || ch == "G" || ch == "\u{0007}" { return "G"; }
+        if ch == "h" || ch == "H" || ch == "\u{0008}" { return "H"; }
+        if ch == "i" || ch == "I" || ch == "\u{0009}" { return "I"; }
+        if ch == "j" || ch == "J" || ch == "\u{000a}" { return "J"; }
+        if ch == "k" || ch == "K" || ch == "\u{000b}" { return "K"; }
+        if ch == "l" || ch == "L" || ch == "\u{000c}" { return "L"; }
+        if ch == "m" || ch == "M" || ch == "\u{000d}" { return "M"; }
+        if ch == "n" || ch == "N" || ch == "\u{000e}" { return "N"; }
+        if ch == "o" || ch == "O" || ch == "\u{000f}" { return "O"; }
+        if ch == "p" || ch == "P" || ch == "\u{0010}" { return "P"; }
+        if ch == "q" || ch == "Q" || ch == "\u{0011}" { return "Q"; }
+        if ch == "r" || ch == "R" || ch == "\u{0012}" { return "R"; }
+        if ch == "s" || ch == "S" || ch == "\u{0013}" { return "S"; }
+        if ch == "t" || ch == "T" || ch == "\u{0014}" { return "T"; }
+        if ch == "u" || ch == "U" || ch == "\u{0015}" { return "U"; }
+        if ch == "v" || ch == "V" || ch == "\u{0016}" { return "V"; }
+        if ch == "w" || ch == "W" || ch == "\u{0017}" { return "W"; }
+        if ch == "x" || ch == "X" || ch == "\u{0018}" { return "X"; }
+        if ch == "y" || ch == "Y" || ch == "\u{0019}" { return "Y"; }
+        if ch == "z" || ch == "Z" || ch == "\u{001a}" { return "Z"; }
+        if ch == "0" || ch == "1" || ch == "2" || ch == "3" || ch == "4" ||
+           ch == "5" || ch == "6" || ch == "7" || ch == "8" || ch == "9" { return ch; }
+        return "";
+    }
+
+    // Build shortcut combo string from modifiers and key
+    pure function build-combo(has_ctrl: bool, has_alt: bool, has_shift: bool, has_meta: bool, key: string) -> string {
+        let p_ctrl = has_ctrl ? "Ctrl+" : "";
+        let p_alt = has_alt ? "Alt+" : "";
+        let p_shift = has_shift ? "Shift+" : "";
+        let p_meta = has_meta ? "Win+" : "";
+        let prefix = p_ctrl + p_alt + p_shift + p_meta;
+        let is_fn = key == "F1" || key == "F2" || key == "F3" || key == "F4" ||
+                    key == "F5" || key == "F6" || key == "F7" || key == "F8" ||
+                    key == "F9" || key == "F10" || key == "F11" || key == "F12";
+        let final_prefix = (prefix == "" && !is_fn) ? "Alt+" : prefix;
+        return final_prefix + key;
+    }
+
+    // Real-time modifier string builder (Ctrl + Alt + ...)
+    pure function build-live-modifiers(has_ctrl: bool, has_alt: bool, has_shift: bool, has_meta: bool) -> string {
+        let p_ctrl = has_ctrl ? "Ctrl + " : "";
+        let p_alt = has_alt ? "Alt + " : "";
+        let p_shift = has_shift ? "Shift + " : "";
+        let p_meta = has_meta ? "Win + " : "";
+        let prefix = p_ctrl + p_alt + p_shift + p_meta;
+        if (prefix != "") {
+            return prefix + "...";
+        }
+        return "";
+    }
+
+    // Helper pure function: check if language is in priority list
+    pure function is-priority(code: string) -> bool {
+        return (root.prio1 != "" && root.prio1 == code) ||
+               (root.prio2 != "" && root.prio2 == code) ||
+               (root.prio3 != "" && root.prio3 == code) ||
+               (root.prio4 != "" && root.prio4 == code) ||
+               (root.prio5 != "" && root.prio5 == code) ||
+               (root.prio6 != "" && root.prio6 == code);
+    }
+
+    // Language display names (respecting UI language)
+    pure function lang-name(code: string) -> string {
+        if (root.ui-lang == "en") {
+            if (code == "auto") { return "Auto-detect"; }
+            if (code == "uk") { return "Ukrainian"; }
+            if (code == "en") { return "English"; }
+            if (code == "pl") { return "Polish"; }
+            if (code == "de") { return "German"; }
+            if (code == "fr") { return "French"; }
+            if (code == "es") { return "Spanish"; }
+            if (code == "it") { return "Italian"; }
+            if (code == "pt") { return "Portuguese"; }
+            if (code == "tr") { return "Turkish"; }
+            if (code == "nl") { return "Dutch"; }
+            if (code == "cs") { return "Czech"; }
+            if (code == "sk") { return "Slovak"; }
+            if (code == "ro") { return "Romanian"; }
+            if (code == "hu") { return "Hungarian"; }
+            if (code == "el") { return "Greek"; }
+            if (code == "bg") { return "Bulgarian"; }
+            if (code == "sv") { return "Swedish"; }
+            if (code == "no") { return "Norwegian"; }
+            if (code == "da") { return "Danish"; }
+            if (code == "fi") { return "Finnish"; }
+            if (code == "lt") { return "Lithuanian"; }
+            if (code == "lv") { return "Latvian"; }
+            if (code == "et") { return "Estonian"; }
+            if (code == "ja") { return "Japanese"; }
+            if (code == "zh") { return "Chinese"; }
+            if (code == "ko") { return "Korean"; }
+            if (code == "ar") { return "Arabic"; }
+            if (code == "he") { return "Hebrew"; }
+            if (code == "hi") { return "Hindi"; }
+            if (code == "ru") { return "Russian"; }
+        } else {
+            if (code == "auto") { return "Автовизначення"; }
+            if (code == "uk") { return "Українська"; }
+            if (code == "en") { return "Англійська"; }
+            if (code == "pl") { return "Польська"; }
+            if (code == "de") { return "Німецька"; }
+            if (code == "fr") { return "Французька"; }
+            if (code == "es") { return "Іспанська"; }
+            if (code == "it") { return "Італійська"; }
+            if (code == "pt") { return "Португальська"; }
+            if (code == "tr") { return "Турецька"; }
+            if (code == "nl") { return "Нідерландська"; }
+            if (code == "cs") { return "Чеська"; }
+            if (code == "sk") { return "Словацька"; }
+            if (code == "ro") { return "Румунська"; }
+            if (code == "hu") { return "Угорська"; }
+            if (code == "el") { return "Грецька"; }
+            if (code == "bg") { return "Болгарська"; }
+            if (code == "sv") { return "Шведська"; }
+            if (code == "no") { return "Норвезька"; }
+            if (code == "da") { return "Данська"; }
+            if (code == "fi") { return "Фінська"; }
+            if (code == "lt") { return "Литовська"; }
+            if (code == "lv") { return "Латвійська"; }
+            if (code == "et") { return "Естонська"; }
+            if (code == "ja") { return "Японська"; }
+            if (code == "zh") { return "Китайська"; }
+            if (code == "ko") { return "Корейська"; }
+            if (code == "ar") { return "Арабська"; }
+            if (code == "he") { return "Іврит"; }
+            if (code == "hi") { return "Гінді"; }
+            if (code == "ru") { return "Російська"; }
+        }
+        return code;
+    }
+
+    public function focus-input() {
+        ti-src.focus();
+    }
+
+    init => {
+        ti-src.focus();
+    }
+
+    icon: @image-url("app-icon.png");
+
+    focus-scope := FocusScope {
+        width: 100%;
+        height: 100%;
+        key-pressed(event) => {
+            if (root.is-recording-translate) {
+                if (event.text == Key.Escape) {
+                    root.is-recording-translate = false;
+                    return EventResult.accept;
+                }
+            }
+            if (root.is-recording-window) {
+                if (event.text == Key.Escape) {
+                    root.is-recording-window = false;
+                    return EventResult.accept;
+                }
+            }
+            if (root.is-recording-custom) {
+                if (event.text == Key.Escape) {
+                    root.is-recording-custom = false;
+                    return EventResult.accept;
+                }
+                let key = root.normalize-key(event.text);
+                if (key != "") {
+                    root.custom-shortcut = root.build-combo(
+                        event.modifiers.control,
+                        event.modifiers.alt,
+                        event.modifiers.shift,
+                        event.modifiers.meta,
+                        key
+                    );
+                    root.enable-custom-shortcut = true;
+                    root.is-recording-custom = false;
+                    root.custom-shortcut-changed(root.custom-shortcut);
+                    root.custom-shortcut-toggled(true);
+                    return EventResult.accept;
+                }
+                return EventResult.accept;
+            }
+
+            if (event.text == Key.Escape) {
+                root.hide-to-tray();
+                return EventResult.accept;
+            }
+
+            let norm = root.normalize-key(event.text);
+            // Global Ctrl+V when editor is not focused: paste into source and focus
+            if (event.modifiers.control && norm == "V") {
+                root.focus-input();
+                root.ctx-paste-requested();
+                return EventResult.accept;
+            }
+            // Global Ctrl+C when editor is not focused: copy translation result
+            if (event.modifiers.control && norm == "C") {
+                root.copy-requested();
+                return EventResult.accept;
+            }
+
+            EventResult.reject
+        }
+
+        main-rect := Rectangle {
+            width: 100%;
+            height: 100%;
+            background: #101010;
+            border-color: #282828;
+            border-width: 1px;
+            border-radius: 10px;
+            clip: true;
+
+            VerticalLayout {
+                padding: 10px;
+                spacing: 6px;
+
+                // 1. Titlebar Header
+                titlebar := Rectangle {
+                    height: 32px;
+                    background: #1c1c1c;
+                    border-color: #282828;
+                    border-width: 1px;
+                    border-radius: 6px;
+
+                    // App Icon + Title
+                    HorizontalLayout {
+                        x: 8px;
+                        y: 0;
+                        height: 100%;
+                        spacing: 8px;
+                        alignment: start;
+
+                        VerticalLayout {
+                            alignment: center;
+                            Image {
+                                source: @image-url("app-icon.png");
+                                width: 18px;
+                                height: 18px;
+                            }
+                        }
+
+                        VerticalLayout {
+                            alignment: center;
+                            Text {
+                                text: "Louise Translator"; color: #f1ffff; font-size: 11px;
+                                font-family: "JetBrains Mono"; font-weight: 700;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    // Window drag area — covers full titlebar from left edge to control buttons (0 dead zones)
+                    drag-area := TouchArea {
+                        x: 0;
+                        y: 0;
+                        width: parent.width - 86px;
+                        height: 100%;
+                        mouse-cursor: default;
+                        pointer-event(event) => {
+                            if (event.kind == PointerEventKind.down && event.button == PointerEventButton.left) {
+                                root.start-window-drag();
+                            }
+                            if (event.kind == PointerEventKind.up || event.kind == PointerEventKind.cancel) {
+                                root.end-window-drag();
+                            }
+                        }
+                        moved => {
+                            root.window-drag-moved();
+                        }
+                    }
+
+                    // Window control buttons (exactly 86px: 3 buttons @ 22px + 2 gaps @ 6px + 8px right padding)
+                    HorizontalLayout {
+                        x: parent.width - 86px;
+                        y: 0;
+                        width: 86px;
+                        height: 100%;
+                        spacing: 6px;
+                        padding-right: 8px;
+                        alignment: end;
+
+                        VerticalLayout {
+                            alignment: center;
+                            // ? Button (Help)
+                            WindowBtn {
+                                clicked => { root.show-help = !root.show-help; root.show-settings = false; }
+                                Text {
+                                    text: "?";
+                                    color: root.show-help ? #f1ffff : #888888;
+                                    font-size: 12px;
+                                    font-family: "JetBrains Mono";
+                                    font-weight: 700;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                        }
+
+                        VerticalLayout {
+                            alignment: center;
+                            // ⚙ Button (Settings)
+                            WindowBtn {
+                                clicked => {
+                                    root.show-settings = !root.show-settings;
+                                    root.show-help = false;
+                                    if (root.show-settings) { root.refresh-deepl-quota(); }
+                                }
+                                GearIcon {
+                                    x: (parent.width - self.width) / 2;
+                                    y: (parent.height - self.height) / 2;
+                                    icon-color: root.show-settings ? #f1ffff : #888888;
+                                }
+                            }
+                        }
+
+                        VerticalLayout {
+                            alignment: center;
+                            // × Button (Hide to tray)
+                            CloseButton {
+                                clicked => { root.hide-to-tray(); }
+                            }
+                        }
+                    }
+                }
+
+                // 2. Language selector
+                HorizontalLayout {
+                    height: 38px;
+                    spacing: 8px;
+
+                    LangTabButton {
+                        width: (parent.width - 38px - 16px) / 2;
+                        text: root.src-lang-label;
+                        lang-code: root.src-lang;
+                        is-open: root.show-src-picker;
+                        clicked => {
+                            root.show-dst-picker = false;
+                            root.show-src-picker = !root.show-src-picker;
+                        }
+                    }
+
+                    Rectangle {
+                        width: 38px;
+                        height: 38px;
+                        border-radius: 8px;
+                        background: ta-swap.pressed ? #141414 : (ta-swap.has-hover ? #242424 : #1c1c1c);
+                        border-color: ta-swap.has-hover ? #f1ffff : #282828;
+                        border-width: 1px;
+
+                        ta-swap := TouchArea {
+                            clicked => { root.swap-languages(); }
+                            mouse-cursor: pointer;
+                        }
+
+                        SwapIcon {
+                            x: (parent.width - self.width) / 2;
+                            y: (parent.height - self.height) / 2;
+                            icon-color: ta-swap.has-hover ? #f1ffff : #888888;
+                        }
+                    }
+
+                    LangTabButton {
+                        width: (parent.width - 38px - 16px) / 2;
+                        text: root.dst-lang-label;
+                        lang-code: root.dst-lang;
+                        is-open: root.show-dst-picker;
+                        clicked => {
+                            root.show-src-picker = false;
+                            root.show-dst-picker = !root.show-dst-picker;
+                        }
+                    }
+                }
+
+                // 3. Source text block
+                VerticalLayout {
+                    height: 194px;
+                    spacing: 4px;
+
+                    HorizontalLayout {
+                        height: 16px;
+                        alignment: space-between;
+                        HorizontalLayout {
+                            spacing: 8px; alignment: start;
+                            Text {
+                                text: root.ui-lang == "en" ? "SOURCE" : "ДЖЕРЕЛО";
+                                color: #777777; font-size: 10px;
+                                font-family: "JetBrains Mono"; font-weight: 700;
+                                vertical-alignment: center;
+                            }
+                            Text {
+                                text: (root.src-text != "" && root.detected-lang-label != "") ? ("→ " + root.detected-lang-label) : "";
+                                opacity: (root.src-text != "" && root.detected-lang-label != "") ? 1.0 : 0.0;
+                                color: #555555; font-size: 10px;
+                                font-family: "JetBrains Mono"; vertical-alignment: center;
+                            }
+                        }
+                        HorizontalLayout {
+                            spacing: 8px; alignment: end;
+                            Text {
+                                text: root.src-text != "" ? (root.src-text.character-count + (root.ui-lang == "en" ? " chars" : " симв")) : "";
+                                opacity: root.src-text != "" ? 1.0 : 0.0;
+                                color: #444444; font-size: 10px;
+                                font-family: "JetBrains Mono"; vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        height: 174px;
+                        background: #1c1c1c;
+                        border-color: ti-src.has-focus ? #f1ffff : #282828;
+                        border-width: 1px;
+                        border-radius: 7px;
+                        clip: true;
+                        animate border-color { duration: 150ms; }
+
+                        TouchArea {
+                            width: 100%; height: 100%;
+                            clicked => { ti-src.focus(); }
+                            // RMB -> Context menu
+                            pointer-event(event) => {
+                                if (event.kind == PointerEventKind.down && event.button == PointerEventButton.right) {
+                                    root.ctx-x = self.mouse-x + (self.absolute-position.x - root.absolute-position.x);
+                                    root.ctx-y = self.mouse-y + (self.absolute-position.y - root.absolute-position.y);
+                                    root.ctx-for-src = true;
+                                    root.show-ctx-menu = true;
+                                    return EventResult.accept;
+                                }
+                                EventResult.reject
+                            }
+                        }
+
+                        if root.src-text == "": Text {
+                            x: 10px; y: 10px;
+                            text: root.ui-lang == "en"
+                                ? "Type text here or select on screen..."
+                                : "Введіть текст або виділіть на екрані...";
+                            color: #555555; font-family: "JetBrains Mono"; font-size: 12px;
+                        }
+
+                        ScrollView {
+                            width: 100%;
+                            height: 100%;
+
+                            VerticalLayout {
+                                alignment: start;
+                                padding-left: 10px;
+                                padding-right: 10px;
+                                padding-top: 10px;
+                                padding-bottom: 10px;
+
+                                ti-src := TextInput {
+                                    text <=> root.src-text;
+                                    color: #f1ffff;
+                                    font-family: "JetBrains Mono";
+                                    font-size: 12px;
+                                    wrap: word-wrap;
+                                    single-line: false;
+                                    edited => {
+                                        if (root.src-text == "") {
+                                            root.dst-text = "";
+                                            root.detected-lang-label = "";
+                                            root.status-text = "";
+                                        }
+                                        root.translate-requested();
+                                    }
+                                    key-pressed(event) => {
+                                        let norm = root.normalize-key(event.text);
+                                        if (event.modifiers.control && norm == "A") {
+                                            self.select-all();
+                                            return EventResult.accept;
+                                        }
+                                        if (event.modifiers.control && norm == "C") {
+                                            self.copy();
+                                            return EventResult.accept;
+                                        }
+                                        if (event.modifiers.control && norm == "V") {
+                                            self.paste();
+                                            root.translate-requested();
+                                            return EventResult.accept;
+                                        }
+                                        if (event.modifiers.control && norm == "X") {
+                                            self.cut();
+                                            root.translate-requested();
+                                            return EventResult.accept;
+                                        }
+                                        if (event.modifiers.control && event.text == "\n") {
+                                            root.translate-requested();
+                                            return EventResult.accept;
+                                        }
+                                        EventResult.reject
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 4. Translation text block (with ScrollView)
+                VerticalLayout {
+                    height: 194px;
+                    spacing: 4px;
+
+                    HorizontalLayout {
+                        height: 16px;
+                        alignment: space-between;
+
+                        HorizontalLayout {
+                            spacing: 8px;
+                            alignment: start;
+                            Text {
+                                text: root.ui-lang == "en" ? "TRANSLATION" : "ПЕРЕКЛАД";
+                                color: #777777; font-size: 10px;
+                                font-family: "JetBrains Mono"; font-weight: 700;
+                                vertical-alignment: center;
+                            }
+                        }
+
+                        HorizontalLayout {
+                            spacing: 10px;
+                            alignment: end;
+
+                            if root.status-text != "": Text {
+                                text: root.status-text;
+                                color: #88ff88; font-size: 10px;
+                                font-family: "JetBrains Mono"; font-weight: 700;
+                                vertical-alignment: center;
+                            }
+                            if root.is-loading: Text {
+                                text: root.ui-lang == "en" ? "⏳ Translating..." : "⏳ Перекладаю...";
+                                color: #a1a1aa; font-size: 10px;
+                                font-family: "JetBrains Mono";
+                                vertical-alignment: center;
+                            }
+                            if root.engine-label != "": Text {
+                                text: root.engine-label;
+                                color: root.engine-label == "DeepL ⚡" ? #00c0f0 : (root.engine-label == "Google 🔄" ? #ffaa44 : #888888);
+                                font-size: 10px; font-family: "JetBrains Mono"; font-weight: 700;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        height: 174px;
+                        background: #1c1c1c;
+                        border-color: #282828;
+                        border-width: 1px;
+                        border-radius: 7px;
+                        clip: true;
+
+                        if root.dst-text == "" && !root.is-loading: Text {
+                            x: 10px; y: 10px;
+                            text: root.ui-lang == "en"
+                                ? "Translation will appear here..."
+                                : "Тут миттєво з'явиться переклад...";
+                            color: #555555; font-family: "JetBrains Mono"; font-size: 12px;
+                        }
+
+                        // RMB for translation box
+                        TouchArea {
+                            width: 100%; height: 100%;
+                            clicked => { ti-dst.focus(); }
+                            pointer-event(event) => {
+                                if (event.kind == PointerEventKind.down && event.button == PointerEventButton.right) {
+                                    root.ctx-x = self.mouse-x + (self.absolute-position.x - root.absolute-position.x);
+                                    root.ctx-y = self.mouse-y + (self.absolute-position.y - root.absolute-position.y);
+                                    root.ctx-for-src = false;
+                                    root.show-ctx-menu = true;
+                                    return EventResult.accept;
+                                }
+                                EventResult.reject
+                            }
+                        }
+
+                        ScrollView {
+                            width: 100%;
+                            height: 100%;
+
+                            VerticalLayout {
+                                alignment: start;
+                                padding-left: 10px;
+                                padding-right: 10px;
+                                padding-top: 10px;
+                                padding-bottom: 10px;
+
+                                ti-dst := TextInput {
+                                    text <=> root.dst-text;
+                                    color: #f1ffff;
+                                    font-family: "JetBrains Mono";
+                                    font-size: 12px;
+                                    wrap: word-wrap;
+                                    single-line: false;
+                                    read-only: true;
+                                    key-pressed(event) => {
+                                        let norm = root.normalize-key(event.text);
+                                        if (event.modifiers.control && norm == "A") {
+                                            self.select-all();
+                                            return EventResult.accept;
+                                        }
+                                        if (event.modifiers.control && norm == "C") {
+                                            self.copy();
+                                            root.copy-requested();
+                                            return EventResult.accept;
+                                        }
+                                        EventResult.reject
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 5. Bottom action buttons
+                HorizontalLayout {
+                    height: 38px;
+                    spacing: 8px;
+
+                    ActionButton {
+                        width: 106px; height: 38px;
+                        text: root.ui-lang == "en" ? "Copy" : "Скопіювати";
+                        clicked => { root.copy-requested(); }
+                    }
+
+                    ActionButton {
+                        horizontal-stretch: 1; height: 38px;
+                        text: root.ui-lang == "en" ? "Paste as replacement" : "Вставити замість виділеного";
+                        is-primary: true;
+                        clicked => { root.paste-back-requested(); }
+                    }
+
+                    ActionButton {
+                        width: 106px; height: 38px;
+                        text: root.ui-lang == "en" ? "Clear" : "Очистити";
+                        clicked => {
+                            root.src-text = "";
+                            root.dst-text = "";
+                            root.detected-lang-label = "";
+                            root.status-text = "";
+                            root.clear-requested();
+                            root.focus-input();
+                        }
+                    }
+                }
+            }
+
+            // Settings (Settings Overlay)
+            if root.show-settings: Rectangle {
+                x: 10px; y: 46px; width: parent.width - 20px; height: parent.height - 56px;
+                background: #101010; border-color: #282828; border-width: 1px;
+                border-radius: 8px; drop-shadow-blur: 24px; drop-shadow-color: #000000ee;
+                clip: true;
+
+                // Block click-through behind overlay
+                TouchArea { width: 100%; height: 100%; }
+
+                VerticalLayout {
+                    padding: 0px;
+                    spacing: 0px;
+
+                    // 1. STATIC HEADER
+                    Rectangle {
+                        height: 48px;
+                        background: #141414;
+
+                        HorizontalLayout {
+                            padding-left: 14px;
+                            padding-right: 14px;
+                            alignment: space-between;
+
+                            VerticalLayout {
+                                alignment: center;
+                                Text {
+                                    text: root.ui-lang == "en" ? "Settings" : "Налаштування";
+                                    color: #f1ffff; font-family: "JetBrains Mono";
+                                    font-size: 13px; font-weight: 700;
+                                }
+                            }
+
+                            VerticalLayout {
+                                alignment: center;
+                                ActionButton {
+                                    width: 70px; height: 26px;
+                                    text: root.ui-lang == "en" ? "Done" : "Готово";
+                                    is-primary: true;
+                                    clicked => {
+                                        root.is-recording-translate = false;
+                                        root.is-recording-window = false;
+                                        root.live-recording-text = "";
+                                        root.recording-state-changed(false);
+                                        root.show-settings = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Divider line under header
+                    Rectangle { height: 1px; background: #282828; }
+
+                    // 2. Settings Tab Bar
+                    Rectangle {
+                        height: 38px;
+                        background: #161616;
+
+                        HorizontalLayout {
+                            padding-left: 12px;
+                            padding-right: 12px;
+                            spacing: 6px;
+
+                            // Tab 1: General
+                            Rectangle {
+                                horizontal-stretch: 1;
+                                height: 28px;
+                                y: (parent.height - self.height) / 2;
+                                border-radius: 5px;
+                                background: root.settings-tab == 0 ? #282828 : transparent;
+                                border-color: root.settings-tab == 0 ? #444444 : transparent;
+                                border-width: 1px;
+                                ta-tab0 := TouchArea {
+                                    clicked => {
+                                        root.is-recording-translate = false;
+                                        root.is-recording-window = false;
+                                        root.live-recording-text = "";
+                                        root.recording-state-changed(false);
+                                        root.settings-tab = 0;
+                                    }
+                                    mouse-cursor: pointer;
+                                }
+                                Text {
+                                    text: root.ui-lang == "en" ? "General" : "Загальні";
+                                    color: root.settings-tab == 0 ? #f1ffff : #888888;
+                                    font-family: "JetBrains Mono"; font-size: 11px; font-weight: 600;
+                                    horizontal-alignment: center; vertical-alignment: center;
+                                }
+                            }
+
+                            // Tab 2: Shortcuts
+                            Rectangle {
+                                horizontal-stretch: 1;
+                                height: 28px;
+                                y: (parent.height - self.height) / 2;
+                                border-radius: 5px;
+                                background: root.settings-tab == 1 ? #282828 : transparent;
+                                border-color: root.settings-tab == 1 ? #444444 : transparent;
+                                border-width: 1px;
+                                ta-tab1 := TouchArea {
+                                    clicked => {
+                                        root.is-recording-translate = false;
+                                        root.is-recording-window = false;
+                                        root.live-recording-text = "";
+                                        root.recording-state-changed(false);
+                                        root.settings-tab = 1;
+                                    }
+                                    mouse-cursor: pointer;
+                                }
+                                Text {
+                                    text: root.ui-lang == "en" ? "Shortcuts" : "Шорткати";
+                                    color: root.settings-tab == 1 ? #f1ffff : #888888;
+                                    font-family: "JetBrains Mono"; font-size: 11px; font-weight: 600;
+                                    horizontal-alignment: center; vertical-alignment: center;
+                                }
+                            }
+
+                            // Tab 3: Languages
+                            Rectangle {
+                                horizontal-stretch: 1;
+                                height: 28px;
+                                y: (parent.height - self.height) / 2;
+                                border-radius: 5px;
+                                background: root.settings-tab == 2 ? #282828 : transparent;
+                                border-color: root.settings-tab == 2 ? #444444 : transparent;
+                                border-width: 1px;
+                                ta-tab2 := TouchArea {
+                                    clicked => {
+                                        root.is-recording-translate = false;
+                                        root.is-recording-window = false;
+                                        root.live-recording-text = "";
+                                        root.recording-state-changed(false);
+                                        root.settings-tab = 2;
+                                    }
+                                    mouse-cursor: pointer;
+                                }
+                                Text {
+                                    text: root.ui-lang == "en" ? "Languages" : "Мої мови";
+                                    color: root.settings-tab == 2 ? #f1ffff : #888888;
+                                    font-family: "JetBrains Mono"; font-size: 11px; font-weight: 600;
+                                    horizontal-alignment: center; vertical-alignment: center;
+                                }
+                            }
+
+                            // Tab 4: API Keys
+                            Rectangle {
+                                horizontal-stretch: 1;
+                                height: 28px;
+                                y: (parent.height - self.height) / 2;
+                                border-radius: 5px;
+                                background: root.settings-tab == 3 ? #282828 : transparent;
+                                border-color: root.settings-tab == 3 ? #444444 : transparent;
+                                border-width: 1px;
+                                ta-tab3 := TouchArea {
+                                    clicked => {
+                                        root.is-recording-translate = false;
+                                        root.is-recording-window = false;
+                                        root.live-recording-text = "";
+                                        root.recording-state-changed(false);
+                                        root.settings-tab = 3;
+                                    }
+                                    mouse-cursor: pointer;
+                                }
+                                Text {
+                                    text: root.ui-lang == "en" ? "Engine & API" : "Рушій & API";
+                                    color: root.settings-tab == 3 ? #f1ffff : #888888;
+                                    font-family: "JetBrains Mono"; font-size: 11px; font-weight: 600;
+                                    horizontal-alignment: center; vertical-alignment: center;
+                                }
+                            }
+                        }
+                    }
+
+                    Rectangle { height: 1px; background: #222222; }
+
+                    // 3. ACTIVE TAB CONTENT (NO SCROLL)
+                    Rectangle {
+                        vertical-stretch: 1;
+                        background: transparent;
+
+                        // Tab 0: GENERAL
+                        if root.settings-tab == 0: VerticalLayout {
+                            padding: 14px;
+                            spacing: 8px;
+                            alignment: start;
+
+                            // UI Language (aligned with flags)
+                            Rectangle {
+                                height: 44px;
+                                background: #1c1c1c;
+                                border-color: #282828;
+                                border-width: 1px;
+                                border-radius: 8px;
+
+                                HorizontalLayout {
+                                    padding-left: 14px;
+                                    padding-right: 14px;
+                                    alignment: space-between;
+
+                                    VerticalLayout {
+                                        alignment: center;
+                                        Text {
+                                            text: root.ui-lang == "en" ? "Interface language" : "Мова інтерфейсу";
+                                            color: #f1ffff; font-family: "JetBrains Mono";
+                                            font-size: 11px; font-weight: 600;
+                                            vertical-alignment: center;
+                                        }
+                                    }
+
+                                    HorizontalLayout {
+                                        spacing: 8px;
+                                        alignment: end;
+
+                                        // Flag of Ukraine
+                                        Rectangle {
+                                            width: 44px; height: 28px;
+                                            y: (parent.height - self.height) / 2;
+                                            border-radius: 6px;
+                                            background: root.ui-lang == "uk" ? #2c2c2c : #161616;
+                                            border-color: root.ui-lang == "uk" ? #f1ffff : #333333;
+                                            border-width: root.ui-lang == "uk" ? 1.5px : 1px;
+
+                                            ta-uk := TouchArea {
+                                                clicked => {
+                                                    root.ui-lang = "uk";
+                                                    root.ui-lang-changed("uk");
+                                                }
+                                                mouse-cursor: pointer;
+                                            }
+
+                                            FlagBadge {
+                                                x: (parent.width - self.width) / 2;
+                                                y: (parent.height - self.height) / 2;
+                                                code: "uk";
+                                            }
+                                        }
+
+                                        // Flag of United Kingdom
+                                        Rectangle {
+                                            width: 44px; height: 28px;
+                                            y: (parent.height - self.height) / 2;
+                                            border-radius: 6px;
+                                            background: root.ui-lang == "en" ? #2c2c2c : #161616;
+                                            border-color: root.ui-lang == "en" ? #f1ffff : #333333;
+                                            border-width: root.ui-lang == "en" ? 1.5px : 1px;
+
+                                            ta-en := TouchArea {
+                                                clicked => {
+                                                    root.ui-lang = "en";
+                                                    root.ui-lang-changed("en");
+                                                }
+                                                mouse-cursor: pointer;
+                                            }
+
+                                            FlagBadge {
+                                                x: (parent.width - self.width) / 2;
+                                                y: (parent.height - self.height) / 2;
+                                                code: "en";
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            SettingItem {
+                                title: root.ui-lang == "en" ? "Popup mode (no taskbar)" : "Popup режим (без панелі завдань)";
+                                subtitle: root.ui-lang == "en" ? "Window hidden from taskbar (tray only)" : "Вікно приховане з панелі завдань (тільки трей)";
+                                checked <=> root.popup-mode;
+                                toggled(v) => {
+                                    root.settings-changed(root.popup-mode, root.pin-on-top, root.auto-copy, root.close-on-paste);
+                                }
+                            }
+
+                            SettingItem {
+                                title: root.ui-lang == "en" ? "Always on top" : "Завжди поверх інших вікон";
+                                subtitle: root.ui-lang == "en" ? "Keep translator window above all apps" : "Тримати вікно перекладача поверх усіх додатків";
+                                checked <=> root.pin-on-top;
+                                toggled(v) => {
+                                    root.settings-changed(root.popup-mode, root.pin-on-top, root.auto-copy, root.close-on-paste);
+                                }
+                            }
+
+                            SettingItem {
+                                title: root.ui-lang == "en" ? "Close after paste" : "Закривати після вставки";
+                                subtitle: root.ui-lang == "en" ? "Auto-hide window after paste as replacement" : "Автоматично ховати вікно після вставки замість виділеного";
+                                checked <=> root.close-on-paste;
+                                toggled(v) => {
+                                    root.settings-changed(root.popup-mode, root.pin-on-top, root.auto-copy, root.close-on-paste);
+                                }
+                            }
+
+                            SettingItem {
+                                title: root.ui-lang == "en" ? "Autostart with Windows" : "Автозавантаження разом з Windows";
+                                subtitle: root.ui-lang == "en" ? "Launch automatically on system startup" : "Запускати додаток автоматично при старті системи";
+                                checked <=> root.autostart;
+                                toggled(v) => {
+                                    root.autostart-toggled(v);
+                                }
+                            }
+                        }
+
+                        // Tab 1: SHORTCUTS
+                        if root.settings-tab == 1: VerticalLayout {
+                            padding: 14px;
+                            spacing: 8px;
+                            alignment: start;
+
+                            // 1. Translate selection shortcut card
+                            Rectangle {
+                                background: #1c1c1c;
+                                border-color: root.is-recording-translate ? #4488ff : #282828;
+                                border-width: 1px;
+                                border-radius: 8px;
+
+                                VerticalLayout {
+                                    padding: 12px;
+                                    spacing: 8px;
+
+                                    // Title and action description
+                                    VerticalLayout {
+                                        spacing: 2px;
+                                        Text {
+                                            text: root.ui-lang == "en" ? "Translate selection" : "Переклад виділеного тексту";
+                                            color: #f1ffff; font-family: "JetBrains Mono";
+                                            font-size: 11px; font-weight: 700;
+                                        }
+                                        Text {
+                                            text: root.ui-lang == "en"
+                                                ? "Instant popup translation of selected text in any app"
+                                                : "Миттєвий переклад виділеного тексту в будь-якій програмі";
+                                            color: #666666; font-family: "JetBrains Mono"; font-size: 10px;
+                                        }
+                                    }
+
+                                    // Row: shortcut display and recording trigger
+                                    HorizontalLayout {
+                                        spacing: 8px;
+
+                                        Rectangle {
+                                            horizontal-stretch: 1;
+                                            height: 30px;
+                                            background: root.is-recording-translate ? #112233 : #141414;
+                                            border-color: root.is-recording-translate ? #3388ff : #282828;
+                                            border-width: 1px;
+                                            border-radius: 6px;
+
+                                            fs-tr := FocusScope {
+                                                width: 100%;
+                                                height: 100%;
+                                                enabled: root.is-recording-translate;
+                                                key-pressed(event) => {
+                                                    if event.text == Key.Escape {
+                                                        root.is-recording-translate = false;
+                                                        root.live-recording-text = "";
+                                                        root.pending-combo = "";
+                                                        root.recording-state-changed(false);
+                                                        return EventResult.accept;
+                                                    }
+                                                    let key = root.normalize-key(event.text);
+                                                    if key != "" {
+                                                        root.pending-combo = root.build-combo(
+                                                            event.modifiers.control,
+                                                            event.modifiers.alt,
+                                                            event.modifiers.shift,
+                                                            event.modifiers.meta,
+                                                            key
+                                                        );
+                                                        root.live-recording-text = root.pending-combo;
+                                                        return EventResult.accept;
+                                                    } else {
+                                                        root.pending-combo = "";
+                                                        root.live-recording-text = root.build-live-modifiers(
+                                                            event.modifiers.control,
+                                                            event.modifiers.alt,
+                                                            event.modifiers.shift,
+                                                            event.modifiers.meta
+                                                        );
+                                                        return EventResult.accept;
+                                                    }
+                                                }
+                                                key-released(event) => {
+                                                    if root.is-recording-translate {
+                                                        if root.pending-combo != "" {
+                                                            root.custom-translate-shortcut = root.pending-combo;
+                                                            root.enable-custom-translate = true;
+                                                            root.enable-alt-c = false;
+                                                            root.is-recording-translate = false;
+                                                            root.live-recording-text = "";
+                                                            root.recording-state-changed(false);
+                                                            root.custom-translate-changed(root.custom-translate-shortcut);
+                                                            root.shortcuts-changed(root.enable-alt-c, root.enable-alt-x);
+                                                            root.pending-combo = "";
+                                                            return EventResult.accept;
+                                                        } else {
+                                                            root.live-recording-text = root.build-live-modifiers(
+                                                                event.modifiers.control,
+                                                                event.modifiers.alt,
+                                                                event.modifiers.shift,
+                                                                event.modifiers.meta
+                                                            );
+                                                            return EventResult.accept;
+                                                        }
+                                                    }
+                                                    EventResult.reject
+                                                }
+                                            }
+
+                                            TouchArea {
+                                                width: 100%;
+                                                height: 100%;
+                                                clicked => {
+                                                    root.is-recording-translate = true;
+                                                    root.is-recording-window = false;
+                                                    root.live-recording-text = "";
+                                                    root.pending-combo = "";
+                                                    root.recording-state-changed(true);
+                                                    fs-tr.focus();
+                                                }
+                                                mouse-cursor: pointer;
+                                            }
+
+                                            HorizontalLayout {
+                                                padding-left: 10px;
+                                                padding-right: 8px;
+                                                alignment: space-between;
+
+                                                HorizontalLayout {
+                                                    spacing: 8px;
+                                                    alignment: start;
+
+                                                    VerticalLayout {
+                                                        alignment: center;
+                                                        Text {
+                                                            text: root.is-recording-translate
+                                                                ? (
+                                                                    root.live-recording-text != ""
+                                                                        ? ("⏳ " + root.live-recording-text)
+                                                                        : (root.ui-lang == "en" ? "⏳ Press keys on keyboard..." : "⏳ Натисніть клавіші на клавіатурі...")
+                                                                )
+                                                                : (
+                                                                    root.custom-translate-shortcut != ""
+                                                                        ? root.custom-translate-shortcut
+                                                                        : "Alt + C"
+                                                                );
+                                                            color: root.is-recording-translate ? #88ccff : (root.custom-translate-shortcut != "" ? #00c0f0 : #f1ffff);
+                                                            font-family: "JetBrains Mono";
+                                                            font-size: 11px;
+                                                            font-weight: 700;
+                                                        }
+                                                    }
+
+                                                    if !root.is-recording-translate: VerticalLayout {
+                                                        alignment: center;
+                                                        Rectangle {
+                                                            height: 16px;
+                                                            border-radius: 3px;
+                                                            background: root.custom-translate-shortcut != "" ? #00c0f022 : #ffffff14;
+                                                            HorizontalLayout {
+                                                                padding-left: 5px; padding-right: 5px;
+                                                                Text {
+                                                                    text: root.custom-translate-shortcut != ""
+                                                                        ? (root.ui-lang == "en" ? "Custom" : "Власна")
+                                                                        : (root.ui-lang == "en" ? "Default" : "Стандартна");
+                                                                    color: root.custom-translate-shortcut != "" ? #00c0f0 : #888888;
+                                                                    font-family: "JetBrains Mono"; font-size: 9px; font-weight: 600;
+                                                                    vertical-alignment: center;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+
+                                                if root.custom-translate-shortcut != "" && !root.is-recording-translate: VerticalLayout {
+                                                    alignment: center;
+                                                    Rectangle {
+                                                        width: 20px; height: 20px; border-radius: 4px;
+                                                        background: clear-tr-btn.has-hover ? #ffffff22 : transparent;
+                                                        clear-tr-btn := TouchArea {
+                                                            clicked => {
+                                                                root.custom-translate-shortcut = "";
+                                                                root.enable-custom-translate = false;
+                                                                root.enable-alt-c = true;
+                                                                root.is-recording-translate = false;
+                                                                root.live-recording-text = "";
+                                                                root.pending-combo = "";
+                                                                root.recording-state-changed(false);
+                                                                root.custom-translate-changed("");
+                                                                root.shortcuts-changed(root.enable-alt-c, root.enable-alt-x);
+                                                            }
+                                                            mouse-cursor: pointer;
+                                                        }
+                                                        Text {
+                                                            text: "✕"; color: #888888;
+                                                            font-family: "JetBrains Mono"; font-size: 11px; font-weight: 700;
+                                                            horizontal-alignment: center; vertical-alignment: center;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        ActionButton {
+                                            width: 86px;
+                                            height: 30px;
+                                            text: root.is-recording-translate
+                                                ? (root.ui-lang == "en" ? "Cancel" : "Скасувати")
+                                                : (root.ui-lang == "en" ? "Change" : "Змінити");
+                                            is-primary: root.is-recording-translate;
+                                            clicked => {
+                                                root.is-recording-translate = !root.is-recording-translate;
+                                                root.is-recording-window = false;
+                                                root.live-recording-text = "";
+                                                root.pending-combo = "";
+                                                root.recording-state-changed(root.is-recording-translate);
+                                                if root.is-recording-translate {
+                                                    fs-tr.focus();
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // Quick preset choices
+                                    HorizontalLayout {
+                                        spacing: 5px;
+                                        alignment: start;
+                                        Text {
+                                            text: root.ui-lang == "en" ? "Presets:" : "Швидко:";
+                                            color: #555555; font-family: "JetBrains Mono"; font-size: 10px;
+                                            vertical-alignment: center;
+                                        }
+                                        PresetShortcutBtn {
+                                            label: "Ctrl+Shift+T";
+                                            clicked => {
+                                                root.custom-translate-shortcut = "Ctrl+Shift+T";
+                                                root.enable-custom-translate = true;
+                                                root.enable-alt-c = false;
+                                                root.is-recording-translate = false;
+                                                root.live-recording-text = "";
+                                                root.pending-combo = "";
+                                                root.recording-state-changed(false);
+                                                root.custom-translate-changed("Ctrl+Shift+T");
+                                                root.shortcuts-changed(root.enable-alt-c, root.enable-alt-x);
+                                            }
+                                        }
+                                        PresetShortcutBtn {
+                                            label: "Alt+Shift+Z";
+                                            clicked => {
+                                                root.custom-translate-shortcut = "Alt+Shift+Z";
+                                                root.enable-custom-translate = true;
+                                                root.enable-alt-c = false;
+                                                root.is-recording-translate = false;
+                                                root.live-recording-text = "";
+                                                root.pending-combo = "";
+                                                root.recording-state-changed(false);
+                                                root.custom-translate-changed("Alt+Shift+Z");
+                                                root.shortcuts-changed(root.enable-alt-c, root.enable-alt-x);
+                                            }
+                                        }
+                                        PresetShortcutBtn {
+                                            label: "Ctrl+Space";
+                                            clicked => {
+                                                root.custom-translate-shortcut = "Ctrl+Space";
+                                                root.enable-custom-translate = true;
+                                                root.enable-alt-c = false;
+                                                root.is-recording-translate = false;
+                                                root.live-recording-text = "";
+                                                root.pending-combo = "";
+                                                root.recording-state-changed(false);
+                                                root.custom-translate-changed("Ctrl+Space");
+                                                root.shortcuts-changed(root.enable-alt-c, root.enable-alt-x);
+                                            }
+                                        }
+                                        PresetShortcutBtn {
+                                            label: "Alt+Q";
+                                            clicked => {
+                                                root.custom-translate-shortcut = "Alt+Q";
+                                                root.enable-custom-translate = true;
+                                                root.enable-alt-c = false;
+                                                root.is-recording-translate = false;
+                                                root.live-recording-text = "";
+                                                root.pending-combo = "";
+                                                root.recording-state-changed(false);
+                                                root.custom-translate-changed("Alt+Q");
+                                                root.shortcuts-changed(root.enable-alt-c, root.enable-alt-x);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 2. Toggle window shortcut card
+                            Rectangle {
+                                background: #1c1c1c;
+                                border-color: root.is-recording-window ? #4488ff : #282828;
+                                border-width: 1px;
+                                border-radius: 8px;
+
+                                VerticalLayout {
+                                    padding: 12px;
+                                    spacing: 8px;
+
+                                    // Title and action description
+                                    VerticalLayout {
+                                        spacing: 2px;
+                                        Text {
+                                            text: root.ui-lang == "en" ? "Open / hide window" : "Відкриття / приховання вікна";
+                                            color: #f1ffff; font-family: "JetBrains Mono";
+                                            font-size: 11px; font-weight: 700;
+                                        }
+                                        Text {
+                                            text: root.ui-lang == "en"
+                                                ? "Toggle Louise Translator window from anywhere"
+                                                : "Швидке відкриття або приховання вікна програми";
+                                            color: #666666; font-family: "JetBrains Mono"; font-size: 10px;
+                                        }
+                                    }
+
+                                    // Row: shortcut display and recording trigger
+                                    HorizontalLayout {
+                                        spacing: 8px;
+
+                                        Rectangle {
+                                            horizontal-stretch: 1;
+                                            height: 30px;
+                                            background: root.is-recording-window ? #112233 : #141414;
+                                            border-color: root.is-recording-window ? #3388ff : #282828;
+                                            border-width: 1px;
+                                            border-radius: 6px;
+
+                                            fs-win := FocusScope {
+                                                width: 100%;
+                                                height: 100%;
+                                                enabled: root.is-recording-window;
+                                                key-pressed(event) => {
+                                                    if event.text == Key.Escape {
+                                                        root.is-recording-window = false;
+                                                        root.live-recording-text = "";
+                                                        root.pending-combo = "";
+                                                        root.recording-state-changed(false);
+                                                        return EventResult.accept;
+                                                    }
+                                                    let key = root.normalize-key(event.text);
+                                                    if key != "" {
+                                                        root.pending-combo = root.build-combo(
+                                                            event.modifiers.control,
+                                                            event.modifiers.alt,
+                                                            event.modifiers.shift,
+                                                            event.modifiers.meta,
+                                                            key
+                                                        );
+                                                        root.live-recording-text = root.pending-combo;
+                                                        return EventResult.accept;
+                                                    } else {
+                                                        root.pending-combo = "";
+                                                        root.live-recording-text = root.build-live-modifiers(
+                                                            event.modifiers.control,
+                                                            event.modifiers.alt,
+                                                            event.modifiers.shift,
+                                                            event.modifiers.meta
+                                                        );
+                                                        return EventResult.accept;
+                                                    }
+                                                }
+                                                key-released(event) => {
+                                                    if root.is-recording-window {
+                                                        if root.pending-combo != "" {
+                                                            root.custom-window-shortcut = root.pending-combo;
+                                                            root.enable-custom-window = true;
+                                                            root.enable-alt-x = false;
+                                                            root.is-recording-window = false;
+                                                            root.live-recording-text = "";
+                                                            root.recording-state-changed(false);
+                                                            root.custom-window-changed(root.custom-window-shortcut);
+                                                            root.shortcuts-changed(root.enable-alt-c, root.enable-alt-x);
+                                                            root.pending-combo = "";
+                                                            return EventResult.accept;
+                                                        } else {
+                                                            root.live-recording-text = root.build-live-modifiers(
+                                                                event.modifiers.control,
+                                                                event.modifiers.alt,
+                                                                event.modifiers.shift,
+                                                                event.modifiers.meta
+                                                            );
+                                                            return EventResult.accept;
+                                                        }
+                                                    }
+                                                    EventResult.reject
+                                                }
+                                            }
+
+                                            TouchArea {
+                                                width: 100%;
+                                                height: 100%;
+                                                clicked => {
+                                                    root.is-recording-window = true;
+                                                    root.is-recording-translate = false;
+                                                    root.live-recording-text = "";
+                                                    root.pending-combo = "";
+                                                    root.recording-state-changed(true);
+                                                    fs-win.focus();
+                                                }
+                                                mouse-cursor: pointer;
+                                            }
+
+                                            HorizontalLayout {
+                                                padding-left: 10px;
+                                                padding-right: 8px;
+                                                alignment: space-between;
+
+                                                HorizontalLayout {
+                                                    spacing: 8px;
+                                                    alignment: start;
+
+                                                    VerticalLayout {
+                                                        alignment: center;
+                                                        Text {
+                                                            text: root.is-recording-window
+                                                                ? (
+                                                                    root.live-recording-text != ""
+                                                                        ? ("⏳ " + root.live-recording-text)
+                                                                        : (root.ui-lang == "en" ? "⏳ Press keys on keyboard..." : "⏳ Натисніть клавіші на клавіатурі...")
+                                                                )
+                                                                : (
+                                                                    root.custom-window-shortcut != ""
+                                                                        ? root.custom-window-shortcut
+                                                                        : "Alt + X"
+                                                                );
+                                                            color: root.is-recording-window ? #88ccff : (root.custom-window-shortcut != "" ? #00c0f0 : #f1ffff);
+                                                            font-family: "JetBrains Mono";
+                                                            font-size: 11px;
+                                                            font-weight: 700;
+                                                        }
+                                                    }
+
+                                                    if !root.is-recording-window: VerticalLayout {
+                                                        alignment: center;
+                                                        Rectangle {
+                                                            height: 16px;
+                                                            border-radius: 3px;
+                                                            background: root.custom-window-shortcut != "" ? #00c0f022 : #ffffff14;
+                                                            HorizontalLayout {
+                                                                padding-left: 5px; padding-right: 5px;
+                                                                Text {
+                                                                    text: root.custom-window-shortcut != ""
+                                                                        ? (root.ui-lang == "en" ? "Custom" : "Власна")
+                                                                        : (root.ui-lang == "en" ? "Default" : "Стандартна");
+                                                                    color: root.custom-window-shortcut != "" ? #00c0f0 : #888888;
+                                                                    font-family: "JetBrains Mono"; font-size: 9px; font-weight: 600;
+                                                                    vertical-alignment: center;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+
+                                                if root.custom-window-shortcut != "" && !root.is-recording-window: VerticalLayout {
+                                                    alignment: center;
+                                                    Rectangle {
+                                                        width: 20px; height: 20px; border-radius: 4px;
+                                                        background: clear-win-btn.has-hover ? #ffffff22 : transparent;
+                                                        clear-win-btn := TouchArea {
+                                                            clicked => {
+                                                                root.custom-window-shortcut = "";
+                                                                root.enable-custom-window = false;
+                                                                root.enable-alt-x = true;
+                                                                root.is-recording-window = false;
+                                                                root.live-recording-text = "";
+                                                                root.pending-combo = "";
+                                                                root.recording-state-changed(false);
+                                                                root.custom-window-changed("");
+                                                                root.shortcuts-changed(root.enable-alt-c, root.enable-alt-x);
+                                                            }
+                                                            mouse-cursor: pointer;
+                                                        }
+                                                        Text {
+                                                            text: "✕"; color: #888888;
+                                                            font-family: "JetBrains Mono"; font-size: 11px; font-weight: 700;
+                                                            horizontal-alignment: center; vertical-alignment: center;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        ActionButton {
+                                            width: 86px;
+                                            height: 30px;
+                                            text: root.is-recording-window
+                                                ? (root.ui-lang == "en" ? "Cancel" : "Скасувати")
+                                                : (root.ui-lang == "en" ? "Change" : "Змінити");
+                                            is-primary: root.is-recording-window;
+                                            clicked => {
+                                                root.is-recording-window = !root.is-recording-window;
+                                                root.is-recording-translate = false;
+                                                root.live-recording-text = "";
+                                                root.pending-combo = "";
+                                                root.recording-state-changed(root.is-recording-window);
+                                                if root.is-recording-window {
+                                                    fs-win.focus();
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // Quick preset choices
+                                    HorizontalLayout {
+                                        spacing: 5px;
+                                        alignment: start;
+                                        Text {
+                                            text: root.ui-lang == "en" ? "Presets:" : "Швидко:";
+                                            color: #555555; font-family: "JetBrains Mono"; font-size: 10px;
+                                            vertical-alignment: center;
+                                        }
+                                        PresetShortcutBtn {
+                                            label: "Alt+Shift+W";
+                                            clicked => {
+                                                root.custom-window-shortcut = "Alt+Shift+W";
+                                                root.enable-custom-window = true;
+                                                root.enable-alt-x = false;
+                                                root.is-recording-window = false;
+                                                root.live-recording-text = "";
+                                                root.pending-combo = "";
+                                                root.recording-state-changed(false);
+                                                root.custom-window-changed("Alt+Shift+W");
+                                                root.shortcuts-changed(root.enable-alt-c, root.enable-alt-x);
+                                            }
+                                        }
+                                        PresetShortcutBtn {
+                                            label: "Ctrl+Alt+T";
+                                            clicked => {
+                                                root.custom-window-shortcut = "Ctrl+Alt+T";
+                                                root.enable-custom-window = true;
+                                                root.enable-alt-x = false;
+                                                root.is-recording-window = false;
+                                                root.live-recording-text = "";
+                                                root.pending-combo = "";
+                                                root.recording-state-changed(false);
+                                                root.custom-window-changed("Ctrl+Alt+T");
+                                                root.shortcuts-changed(root.enable-alt-c, root.enable-alt-x);
+                                            }
+                                        }
+                                        PresetShortcutBtn {
+                                            label: "Win+Z";
+                                            clicked => {
+                                                root.custom-window-shortcut = "Win+Z";
+                                                root.enable-custom-window = true;
+                                                root.enable-alt-x = false;
+                                                root.is-recording-window = false;
+                                                root.live-recording-text = "";
+                                                root.pending-combo = "";
+                                                root.recording-state-changed(false);
+                                                root.custom-window-changed("Win+Z");
+                                                root.shortcuts-changed(root.enable-alt-c, root.enable-alt-x);
+                                            }
+                                        }
+                                        PresetShortcutBtn {
+                                            label: "Alt+W";
+                                            clicked => {
+                                                root.custom-window-shortcut = "Alt+W";
+                                                root.enable-custom-window = true;
+                                                root.enable-alt-x = false;
+                                                root.is-recording-window = false;
+                                                root.live-recording-text = "";
+                                                root.pending-combo = "";
+                                                root.recording-state-changed(false);
+                                                root.custom-window-changed("Alt+W");
+                                                root.shortcuts-changed(root.enable-alt-c, root.enable-alt-x);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 3. Info notice for Ctrl+Enter translation
+                            Rectangle {
+                                height: 44px;
+                                background: #1c1c1c;
+                                border-color: #282828;
+                                border-width: 1px;
+                                border-radius: 8px;
+
+                                HorizontalLayout {
+                                    padding-left: 14px;
+                                    padding-right: 14px;
+                                    alignment: space-between;
+
+                                    VerticalLayout {
+                                        alignment: center;
+                                        Text {
+                                            text: "Ctrl + Enter";
+                                            color: #f1ffff; font-family: "JetBrains Mono";
+                                            font-size: 11px; font-weight: 600;
+                                        }
+                                        Text {
+                                            text: root.ui-lang == "en" ? "Manual translation in source input" : "Ручний переклад у полі введення";
+                                            color: #777777; font-family: "JetBrains Mono"; font-size: 10px;
+                                        }
+                                    }
+
+                                    VerticalLayout {
+                                        alignment: center;
+                                        Text {
+                                            text: root.ui-lang == "en" ? "Built-in" : "Вбудовано";
+                                            color: #88ff88; font-family: "JetBrains Mono"; font-size: 10px; font-weight: 700;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Tab 2: LANGUAGES
+                        if root.settings-tab == 2: VerticalLayout {
+                            padding: 14px;
+                            spacing: 8px;
+                            alignment: start;
+
+                            SettingItem {
+                                title: root.ui-lang == "en" ? "Auto-copy translation" : "Автокопіювання перекладу";
+                                subtitle: root.ui-lang == "en" ? "Copy result to clipboard immediately" : "Копіювати результат у буфер одразу після перекладу";
+                                checked <=> root.auto-copy;
+                                toggled(v) => {
+                                    root.settings-changed(root.popup-mode, root.pin-on-top, root.auto-copy, root.close-on-paste);
+                                }
+                            }
+
+                            // Priority languages grid
+                            Rectangle {
+                                background: #1c1c1c; border-color: #282828;
+                                border-width: 1px; border-radius: 8px;
+                                VerticalLayout {
+                                    padding: 12px; spacing: 8px;
+                                    Text {
+                                        text: root.ui-lang == "en" ? "My priority languages" : "Пріоритетні мови (вгорі списку)";
+                                        color: #f1ffff; font-family: "JetBrains Mono";
+                                        font-size: 11px; font-weight: 600;
+                                    }
+                                    Text {
+                                        text: root.ui-lang == "en"
+                                            ? "Selected languages appear at the top of pickers (max 6)"
+                                            : "Вибрані мови з'являються вгорі списку (макс. 6)";
+                                        color: #888888; font-family: "JetBrains Mono"; font-size: 10px;
+                                    }
+                                    // Row 1: UK, EN, PL, DE, FR
+                                    HorizontalLayout {
+                                        spacing: 4px;
+                                        PrioLangBadge { code: "uk"; lang-name: root.lang-name("uk"); is-active: root.is-priority("uk"); clicked(c) => { root.priority-lang-toggled(c); } }
+                                        PrioLangBadge { code: "en"; lang-name: root.lang-name("en"); is-active: root.is-priority("en"); clicked(c) => { root.priority-lang-toggled(c); } }
+                                        PrioLangBadge { code: "pl"; lang-name: root.lang-name("pl"); is-active: root.is-priority("pl"); clicked(c) => { root.priority-lang-toggled(c); } }
+                                        PrioLangBadge { code: "de"; lang-name: root.lang-name("de"); is-active: root.is-priority("de"); clicked(c) => { root.priority-lang-toggled(c); } }
+                                        PrioLangBadge { code: "fr"; lang-name: root.lang-name("fr"); is-active: root.is-priority("fr"); clicked(c) => { root.priority-lang-toggled(c); } }
+                                    }
+                                    // Row 2: IT, ES, PT, JA, ZH
+                                    HorizontalLayout {
+                                        spacing: 4px;
+                                        PrioLangBadge { code: "it"; lang-name: root.lang-name("it"); is-active: root.is-priority("it"); clicked(c) => { root.priority-lang-toggled(c); } }
+                                        PrioLangBadge { code: "es"; lang-name: root.lang-name("es"); is-active: root.is-priority("es"); clicked(c) => { root.priority-lang-toggled(c); } }
+                                        PrioLangBadge { code: "pt"; lang-name: root.lang-name("pt"); is-active: root.is-priority("pt"); clicked(c) => { root.priority-lang-toggled(c); } }
+                                        PrioLangBadge { code: "ja"; lang-name: root.lang-name("ja"); is-active: root.is-priority("ja"); clicked(c) => { root.priority-lang-toggled(c); } }
+                                        PrioLangBadge { code: "zh"; lang-name: root.lang-name("zh"); is-active: root.is-priority("zh"); clicked(c) => { root.priority-lang-toggled(c); } }
+                                    }
+                                    // Row 3: RU, TR, CS, NL, KO
+                                    HorizontalLayout {
+                                        spacing: 4px;
+                                        PrioLangBadge { code: "ru"; lang-name: root.lang-name("ru"); is-active: root.is-priority("ru"); clicked(c) => { root.priority-lang-toggled(c); } }
+                                        PrioLangBadge { code: "tr"; lang-name: root.lang-name("tr"); is-active: root.is-priority("tr"); clicked(c) => { root.priority-lang-toggled(c); } }
+                                        PrioLangBadge { code: "cs"; lang-name: root.lang-name("cs"); is-active: root.is-priority("cs"); clicked(c) => { root.priority-lang-toggled(c); } }
+                                        PrioLangBadge { code: "nl"; lang-name: root.lang-name("nl"); is-active: root.is-priority("nl"); clicked(c) => { root.priority-lang-toggled(c); } }
+                                        PrioLangBadge { code: "ko"; lang-name: root.lang-name("ko"); is-active: root.is-priority("ko"); clicked(c) => { root.priority-lang-toggled(c); } }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Tab 3: TRANSLATION ENGINE AND API KEYS
+                        if root.settings-tab == 3: VerticalLayout {
+                            padding: 12px;
+                            spacing: 8px;
+                            alignment: start;
+
+                            Text {
+                                text: root.ui-lang == "en" ? "TRANSLATION ENGINE" : "ОСНОВНИЙ РУШІЙ ПЕРЕКЛАДУ";
+                                color: #777777;
+                                font-family: "JetBrains Mono";
+                                font-size: 10px;
+                                font-weight: 700;
+                            }
+
+                            // Engine selection: side-by-side cards
+                            HorizontalLayout {
+                                spacing: 8px;
+                                height: 50px;
+
+                                // Card 1: DeepL API
+                                Rectangle {
+                                    horizontal-stretch: 1;
+                                    background: root.use-deepl ? #0d1e26 : (ta-card-deepl.has-hover ? #202020 : #181818);
+                                    border-color: root.use-deepl ? #00c0f0 : (ta-card-deepl.has-hover ? #383838 : #262626);
+                                    border-width: root.use-deepl ? 1.5px : 1px;
+                                    border-radius: 8px;
+                                    animate background { duration: 100ms; }
+                                    animate border-color { duration: 100ms; }
+
+                                    ta-card-deepl := TouchArea {
+                                        mouse-cursor: pointer;
+                                        clicked => {
+                                            root.use-deepl = true;
+                                            root.deepl-settings-changed(true, root.deepl-key);
+                                        }
+                                    }
+
+                                    HorizontalLayout {
+                                        padding-left: 10px;
+                                        padding-right: 10px;
+                                        spacing: 8px;
+                                        alignment: start;
+
+                                        // Radio icon
+                                        VerticalLayout {
+                                            alignment: center;
+                                            Rectangle {
+                                                width: 14px; height: 14px; border-radius: 7px;
+                                                border-color: root.use-deepl ? #00c0f0 : #555555;
+                                                border-width: 1.5px;
+                                                background: transparent;
+                                                if root.use-deepl: Rectangle {
+                                                    x: 2.5px; y: 2.5px; width: 9px; height: 9px;
+                                                    border-radius: 4.5px; background: #00c0f0;
+                                                }
+                                            }
+                                        }
+
+                                        VerticalLayout {
+                                            alignment: center;
+                                            spacing: 2px;
+                                            HorizontalLayout {
+                                                spacing: 5px;
+                                                Text {
+                                                    text: "DeepL API";
+                                                    color: root.use-deepl ? #f1ffff : #cccccc;
+                                                    font-family: "JetBrains Mono";
+                                                    font-size: 11px;
+                                                    font-weight: 700;
+                                                    vertical-alignment: center;
+                                                }
+                                                Rectangle {
+                                                    height: 15px; border-radius: 3px;
+                                                    background: #00c0f025;
+                                                    HorizontalLayout {
+                                                        padding-left: 4px; padding-right: 4px;
+                                                        Text {
+                                                            text: "AI Pro ⚡";
+                                                            color: #00e0ff;
+                                                            font-family: "JetBrains Mono";
+                                                            font-size: 8.5px;
+                                                            font-weight: 700;
+                                                            vertical-alignment: center;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            Text {
+                                                text: root.ui-lang == "en" ? "Context & nuance" : "Живий контекст";
+                                                color: #777777;
+                                                font-family: "JetBrains Mono";
+                                                font-size: 9.5px;
+                                                overflow: elide;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Card 2: Google Translate
+                                Rectangle {
+                                    horizontal-stretch: 1;
+                                    background: !root.use-deepl ? #221a10 : (ta-card-google.has-hover ? #202020 : #181818);
+                                    border-color: !root.use-deepl ? #ffaa44 : (ta-card-google.has-hover ? #383838 : #262626);
+                                    border-width: !root.use-deepl ? 1.5px : 1px;
+                                    border-radius: 8px;
+                                    animate background { duration: 100ms; }
+                                    animate border-color { duration: 100ms; }
+
+                                    ta-card-google := TouchArea {
+                                        mouse-cursor: pointer;
+                                        clicked => {
+                                            root.use-deepl = false;
+                                            root.deepl-settings-changed(false, root.deepl-key);
+                                        }
+                                    }
+
+                                    HorizontalLayout {
+                                        padding-left: 10px;
+                                        padding-right: 10px;
+                                        spacing: 8px;
+                                        alignment: start;
+
+                                        // Radio icon
+                                        VerticalLayout {
+                                            alignment: center;
+                                            Rectangle {
+                                                width: 14px; height: 14px; border-radius: 7px;
+                                                border-color: !root.use-deepl ? #ffaa44 : #555555;
+                                                border-width: 1.5px;
+                                                background: transparent;
+                                                if !root.use-deepl: Rectangle {
+                                                    x: 2.5px; y: 2.5px; width: 9px; height: 9px;
+                                                    border-radius: 4.5px; background: #ffaa44;
+                                                }
+                                            }
+                                        }
+
+                                        VerticalLayout {
+                                            alignment: center;
+                                            spacing: 2px;
+                                            HorizontalLayout {
+                                                spacing: 5px;
+                                                Text {
+                                                    text: "Google";
+                                                    color: !root.use-deepl ? #f1ffff : #cccccc;
+                                                    font-family: "JetBrains Mono";
+                                                    font-size: 11px;
+                                                    font-weight: 700;
+                                                    vertical-alignment: center;
+                                                }
+                                                Rectangle {
+                                                    height: 15px; border-radius: 3px;
+                                                    background: #ffaa4420;
+                                                    HorizontalLayout {
+                                                        padding-left: 4px; padding-right: 4px;
+                                                        Text {
+                                                            text: root.ui-lang == "en" ? "Standard" : "Базовий";
+                                                            color: #ffbb55;
+                                                            font-family: "JetBrains Mono";
+                                                            font-size: 8.5px;
+                                                            font-weight: 700;
+                                                            vertical-alignment: center;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            Text {
+                                                text: root.ui-lang == "en" ? "Free, no key needed" : "Безкоштовно, без ключа";
+                                                color: #777777;
+                                                font-family: "JetBrains Mono";
+                                                font-size: 9.5px;
+                                                overflow: elide;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // DeepL configuration card (when DeepL selected)
+                            if root.use-deepl: Rectangle {
+                                background: #1c1c1c;
+                                border-color: #282828;
+                                border-width: 1px;
+                                border-radius: 8px;
+                                VerticalLayout {
+                                    padding: 10px;
+                                    spacing: 6px;
+
+                                    HorizontalLayout {
+                                        alignment: space-between;
+                                        Text {
+                                            text: root.ui-lang == "en" ? "DeepL API Key" : "Ключ DeepL API";
+                                            color: #f1ffff;
+                                            font-family: "JetBrains Mono";
+                                            font-size: 11px;
+                                            font-weight: 600;
+                                        }
+                                        Text {
+                                            text: root.deepl-key != "" ? (root.ui-lang == "en" ? "Active ✓" : "Активний ✓") : (root.ui-lang == "en" ? "Key required ⚠️" : "Потрібен ключ ⚠️");
+                                            color: root.deepl-key != "" ? #55ff99 : #ffaa44;
+                                            font-family: "JetBrains Mono";
+                                            font-size: 10px;
+                                            font-weight: 700;
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        height: 30px;
+                                        background: #141414;
+                                        border-color: key-input.has-focus ? #00c0f0 : #333333;
+                                        border-width: 1px;
+                                        border-radius: 6px;
+                                        HorizontalLayout {
+                                            padding-left: 8px;
+                                            padding-right: 8px;
+                                            key-input := TextInput {
+                                                text <=> root.deepl-key;
+                                                font-family: "JetBrains Mono";
+                                                font-size: 11px;
+                                                color: #f1ffff;
+                                                vertical-alignment: center;
+                                                horizontal-alignment: left;
+                                                edited => {
+                                                    root.deepl-settings-changed(root.use-deepl, self.text);
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // DeepL quota counter widget
+                                    if root.deepl-key != "": Rectangle {
+                                        background: #141414;
+                                        border-color: #282828;
+                                        border-width: 1px;
+                                        border-radius: 6px;
+                                        height: 48px;
+
+                                        VerticalLayout {
+                                            padding-left: 10px;
+                                            padding-right: 10px;
+                                            padding-top: 6px;
+                                            padding-bottom: 6px;
+                                            spacing: 4px;
+                                            alignment: center;
+
+                                            HorizontalLayout {
+                                                alignment: space-between;
+                                                HorizontalLayout {
+                                                    spacing: 6px;
+                                                    Text {
+                                                        text: root.ui-lang == "en" ? "Quota remaining:" : "Залишок ліміту:";
+                                                        color: #888888;
+                                                        font-family: "JetBrains Mono";
+                                                        font-size: 10px;
+                                                        vertical-alignment: center;
+                                                    }
+                                                    if root.deepl-quota-loading: Text {
+                                                        text: "⏳";
+                                                        font-size: 10px;
+                                                        vertical-alignment: center;
+                                                    }
+                                                }
+
+                                                HorizontalLayout {
+                                                    spacing: 8px;
+                                                    Text {
+                                                        text: root.deepl-quota-text != "" ? root.deepl-quota-text : (root.ui-lang == "en" ? "Checking..." : "Перевірка...");
+                                                        color: root.deepl-quota-percent < 0.1 ? #ff5566 : (root.deepl-quota-percent < 0.25 ? #ffbb44 : #00e0ff);
+                                                        font-family: "JetBrains Mono";
+                                                        font-size: 10px;
+                                                        font-weight: 700;
+                                                        vertical-alignment: center;
+                                                    }
+                                                    Rectangle {
+                                                        width: 20px;
+                                                        height: 18px;
+                                                        border-radius: 3px;
+                                                        background: ta-refresh-quota.has-hover ? #2a2a2a : #1c1c1c;
+                                                        border-color: #383838;
+                                                        border-width: 1px;
+                                                        ta-refresh-quota := TouchArea {
+                                                            mouse-cursor: pointer;
+                                                            clicked => {
+                                                                root.refresh-deepl-quota();
+                                                            }
+                                                        }
+                                                        Text {
+                                                            text: "⟳";
+                                                            color: #00c0f0;
+                                                            font-size: 11px;
+                                                            font-family: "JetBrains Mono";
+                                                            horizontal-alignment: center;
+                                                            vertical-alignment: center;
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            // Quota progress bar
+                                            Rectangle {
+                                                height: 4px;
+                                                background: #202020;
+                                                border-radius: 2px;
+                                                clip: true;
+                                                Rectangle {
+                                                    x: 0;
+                                                    y: 0;
+                                                    width: parent.width * clamp(root.deepl-quota-percent, 0.0, 1.0);
+                                                    height: 100%;
+                                                    background: root.deepl-quota-percent < 0.1 ? #ff4455 : (root.deepl-quota-percent < 0.25 ? #ffaa33 : #00c0f0);
+                                                    border-radius: 2px;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Text {
+                                        text: root.ui-lang == "en"
+                                            ? "⚡ 1,000,000 chars/month. If DeepL is unreachable or quota exhausted, Louise automatically falls back to Google Translate with a notice."
+                                            : "⚡ 1 000 000 симв./місяць. Якщо DeepL буде недоступний або ліміт вичерпано — Louise автоматично перекладе через Google Translate і сповістить вас.";
+                                        color: #777777;
+                                        font-family: "JetBrains Mono";
+                                        font-size: 9.5px;
+                                        wrap: word-wrap;
+                                    }
+                                }
+                            }
+
+                            // Info card when Google Translate is active
+                            if !root.use-deepl: Rectangle {
+                                background: #1c1c1c;
+                                border-color: #282828;
+                                border-width: 1px;
+                                border-radius: 8px;
+                                VerticalLayout {
+                                    padding: 10px;
+                                    spacing: 4px;
+                                    Text {
+                                        text: root.ui-lang == "en" ? "Google Translate is active" : "Google Translate активний";
+                                        color: #ffaa44;
+                                        font-family: "JetBrains Mono";
+                                        font-size: 11px;
+                                        font-weight: 700;
+                                    }
+                                    Text {
+                                        text: root.ui-lang == "en"
+                                            ? "All translations will be processed directly through Google servers. No API keys or account registration needed."
+                                            : "Усі переклади виконуються напряму через швидкі сервери Google Translate. Жодних ключів чи реєстрацій не потрібно.";
+                                        color: #777777;
+                                        font-family: "JetBrains Mono";
+                                        font-size: 10px;
+                                        wrap: word-wrap;
+                                    }
+                                }
+                            }
+
+                            // Active engine indicator
+                            Rectangle {
+                                background: #161616;
+                                border-color: #242424;
+                                border-width: 1px;
+                                border-radius: 8px;
+                                height: 32px;
+                                HorizontalLayout {
+                                    padding-left: 12px;
+                                    padding-right: 12px;
+                                    alignment: space-between;
+                                    Text {
+                                        text: root.ui-lang == "en" ? "Active Engine:" : "Поточний рушій:";
+                                        color: #888888;
+                                        font-family: "JetBrains Mono";
+                                        font-size: 10px;
+                                        vertical-alignment: center;
+                                    }
+                                    Text {
+                                        text: (root.use-deepl && root.deepl-key != "") ? "DeepL ⚡ (AI Pro)" : "Google Translate";
+                                        color: (root.use-deepl && root.deepl-key != "") ? #00c0f0 : #ffaa44;
+                                        font-family: "JetBrains Mono";
+                                        font-size: 10px;
+                                        font-weight: 700;
+                                        vertical-alignment: center;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Help Overlay
+            if root.show-help: Rectangle {
+                x: 10px; y: 46px; width: parent.width - 20px; height: parent.height - 56px;
+                background: #101010; border-color: #282828; border-width: 1px;
+                border-radius: 8px; drop-shadow-blur: 24px; drop-shadow-color: #000000ee;
+
+                // Block click-through behind overlay
+                TouchArea { width: 100%; height: 100%; }
+
+                VerticalLayout {
+                    padding: 16px; spacing: 10px;
+
+                    HorizontalLayout {
+                        alignment: space-between;
+                        VerticalLayout {
+                            alignment: center;
+                            Text {
+                                text: root.ui-lang == "en" ? "Help" : "Довідка";
+                                color: #f1ffff; font-family: "JetBrains Mono";
+                                font-size: 13px; font-weight: 700;
+                            }
+                        }
+                        VerticalLayout {
+                            alignment: center;
+                            ActionButton {
+                                width: 70px; height: 26px;
+                                text: root.ui-lang == "en" ? "Close" : "Закрити";
+                                is-primary: true;
+                                clicked => { root.show-help = false; }
+                            }
+                        }
+                    }
+
+                    Rectangle { height: 1px; background: #222222; }
+
+                    // Hotkeys list (dynamically generated from config)
+                    VerticalLayout {
+                        spacing: 4px;
+                        HorizontalLayout {
+                            alignment: space-between;
+                            VerticalLayout {
+                                alignment: center;
+                                Text {
+                                    text: root.ui-lang == "en" ? "ACTIVE SHORTCUTS" : "АКТИВНІ ГАРЯЧІ КЛАВІШІ";
+                                    color: #777777; font-family: "JetBrains Mono"; font-size: 10px; font-weight: 700;
+                                    vertical-alignment: center;
+                                }
+                            }
+                            ActionButton {
+                                width: root.ui-lang == "en" ? 116px : 124px;
+                                height: 22px;
+                                text: root.ui-lang == "en" ? "⚙ Configure" : "⚙ Налаштувати";
+                                clicked => {
+                                    root.show-help = false;
+                                    root.show-settings = true;
+                                    root.settings-tab = 1;
+                                }
+                            }
+                        }
+                        Rectangle { height: 1px; background: #1e1e1e; }
+                        if root.enable-alt-c: HelpRow {
+                            key: "Alt+C";
+                            desc: root.ui-lang == "en" ? "Translate selected text" : "Перекласти виділений текст";
+                        }
+                        if root.enable-custom-translate && root.custom-translate-shortcut != "": HelpRow {
+                            key: root.custom-translate-shortcut;
+                            desc: root.ui-lang == "en" ? "Translate selection (custom)" : "Переклад виділеного (власна)";
+                        }
+                        if root.enable-alt-x: HelpRow {
+                            key: "Alt+X";
+                            desc: root.ui-lang == "en" ? "Toggle window (open / close)" : "Відкрити / сховати вікно";
+                        }
+                        if root.enable-custom-window && root.custom-window-shortcut != "": HelpRow {
+                            key: root.custom-window-shortcut;
+                            desc: root.ui-lang == "en" ? "Toggle window (custom)" : "Відкрити / сховати (власна)";
+                        }
+                        if !root.enable-alt-c && !root.enable-alt-x && (!root.enable-custom-translate || root.custom-translate-shortcut == "") && (!root.enable-custom-window || root.custom-window-shortcut == ""): HelpRow {
+                            key: "—";
+                            desc: root.ui-lang == "en" ? "No capture shortcuts enabled" : "Немає активних шорткатів";
+                        }
+                        HelpRow { key: "Ctrl+Enter"; desc: root.ui-lang == "en" ? "Translate manually" : "Перекласти текст у полі"; }
+                        HelpRow { key: "Escape"; desc: root.ui-lang == "en" ? "Hide window" : "Сховати вікно"; }
+                        HelpRow { key: "Ctrl+A"; desc: root.ui-lang == "en" ? "Select all text" : "Виділити весь текст"; }
+                    }
+
+                    Rectangle { height: 1px; background: #222222; }
+
+                    // Features guide
+                    VerticalLayout {
+                        spacing: 4px;
+                        Text {
+                            text: root.ui-lang == "en" ? "FEATURES" : "ФУНКЦІОНАЛ";
+                            color: #777777; font-family: "JetBrains Mono"; font-size: 10px; font-weight: 700;
+                        }
+                        Rectangle { height: 1px; background: #1e1e1e; }
+                        HelpBullet { text: root.ui-lang == "en" ? "Select text → press active hotkey: instant translation" : "Виділіть текст → натисніть активний шорткат: миттєвий переклад"; }
+                        HelpBullet { text: root.ui-lang == "en" ? "\"Paste as replacement\" inserts translation into the previous app" : "\"Вставити замість виділеного\" вставляє переклад у попередню програму"; }
+                        HelpBullet { text: root.ui-lang == "en" ? "Auto-detect: detects Cyrillic vs Latin automatically" : "Автовизначення: розрізняє кирилицю та латиницю автоматично"; }
+                        HelpBullet { text: root.ui-lang == "en" ? "All settings are saved between sessions" : "Всі налаштування зберігаються між запусками"; }
+                    }
+
+                    Rectangle { vertical-stretch: 1; }
+
+                    Text {
+                        text: "Louise Translator v0.1  •  Inspired by Arrival  •  Rust + Slint";
+                        color: #444444; font-family: "JetBrains Mono"; font-size: 10px;
+                        horizontal-alignment: center;
+                    }
+                }
+            }
+
+            // Backdrop overlay to dismiss language dropdown
+            if root.show-src-picker || root.show-dst-picker: TouchArea {
+                width: 100%; height: 100%;
+                clicked => {
+                    root.show-src-picker = false;
+                    root.show-dst-picker = false;
+                }
+            }
+
+            // SOURCE language dropdown modal
+            if root.show-src-picker: Rectangle {
+                x: 10px; y: 85px; width: 213px; height: 326px;
+                background: #1c1c1c; border-color: #282828; border-width: 1px;
+                border-radius: 8px; drop-shadow-blur: 20px; drop-shadow-color: #000000dd;
+                clip: true;
+
+                VerticalLayout {
+                    padding: 4px; spacing: 2px;
+                    ScrollView {
+                        VerticalLayout {
+                            // Auto-detect (always first)
+                            LangListItem { name: root.lang-name("auto"); code: "auto"; is-selected: root.src-lang == "auto"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            Rectangle { height: 1px; background: #2a2a2a; }
+
+                            // Priority languages (if configured)
+                            if root.prio1 != "": LangListItem { name: root.lang-name(root.prio1); code: root.prio1; is-selected: root.src-lang == root.prio1; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if root.prio2 != "": LangListItem { name: root.lang-name(root.prio2); code: root.prio2; is-selected: root.src-lang == root.prio2; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if root.prio3 != "": LangListItem { name: root.lang-name(root.prio3); code: root.prio3; is-selected: root.src-lang == root.prio3; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if root.prio4 != "": LangListItem { name: root.lang-name(root.prio4); code: root.prio4; is-selected: root.src-lang == root.prio4; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if root.prio5 != "": LangListItem { name: root.lang-name(root.prio5); code: root.prio5; is-selected: root.src-lang == root.prio5; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if root.prio6 != "": LangListItem { name: root.lang-name(root.prio6); code: root.prio6; is-selected: root.src-lang == root.prio6; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if root.prio1 != "": Rectangle { height: 1px; background: #2a2a2a; }
+
+                            // All languages
+                            if !root.is-priority("uk"): LangListItem { name: root.lang-name("uk"); code: "uk"; is-selected: root.src-lang == "uk"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("en"): LangListItem { name: root.lang-name("en"); code: "en"; is-selected: root.src-lang == "en"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("pl"): LangListItem { name: root.lang-name("pl"); code: "pl"; is-selected: root.src-lang == "pl"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("ru"): LangListItem { name: root.lang-name("ru"); code: "ru"; is-selected: root.src-lang == "ru"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("de"): LangListItem { name: root.lang-name("de"); code: "de"; is-selected: root.src-lang == "de"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("fr"): LangListItem { name: root.lang-name("fr"); code: "fr"; is-selected: root.src-lang == "fr"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("es"): LangListItem { name: root.lang-name("es"); code: "es"; is-selected: root.src-lang == "es"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("it"): LangListItem { name: root.lang-name("it"); code: "it"; is-selected: root.src-lang == "it"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("pt"): LangListItem { name: root.lang-name("pt"); code: "pt"; is-selected: root.src-lang == "pt"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("nl"): LangListItem { name: root.lang-name("nl"); code: "nl"; is-selected: root.src-lang == "nl"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("cs"): LangListItem { name: root.lang-name("cs"); code: "cs"; is-selected: root.src-lang == "cs"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("sk"): LangListItem { name: root.lang-name("sk"); code: "sk"; is-selected: root.src-lang == "sk"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("ro"): LangListItem { name: root.lang-name("ro"); code: "ro"; is-selected: root.src-lang == "ro"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("hu"): LangListItem { name: root.lang-name("hu"); code: "hu"; is-selected: root.src-lang == "hu"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("tr"): LangListItem { name: root.lang-name("tr"); code: "tr"; is-selected: root.src-lang == "tr"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("el"): LangListItem { name: root.lang-name("el"); code: "el"; is-selected: root.src-lang == "el"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("bg"): LangListItem { name: root.lang-name("bg"); code: "bg"; is-selected: root.src-lang == "bg"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("sv"): LangListItem { name: root.lang-name("sv"); code: "sv"; is-selected: root.src-lang == "sv"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("no"): LangListItem { name: root.lang-name("no"); code: "no"; is-selected: root.src-lang == "no"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("da"): LangListItem { name: root.lang-name("da"); code: "da"; is-selected: root.src-lang == "da"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("fi"): LangListItem { name: root.lang-name("fi"); code: "fi"; is-selected: root.src-lang == "fi"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("lt"): LangListItem { name: root.lang-name("lt"); code: "lt"; is-selected: root.src-lang == "lt"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("lv"): LangListItem { name: root.lang-name("lv"); code: "lv"; is-selected: root.src-lang == "lv"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("et"): LangListItem { name: root.lang-name("et"); code: "et"; is-selected: root.src-lang == "et"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("ja"): LangListItem { name: root.lang-name("ja"); code: "ja"; is-selected: root.src-lang == "ja"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("zh"): LangListItem { name: root.lang-name("zh"); code: "zh"; is-selected: root.src-lang == "zh"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("ko"): LangListItem { name: root.lang-name("ko"); code: "ko"; is-selected: root.src-lang == "ko"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("ar"): LangListItem { name: root.lang-name("ar"); code: "ar"; is-selected: root.src-lang == "ar"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("he"): LangListItem { name: root.lang-name("he"); code: "he"; is-selected: root.src-lang == "he"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                            if !root.is-priority("hi"): LangListItem { name: root.lang-name("hi"); code: "hi"; is-selected: root.src-lang == "hi"; clicked(c) => { root.select-src-lang(c); root.show-src-picker = false; } }
+                        }
+                    }
+                }
+            }
+
+            // TARGET language dropdown modal
+            if root.show-dst-picker: Rectangle {
+                x: 277px; y: 85px; width: 213px; height: 326px;
+                background: #1c1c1c; border-color: #282828; border-width: 1px;
+                border-radius: 8px; drop-shadow-blur: 20px; drop-shadow-color: #000000dd;
+                clip: true;
+
+                VerticalLayout {
+                    padding: 4px; spacing: 2px;
+                    ScrollView {
+                        VerticalLayout {
+                            padding-right: 6px; spacing: 2px;
+                            // Priority languages (if configured)
+                            if root.prio1 != "": LangListItem { name: root.lang-name(root.prio1); code: root.prio1; is-selected: root.dst-lang == root.prio1; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if root.prio2 != "": LangListItem { name: root.lang-name(root.prio2); code: root.prio2; is-selected: root.dst-lang == root.prio2; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if root.prio3 != "": LangListItem { name: root.lang-name(root.prio3); code: root.prio3; is-selected: root.dst-lang == root.prio3; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if root.prio4 != "": LangListItem { name: root.lang-name(root.prio4); code: root.prio4; is-selected: root.dst-lang == root.prio4; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if root.prio5 != "": LangListItem { name: root.lang-name(root.prio5); code: root.prio5; is-selected: root.dst-lang == root.prio5; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if root.prio6 != "": LangListItem { name: root.lang-name(root.prio6); code: root.prio6; is-selected: root.dst-lang == root.prio6; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if root.prio1 != "": Rectangle { height: 1px; background: #2a2a2a; }
+                            // All languages (excluding auto)
+                            if !root.is-priority("uk"): LangListItem { name: root.lang-name("uk"); code: "uk"; is-selected: root.dst-lang == "uk"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("en"): LangListItem { name: root.lang-name("en"); code: "en"; is-selected: root.dst-lang == "en"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("pl"): LangListItem { name: root.lang-name("pl"); code: "pl"; is-selected: root.dst-lang == "pl"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("ru"): LangListItem { name: root.lang-name("ru"); code: "ru"; is-selected: root.dst-lang == "ru"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("de"): LangListItem { name: root.lang-name("de"); code: "de"; is-selected: root.dst-lang == "de"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("fr"): LangListItem { name: root.lang-name("fr"); code: "fr"; is-selected: root.dst-lang == "fr"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("es"): LangListItem { name: root.lang-name("es"); code: "es"; is-selected: root.dst-lang == "es"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("it"): LangListItem { name: root.lang-name("it"); code: "it"; is-selected: root.dst-lang == "it"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("pt"): LangListItem { name: root.lang-name("pt"); code: "pt"; is-selected: root.dst-lang == "pt"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("nl"): LangListItem { name: root.lang-name("nl"); code: "nl"; is-selected: root.dst-lang == "nl"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("cs"): LangListItem { name: root.lang-name("cs"); code: "cs"; is-selected: root.dst-lang == "cs"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("sk"): LangListItem { name: root.lang-name("sk"); code: "sk"; is-selected: root.dst-lang == "sk"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("ro"): LangListItem { name: root.lang-name("ro"); code: "ro"; is-selected: root.dst-lang == "ro"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("hu"): LangListItem { name: root.lang-name("hu"); code: "hu"; is-selected: root.dst-lang == "hu"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("tr"): LangListItem { name: root.lang-name("tr"); code: "tr"; is-selected: root.dst-lang == "tr"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("el"): LangListItem { name: root.lang-name("el"); code: "el"; is-selected: root.dst-lang == "el"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("bg"): LangListItem { name: root.lang-name("bg"); code: "bg"; is-selected: root.dst-lang == "bg"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("sv"): LangListItem { name: root.lang-name("sv"); code: "sv"; is-selected: root.dst-lang == "sv"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("no"): LangListItem { name: root.lang-name("no"); code: "no"; is-selected: root.dst-lang == "no"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("da"): LangListItem { name: root.lang-name("da"); code: "da"; is-selected: root.dst-lang == "da"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("fi"): LangListItem { name: root.lang-name("fi"); code: "fi"; is-selected: root.dst-lang == "fi"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("lt"): LangListItem { name: root.lang-name("lt"); code: "lt"; is-selected: root.dst-lang == "lt"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("lv"): LangListItem { name: root.lang-name("lv"); code: "lv"; is-selected: root.dst-lang == "lv"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("et"): LangListItem { name: root.lang-name("et"); code: "et"; is-selected: root.dst-lang == "et"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("ja"): LangListItem { name: root.lang-name("ja"); code: "ja"; is-selected: root.dst-lang == "ja"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("zh"): LangListItem { name: root.lang-name("zh"); code: "zh"; is-selected: root.dst-lang == "zh"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("ko"): LangListItem { name: root.lang-name("ko"); code: "ko"; is-selected: root.dst-lang == "ko"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("ar"): LangListItem { name: root.lang-name("ar"); code: "ar"; is-selected: root.dst-lang == "ar"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("he"): LangListItem { name: root.lang-name("he"); code: "he"; is-selected: root.dst-lang == "he"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                            if !root.is-priority("hi"): LangListItem { name: root.lang-name("hi"); code: "hi"; is-selected: root.dst-lang == "hi"; clicked(c) => { root.select-dst-lang(c); root.show-dst-picker = false; } }
+                        }
+                    }
+                }
+            }
+
+            // Dismiss context menu on backdrop click
+            if root.show-ctx-menu: TouchArea {
+                width: 100%; height: 100%;
+                clicked => { root.show-ctx-menu = false; }
+            }
+
+            // Context menu popup
+            if root.show-ctx-menu: Rectangle {
+                width: 135px;
+                height: root.ctx-for-src ? 116px : 60px;
+                x: clamp(root.ctx-x, 8px, root.width - self.width - 8px);
+                y: clamp(root.ctx-y, 38px, root.height - self.height - 8px);
+                background: #181818;
+                border-color: #333333;
+                border-width: 1px;
+                border-radius: 6px;
+                drop-shadow-blur: 16px;
+                drop-shadow-color: #000000dd;
+
+                VerticalLayout {
+                    padding: 4px; spacing: 2px;
+
+                    Rectangle {
+                        height: 26px; border-radius: 4px;
+                        background: ta-all.has-hover ? #282828 : transparent;
+                        ta-all := TouchArea {
+                            mouse-cursor: pointer;
+                            clicked => {
+                                if (root.ctx-for-src) { ti-src.focus(); ti-src.select-all(); }
+                                else { ti-dst.focus(); ti-dst.select-all(); }
+                                root.show-ctx-menu = false;
+                            }
+                        }
+                        HorizontalLayout { padding-left: 8px; spacing: 7px; alignment: start;
+                            Text { text: "⊞"; color: #888888; font-size: 10px; vertical-alignment: center; }
+                            Text { text: root.ui-lang == "en" ? "Select all" : "Виділити все"; color: #f1ffff; font-family: "JetBrains Mono"; font-size: 11px; vertical-alignment: center; }
+                        }
+                    }
+
+                    Rectangle {
+                        height: 26px; border-radius: 4px;
+                        background: ta-copy.has-hover ? #282828 : transparent;
+                        ta-copy := TouchArea {
+                            mouse-cursor: pointer;
+                            clicked => {
+                                root.ctx-copy-requested(root.ctx-for-src);
+                                root.show-ctx-menu = false;
+                            }
+                        }
+                        HorizontalLayout { padding-left: 8px; spacing: 7px; alignment: start;
+                            Text { text: "⧉"; color: #888888; font-size: 10px; vertical-alignment: center; }
+                            Text { text: root.ui-lang == "en" ? "Copy" : "Копіювати"; color: #f1ffff; font-family: "JetBrains Mono"; font-size: 11px; vertical-alignment: center; }
+                        }
+                    }
+
+                    if root.ctx-for-src: Rectangle {
+                        height: 26px; border-radius: 4px;
+                        background: ta-paste.has-hover ? #282828 : transparent;
+                        ta-paste := TouchArea {
+                            mouse-cursor: pointer;
+                            clicked => {
+                                root.ctx-paste-requested();
+                                root.show-ctx-menu = false;
+                            }
+                        }
+                        HorizontalLayout { padding-left: 8px; spacing: 7px; alignment: start;
+                            Text { text: "⎘"; color: #888888; font-size: 10px; vertical-alignment: center; }
+                            Text { text: root.ui-lang == "en" ? "Paste" : "Вставити"; color: #f1ffff; font-family: "JetBrains Mono"; font-size: 11px; vertical-alignment: center; }
+                        }
+                    }
+
+                    if root.ctx-for-src: Rectangle { height: 1px; background: #282828; }
+
+                    if root.ctx-for-src: Rectangle {
+                        height: 26px; border-radius: 4px;
+                        background: ta-clr.has-hover ? #1a0808 : transparent;
+                        ta-clr := TouchArea {
+                            mouse-cursor: pointer;
+                            clicked => {
+                                root.src-text = ""; root.dst-text = "";
+                                root.detected-lang-label = "";
+                                root.clear-requested();
+                                root.show-ctx-menu = false;
+                            }
+                        }
+                        HorizontalLayout { padding-left: 8px; spacing: 7px; alignment: start;
+                            Text { text: "✕"; color: #884444; font-size: 10px; vertical-alignment: center; }
+                            Text { text: root.ui-lang == "en" ? "Clear" : "Очистити"; color: #cc7777; font-family: "JetBrains Mono"; font-size: 11px; vertical-alignment: center; }
+                        }
+                    }
+                }
+            }
+
+            // Floating Toast Banner
+            if root.show-toast: Rectangle {
+                x: 14px;
+                y: parent.height - self.height - 14px;
+                width: parent.width - 28px;
+                height: 40px;
+                background: root.toast-type == "error" ? #221214 : (root.toast-type == "warning" ? #241c10 : #122216);
+                border-color: root.toast-type == "error" ? #66222a : (root.toast-type == "warning" ? #664411 : #225528);
+                border-width: 1px;
+                border-radius: 8px;
+                drop-shadow-blur: 20px;
+                drop-shadow-color: #000000ee;
+
+                HorizontalLayout {
+                    padding-left: 12px;
+                    padding-right: 10px;
+                    padding-top: 8px;
+                    padding-bottom: 8px;
+                    spacing: 8px;
+                    alignment: space-between;
+
+                    VerticalLayout {
+                        alignment: center;
+                        Text {
+                            text: root.toast-type == "error" ? "✕" : (root.toast-type == "warning" ? "⚠️" : "✓");
+                            font-size: 12px;
+                            color: root.toast-type == "error" ? #ff7788 : (root.toast-type == "warning" ? #ffcc66 : #88ffaa);
+                        }
+                    }
+
+                    VerticalLayout {
+                        alignment: center;
+                        horizontal-stretch: 1;
+                        Text {
+                            text: root.toast-text;
+                            color: root.toast-type == "error" ? #ff99aa : (root.toast-type == "warning" ? #ffdd88 : #aaffcc);
+                            font-family: "JetBrains Mono";
+                            font-size: 11px;
+                            wrap: word-wrap;
+                        }
+                    }
+
+                    VerticalLayout {
+                        alignment: center;
+                        Rectangle {
+                            width: 22px; height: 22px; border-radius: 4px;
+                            background: toast-close-ta.has-hover ? #ffffff22 : transparent;
+                            toast-close-ta := TouchArea {
+                                mouse-cursor: pointer;
+                                clicked => {
+                                    root.show-toast = false;
+                                    root.dismiss-toast();
+                                }
+                            }
+                            Text {
+                                text: "✕";
+                                color: #888888;
+                                font-family: "JetBrains Mono";
+                                font-size: 11px;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
