@@ -10,5 +10,6 @@ config.json
 REGRESSION_CHECKLIST.md
 dev.bat
 tools/
+POT_REFERENCE.md
 .DS_Store
 Thumbs.db
