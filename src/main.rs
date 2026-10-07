@@ -42,6 +42,8 @@ mod win32;
 pub use win32::*;
 mod ocr;
 pub use ocr::*;
+mod snipping;
+pub use snipping::*;
 
 
 
