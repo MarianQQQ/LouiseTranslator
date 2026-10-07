@@ -40,6 +40,8 @@ mod hotkeys;
 pub use hotkeys::*;
 mod win32;
 pub use win32::*;
+mod ocr;
+pub use ocr::*;
 
 
 
