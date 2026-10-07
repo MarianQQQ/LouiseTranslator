@@ -23,8 +23,9 @@ use windows::Win32::UI::WindowsAndMessaging::{
     GetWindowLongPtrW, GetWindowLongW, GetWindowThreadProcessId, IsWindowVisible, RegisterClassW,
     SetForegroundWindow, SetWindowLongPtrW, SetWindowLongW, SetWindowPos, ShowWindow,
     GWLP_HWNDPARENT, GWL_EXSTYLE, GWL_STYLE, HWND_NOTOPMOST, HWND_TOPMOST,
-    SM_CXSCREEN, SM_CYSCREEN, SWP_FRAMECHANGED, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE,
-    SW_HIDE, WINDOW_EX_STYLE, WNDCLASSW, WS_EX_APPWINDOW, WS_EX_TOOLWINDOW, WS_POPUP, WS_SYSMENU,
+    SM_CXSCREEN, SM_CYSCREEN, SWP_FRAMECHANGED, SWP_HIDEWINDOW, SWP_NOACTIVATE, SWP_NOMOVE,
+    SWP_NOSIZE, SWP_NOZORDER, SW_HIDE, WINDOW_EX_STYLE, WNDCLASSW, WS_EX_APPWINDOW,
+    WS_EX_TOOLWINDOW, WS_POPUP, WS_SYSMENU,
 };
 use crate::AppWindow;
 
@@ -259,6 +260,32 @@ pub fn hide_app_window(app: &AppWindow) {
         }
     }
     let _ = app.hide();
+}
+
+/// Immediately moves the translator window off-screen (-32000, -32000) and hides it,
+/// completely bypassing Windows DWM's ~200ms fade-out animation so screen capture never sees a ghost window.
+/// Returns the previous physical `(x, y)` position so it can be restored if snipping is cancelled.
+pub fn hide_app_window_for_snip(app: &AppWindow) -> (i32, i32) {
+    let pos = app.window().position();
+    let prev_pos = (pos.x, pos.y);
+    WINDOW_SHOWN.store(false, Ordering::Relaxed);
+    let hwnd = cache_hwnd_from_window(app.window());
+    if !hwnd.0.is_null() {
+        unsafe {
+            let _ = SetWindowPos(
+                hwnd,
+                None,
+                -32000,
+                -32000,
+                0,
+                0,
+                SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_HIDEWINDOW,
+            );
+            let _ = ShowWindow(hwnd, SW_HIDE);
+        }
+    }
+    let _ = app.hide();
+    prev_pos
 }
 
 // Positions the window so mouse cursor is centered on the SOURCE text input box

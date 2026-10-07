@@ -390,6 +390,165 @@ fn run_engine_on_bitmap(engine: &OcrEngine, bitmap: &SoftwareBitmap) -> Result<S
     Ok(lines_out.join("\n"))
 }
 
+/// Pre-warms the Windows Media OCR engines on a tiny 32x32 dummy bitmap in the background
+/// so that the first user-triggered Alt+S capture has zero DLL/model initialization lag.
+pub fn warmup_ocr_engines() {
+    let dummy = vec![255u8; 32 * 32 * 4];
+    let _ = recognize_bgra_pixels(&dummy, 32, 32, Some("en"));
+    let _ = recognize_bgra_pixels(&dummy, 32, 32, Some("uk"));
+}
+
+fn is_cyrillic_char(c: char) -> bool {
+    ('\u{0400}'..='\u{04FF}').contains(&c)
+}
+
+fn is_ukr_vowel(c: char) -> bool {
+    matches!(
+        c,
+        'а' | 'е' | 'є' | 'и' | 'і' | 'ї' | 'о' | 'у' | 'ю' | 'я'
+            | 'А' | 'Е' | 'Є' | 'И' | 'І' | 'Ї' | 'О' | 'У' | 'Ю' | 'Я'
+    )
+}
+
+/// Cleans common Windows OCR artifacts on Cyrillic/Ukrainian text (especially when Windows falls back
+/// to the `ru` recognizer if `uk-UA` OCR pack is not installed):
+/// 1. Converts Latin lookalikes (`i`, `I`) inside Cyrillic words to Ukrainian `і`, `І`.
+/// 2. Restores Ukrainian `є` when Russian OCR outputs uppercase `Е`/`Є`/`Э` inside/at the end of a lowercase word
+///    (e.g. `заморожуЕ` -> `заморожує`, `ЗатемнюЕ` -> `Затемнює`, `вмикаЕ` -> `вмикає`, `миттЄво` -> `миттєво`).
+/// 3. Restores Ukrainian `ї` when Russian OCR outputs trailing uppercase `Т` after a vowel
+///    (e.g. `правоТ` -> `правої`, `лівоТ` -> `лівої`).
+/// 4. Normalizes random mid-word OCR capitalization (`МОНіТоріВ` -> `моніторів`).
+/// 5. Restores Ukrainian vowel+`є` combinations (`-уе`, `-юе`, `-ае`, `-яе`, `-іе`, `-еться`, `миттево`).
+pub fn postprocess_ocr_text(text: &str) -> String {
+    if !text.chars().any(is_cyrillic_char) {
+        return text.to_string();
+    }
+
+    let mut out_lines = Vec::new();
+    for line in text.split('\n') {
+        let mut out_tokens = Vec::new();
+        for token in line.split(' ') {
+            out_tokens.push(clean_cyrillic_token(token));
+        }
+        out_lines.push(out_tokens.join(" "));
+    }
+    out_lines.join("\n")
+}
+
+fn clean_cyrillic_token(token: &str) -> String {
+    if token.is_empty() {
+        return String::new();
+    }
+
+    let chars: Vec<char> = token.chars().collect();
+    // Find leading and trailing non-alphanumeric punctuation (quotes, parens, commas, etc.)
+    let start = chars
+        .iter()
+        .position(|c| c.is_alphanumeric())
+        .unwrap_or(chars.len());
+    if start == chars.len() {
+        return token.to_string();
+    }
+    let end = chars
+        .iter()
+        .rposition(|c| c.is_alphanumeric())
+        .map(|i| i + 1)
+        .unwrap_or(start);
+
+    let prefix: String = chars[..start].iter().collect();
+    let suffix: String = chars[end..].iter().collect();
+    let core = &chars[start..end];
+
+    let cyr_count = core.iter().filter(|&&c| is_cyrillic_char(c)).count();
+    if cyr_count == 0 {
+        return token.to_string();
+    }
+
+    let mut word: Vec<char> = core.to_vec();
+
+    // 1. Replace Latin lookalikes inside predominantly Cyrillic words
+    if cyr_count >= 2 {
+        for i in 0..word.len() {
+            match word[i] {
+                'i' => word[i] = 'і',
+                'I' => word[i] = 'І',
+                _ => {}
+            }
+        }
+    }
+
+    let has_lower_cyr = word
+        .iter()
+        .any(|&c| is_cyrillic_char(c) && c.is_lowercase());
+
+    // 2. If word has lowercase Cyrillic letters, fix Russian-OCR-on-Ukrainian `Т` -> `ї` and `Е`/`Є`/`Э` -> `є`
+    if has_lower_cyr && word.len() >= 3 {
+        // Trailing uppercase `Т` after a vowel in a lowercase word (`правоТ` -> `правої`)
+        let last_idx = word.len() - 1;
+        if word[last_idx] == 'Т' && is_ukr_vowel(word[last_idx - 1]) {
+            word[last_idx] = 'ї';
+        }
+
+        // Mid-word or word-final uppercase `Е`, `Є`, `Э` in a word that has lowercase letters
+        // (`заморожуЕ` -> `заморожує`, `ЗатемнюЕ` -> `Затемнює`, `миттЄво` -> `миттєво`, `виреЄться` -> `виреється`)
+        for i in 1..word.len() {
+            if matches!(word[i], 'Е' | 'Є' | 'Э') {
+                word[i] = 'є';
+            }
+        }
+    }
+
+    // 3. Fix random mid-word OCR uppercase in Cyrillic words (`МОНіТоріВ` -> `моніторів`)
+    let has_lower = word.iter().any(|c| c.is_lowercase());
+    let has_upper_after_first = word.iter().skip(1).any(|c| c.is_uppercase());
+    if has_lower && has_upper_after_first {
+        let first_upper = word[0].is_uppercase();
+        let second_upper = word.get(1).map(|c| c.is_uppercase()).unwrap_or(false);
+        if first_upper && !second_upper {
+            // Keep Titlecase (first letter uppercase, rest lowercase)
+            for c in word.iter_mut().skip(1) {
+                for lc in c.to_lowercase() {
+                    *c = lc;
+                    break;
+                }
+            }
+        } else {
+            // Multiple leading/mid uppercase letters mixed with lowercase (`МОНіТоріВ`) -> all lowercase
+            for c in word.iter_mut() {
+                for lc in c.to_lowercase() {
+                    *c = lc;
+                    break;
+                }
+            }
+        }
+    }
+
+    // 4. Restore Ukrainian orthographic vowel + `е`/`э` -> vowel + `є`
+    let mut w_str: String = word.into_iter().collect();
+    for (bad, good) in [
+        ("ае", "ає"),
+        ("яе", "яє"),
+        ("уе", "ує"),
+        ("юе", "ює"),
+        ("іе", "іє"),
+        ("їе", "їє"),
+        ("аэ", "ає"),
+        ("яэ", "яє"),
+        ("уэ", "ує"),
+        ("юэ", "ює"),
+        ("іэ", "іє"),
+        ("еться", "ється"),
+        ("миттев", "миттєв"),
+        ("Миттев", "Миттєв"),
+    ] {
+        if w_str.contains(bad) {
+            w_str = w_str.replace(bad, good);
+        }
+    }
+
+    format!("{}{}{}", prefix, w_str, suffix)
+}
+
 /// Runs Windows Media OCR on raw BGRA8 pixel buffer of size `width` x `height`.
 pub fn recognize_bgra_pixels(
     bgra: &[u8],
@@ -440,15 +599,15 @@ pub fn recognize_bgra_pixels(
     if is_auto && looks_like_misread_cyrillic(&primary_text) {
         if let Some(cyr_engine) = try_create_cyrillic_ocr_engine() {
             if let Ok(cyr_text) = run_engine_on_bitmap(&cyr_engine, &bitmap) {
-                let has_cyrillic = cyr_text.chars().any(|c| ('\u{0400}'..='\u{04FF}').contains(&c));
+                let has_cyrillic = cyr_text.chars().any(is_cyrillic_char);
                 if !cyr_text.trim().is_empty() && has_cyrillic {
-                    return Ok(cyr_text);
+                    return Ok(postprocess_ocr_text(&cyr_text));
                 }
             }
         }
     }
 
-    Ok(primary_text)
+    Ok(postprocess_ocr_text(&primary_text))
 }
 
 /// Captures a screen rectangle and performs OCR on it in one step.
@@ -605,6 +764,19 @@ mod tests {
         assert!(looks_like_misread_cyrillic("npBiT CBiT"));
         assert!(!looks_like_misread_cyrillic("Louise Translator OCR Test"));
         assert!(!looks_like_misread_cyrillic("Hello world, this is normal English text!"));
+    }
+
+    #[test]
+    fn test_postprocess_ocr_text() {
+        let raw = "Миттево «заморожуЕ» поточний кадр усього екрана (пттримуЕ МОНіТоріВ) до появи оверлею.\nЗатемнюЕ екран на 55% і вмикаЕ. Натискання Esc або правоТ кнопки скасовуЕ.";
+        let cleaned = postprocess_ocr_text(raw);
+        assert!(cleaned.contains("Миттєво"), "got: {}", cleaned);
+        assert!(cleaned.contains("«заморожує»"), "got: {}", cleaned);
+        assert!(cleaned.contains("(пттримує моніторів)"), "got: {}", cleaned);
+        assert!(cleaned.contains("Затемнює"), "got: {}", cleaned);
+        assert!(cleaned.contains("вмикає."), "got: {}", cleaned);
+        assert!(cleaned.contains("правої"), "got: {}", cleaned);
+        assert!(cleaned.contains("скасовує."), "got: {}", cleaned);
     }
 
     #[test]

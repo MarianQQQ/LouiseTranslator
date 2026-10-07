@@ -206,98 +206,105 @@ fn trigger_screen_ocr(app_weak: slint::Weak<AppWindow>) {
     }
 
     let was_shown = is_window_shown();
-    let state_pair: Arc<Mutex<(String, String)>> =
-        Arc::new(Mutex::new(("auto".to_string(), "uk".to_string())));
-    let state_pair_clone = state_pair.clone();
-    let app_w_prep = app_weak.clone();
 
     let _ = slint::invoke_from_event_loop(move || {
-        if let Some(app) = app_w_prep.upgrade() {
-            let s_lang = app.get_src_lang().to_string();
-            let u_lang = app.get_ui_lang().to_string();
-            if let Ok(mut guard) = state_pair_clone.lock() {
-                *guard = (s_lang, u_lang);
-            }
+        let mut pref_lang = "auto".to_string();
+        let mut ui_lang = "uk".to_string();
+        let mut prev_pos: Option<(i32, i32)> = None;
+
+        if let Some(app) = app_weak.upgrade() {
+            pref_lang = app.get_src_lang().to_string();
+            ui_lang = app.get_ui_lang().to_string();
             if was_shown {
-                hide_app_window(&app);
+                // Move off-screen (-32000, -32000) and hide synchronously on the UI thread
+                // BEFORE spawning the screen capture thread so DWM fade-out never appears on screen
+                prev_pos = Some(hide_app_window_for_snip(&app));
             }
         }
-    });
 
-    std::thread::spawn(move || {
-        // If the translator window was open, wait briefly so it disappears before screen snapshot
-        if was_shown {
-            std::thread::sleep(Duration::from_millis(120));
-        }
+        let app_weak_bg = app_weak.clone();
+        std::thread::spawn(move || {
+            // Wait 50ms (~3 VSync frames) after off-screen move so DWM compositor has flushed the frame
+            if was_shown {
+                std::thread::sleep(Duration::from_millis(50));
+            }
 
-        let snip_res = run_snipping_overlay();
-        let (pref_lang, ui_lang) = state_pair
-            .lock()
-            .map(|g| g.clone())
-            .unwrap_or_else(|_| ("auto".to_string(), "uk".to_string()));
-        let is_en = ui_lang == "en";
+            let snip_res = run_snipping_overlay();
+            let is_en = ui_lang == "en";
 
-        match snip_res {
-            Ok(Some(snip)) => {
-                match recognize_bgra_pixels(&snip.bgra, snip.width, snip.height, Some(&pref_lang)) {
-                    Ok(recognized) => {
-                        let cleaned = recognized.trim().to_string();
-                        if !cleaned.is_empty() {
-                            present_and_translate_text(app_weak.clone(), cleaned);
-                        } else {
-                            let app_w = app_weak.clone();
+            match snip_res {
+                Ok(Some(snip)) => {
+                    match recognize_bgra_pixels(&snip.bgra, snip.width, snip.height, Some(&pref_lang)) {
+                        Ok(recognized) => {
+                            let cleaned = recognized.trim().to_string();
+                            if !cleaned.is_empty() {
+                                present_and_translate_text(app_weak_bg.clone(), cleaned);
+                            } else {
+                                let app_w = app_weak_bg.clone();
+                                let _ = slint::invoke_from_event_loop(move || {
+                                    if let Some(app) = app_w.upgrade() {
+                                        if let Some((px, py)) = prev_pos {
+                                            app.window().set_position(slint::PhysicalPosition::new(px, py));
+                                        } else {
+                                            position_window_at_cursor(&app);
+                                        }
+                                        show_app_window(&app);
+                                    }
+                                });
+                                let msg = if is_en {
+                                    "⚠️ No text detected in the selected screen area".to_string()
+                                } else {
+                                    "⚠️ На виділеній ділянці екрана текст не знайдено".to_string()
+                                };
+                                show_toast(app_weak_bg, msg, "warning", 3500);
+                            }
+                        }
+                        Err(err) => {
+                            let app_w = app_weak_bg.clone();
                             let _ = slint::invoke_from_event_loop(move || {
                                 if let Some(app) = app_w.upgrade() {
+                                    if let Some((px, py)) = prev_pos {
+                                        app.window().set_position(slint::PhysicalPosition::new(px, py));
+                                    } else {
+                                        position_window_at_cursor(&app);
+                                    }
                                     show_app_window(&app);
-                                    position_window_at_cursor(&app);
                                 }
                             });
                             let msg = if is_en {
-                                "⚠️ No text detected in the selected screen area".to_string()
+                                format!("⚠️ OCR error: {}", err)
                             } else {
-                                "⚠️ На виділеній ділянці екрана текст не знайдено".to_string()
+                                format!("⚠️ Помилка OCR: {}", err)
                             };
-                            show_toast(app_weak, msg, "warning", 3500);
+                            show_toast(app_weak_bg, msg, "error", 4000);
                         }
                     }
-                    Err(err) => {
-                        let app_w = app_weak.clone();
+                }
+                Ok(None) => {
+                    // Cancelled by user (Escape or Right-Click): restore window to its exact previous position
+                    if was_shown {
+                        let app_w = app_weak_bg.clone();
                         let _ = slint::invoke_from_event_loop(move || {
                             if let Some(app) = app_w.upgrade() {
+                                if let Some((px, py)) = prev_pos {
+                                    app.window().set_position(slint::PhysicalPosition::new(px, py));
+                                }
                                 show_app_window(&app);
-                                position_window_at_cursor(&app);
+                                app.invoke_focus_input();
                             }
                         });
-                        let msg = if is_en {
-                            format!("⚠️ OCR error: {}", err)
-                        } else {
-                            format!("⚠️ Помилка OCR: {}", err)
-                        };
-                        show_toast(app_weak, msg, "error", 4000);
                     }
                 }
-            }
-            Ok(None) => {
-                // Cancelled by user (Escape or Right-Click): restore window if it was previously open
-                if was_shown {
-                    let app_w = app_weak.clone();
-                    let _ = slint::invoke_from_event_loop(move || {
-                        if let Some(app) = app_w.upgrade() {
-                            show_app_window(&app);
-                            app.invoke_focus_input();
-                        }
-                    });
+                Err(err) => {
+                    let msg = if is_en {
+                        format!("⚠️ Screen capture failed: {}", err)
+                    } else {
+                        format!("⚠️ Не вдалося захопити екран: {}", err)
+                    };
+                    show_toast(app_weak_bg, msg, "error", 4000);
                 }
             }
-            Err(err) => {
-                let msg = if is_en {
-                    format!("⚠️ Screen capture failed: {}", err)
-                } else {
-                    format!("⚠️ Не вдалося захопити екран: {}", err)
-                };
-                show_toast(app_weak, msg, "error", 4000);
-            }
-        }
+        });
     });
 }
 
@@ -1433,6 +1440,11 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
             app.window().set_position(slint::PhysicalPosition::new(x, y));
         }
     }
+
+    // Pre-warm Windows Media OCR engines in the background so the very first Alt+S is instant
+    std::thread::spawn(|| {
+        warmup_ocr_engines();
+    });
 
     // Start in background mode: window is hidden in system tray and waits for Alt+X / Alt+C or tray click
     log("Started in background tray mode: staying hidden in system tray until invoked.");
