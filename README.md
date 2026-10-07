@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://github.com/MarianQQQ/LouiseTranslator">
-    <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=16&duration=3000&pause=1000&color=00C0F0&center=true&vCenter=true&width=620&lines=Discreet%2C+keyboard-first+instant+desktop+translator.;Highlight+any+text+%2B+Alt%2BC+%E2%86%92+Instant+translation.;Dual-Engine%3A+DeepL+Neural+AI+%2B+Google+Fallback.;Crafted+with+pure+Rust+%26+Slint+UI+(~60+MB+RAM)." alt="Louise Typing Animation" />
+    <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=16&duration=3000&pause=1000&color=00C0F0&center=true&vCenter=true&width=620&lines=Discreet%2C+keyboard-first+instant+desktop+translator.;Highlight+text+%2B+Alt%2BC+%E2%86%92+Instant+translation.;Screen+OCR+%2B+Alt%2BS+%E2%86%92+Snip+any+image%2C+video%2C+PDF.;Dual-Engine%3A+DeepL+Neural+AI+%2B+Google+Fallback.;Crafted+with+pure+Rust+%26+Slint+UI+(~60+MB+RAM)." alt="Louise Typing Animation" />
   </a>
 </p>
 
@@ -17,6 +17,7 @@
 [![Slint UI](https://img.shields.io/badge/Slint_UI-v1.18-00C0F0.svg?style=for-the-badge&logo=qt)](https://slint.dev/)
 [![Windows](https://img.shields.io/badge/Platform-Windows_10_%7C_11-0078D6.svg?style=for-the-badge&logo=windows)](https://microsoft.com)
 [![DeepL](https://img.shields.io/badge/DeepL-Neural_AI_Supported-00b4d8.svg?style=for-the-badge)](https://www.deepl.com/)
+[![Windows OCR](https://img.shields.io/badge/Windows_OCR-Offline_%26_Native-7928ca.svg?style=for-the-badge&logo=windows)](https://learn.microsoft.com/en-us/uwp/api/windows.media.ocr)
 [![License](https://img.shields.io/badge/License-MIT-22c55e.svg?style=for-the-badge)](LICENSE)
 [![Privacy](https://img.shields.io/badge/Privacy-100%25_Local_%26_Zero_Telemetry-a855f7.svg?style=for-the-badge)](#-the-philosophy-behind-louise)
 
@@ -33,7 +34,7 @@
 
 <br>
 
-[**The Philosophy**](#-the-philosophy-behind-louise) • [**Interface Showcase**](#-interface-showcase) • [**Key Features**](#-key-features) • [**Dual-Engine Architecture**](#-dual-engine-architecture) • [**Shortcuts**](#-shortcuts-cheatsheet) • [**System Architecture**](#-system-architecture) • [**Quick Start**](#-quick-start--build)
+[**The Philosophy**](#-the-philosophy-behind-louise) • [**Interface Showcase**](#-interface-showcase) • [**Key Features**](#-key-features) • [**Screen OCR & Language Packs**](#-screen-ocr--windows-language-packs) • [**Dual-Engine Architecture**](#-dual-engine-architecture) • [**Shortcuts**](#-shortcuts-cheatsheet) • [**System Architecture**](#-system-architecture) • [**Quick Start**](#-quick-start--build)
 
 </div>
 
@@ -82,7 +83,7 @@
   <img src="assets/ui_settings.png" alt="Louise Priority Languages Settings" width="47%" style="border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);" />
 </p>
 <p align="center">
-  <i>Left: Minimalist Dark UI with Auto-detect, DeepL ⚡ badge, and inline actions. Right: Fast Priority Languages customization with SVG flags.</i>
+  <i>Left: Minimalist Dark UI with Auto-detect, OCR viewfinder button, DeepL ⚡ badge, and inline actions. Right: Fast Priority Languages customization with SVG flags.</i>
 </p>
 
 ---
@@ -90,7 +91,12 @@
 ## ✨ Key Features
 
 - **⚡ Instant Selection Capture (`Alt + C`)**:
-  Highlight foreign text in any Windows app (browser, Discord, IDE, PDF reader, Slack) and hit `Alt + C`. Louise appears next to your mouse with zero delay.
+  Highlight foreign text in any Windows app (browser, Discord, IDE, PDF reader, Slack) and hit `Alt + C`. Louise appears next to your mouse with zero delay. If no text is selected, Louise discreetly remains silent without popping up empty windows.
+- **📷 Offline Screen OCR Capture (`Alt + S` or In-App `OCR · Alt+S` Button)**:
+  Translate text locked in images, YouTube videos, games, scanned PDFs, slides, or protected web pages. Hit `Alt + S` to freeze your multi-monitor screen, drag a selection box, and Louise instantly extracts and translates the text using offline, hardware-accelerated **Windows Media OCR**.
+  - **Zero-Ghosting Instant Hide**: Louise teleports off-screen in 0ms before taking the screen snapshot, ensuring its own window never obscures your snip.
+  - **Background Engine Warmup**: OCR libraries and language models pre-initialize quietly upon startup, making snips instantaneous.
+  - **Smart Post-Processing**: Automatically normalizes mixed casing and corrects Cyrillic/Ukrainian character substitutions (`є`, `і`, `ї`, `ґ`).
 - **🪟 Instant Window Toggle (`Alt + X`)**:
   Hit `Alt + X` to summon Louise near your cursor for manual input, or hit `Alt + X` again while open to instantly hide it back to tray.
 - **🔄 In-Place Paste Replacement**:
@@ -108,13 +114,74 @@
 - **🖤 Bespoke Monochrome Dark Palette**:
   Deep `#101010` background, subtle borders, high-contrast typography, JetBrains Mono font, and buttery 180+ Hz zero-dead-zone window dragging.
 - **⌨️ Fully Customizable Hotkeys with Layout Agility**:
-  Separate customization for selection translation and window toggle with release-to-commit key recording. Seamlessly supports both English and Ukrainian/Cyrillic keyboard layouts across all shortcuts including in-app <kbd>Ctrl</kbd>+<kbd>C</kbd>, <kbd>Ctrl</kbd>+<kbd>V</kbd>, <kbd>Ctrl</kbd>+<kbd>A</kbd>, and <kbd>Ctrl</kbd>+<kbd>X</kbd>.
+  Separate customization for selection translation, screen OCR, and window toggle with release-to-commit key recording. Seamlessly supports both English and Ukrainian/Cyrillic keyboard layouts across all shortcuts including in-app <kbd>Ctrl</kbd>+<kbd>C</kbd>, <kbd>Ctrl</kbd>+<kbd>V</kbd>, <kbd>Ctrl</kbd>+<kbd>A</kbd>, and <kbd>Ctrl</kbd>+<kbd>X</kbd>.
 - **🚀 Native Rust & Slint Performance**:
   No Chromium, no Electron, no JavaScript runtime. Tiny memory footprint (~60 MB RAM) and sub-15ms cold start.
 
 <p align="center">
   <img src="assets/divider.svg" width="60%" />
 </p>
+
+---
+
+## 📷 Screen OCR & Windows Language Packs
+
+Louise utilizes native **Windows.Media.Ocr** APIs directly from the Windows OS. This delivers **100% offline, zero-latency, private recognition** without consuming any cloud tokens.
+
+### 📥 Installing OCR Language Packs for Windows
+
+Windows ships with your system display languages by default. If you frequently translate text from images in specific languages (such as Ukrainian, Polish, German, Japanese, etc.), you can install the official Microsoft OCR models in seconds.
+
+#### Quick Method: PowerShell (Run as Administrator)
+
+Open **PowerShell as Administrator** and run the one-line command for your desired language:
+
+```powershell
+# 🇺🇦 Ukrainian OCR
+Add-WindowsCapability -Online -Name "Language.OCR~~~uk-UA~0.0.1.0"
+
+# 🇵🇱 Polish OCR
+Add-WindowsCapability -Online -Name "Language.OCR~~~pl-PL~0.0.1.0"
+
+# 🇩🇪 German OCR
+Add-WindowsCapability -Online -Name "Language.OCR~~~de-DE~0.0.1.0"
+
+# 🇫🇷 French OCR
+Add-WindowsCapability -Online -Name "Language.OCR~~~fr-FR~0.0.1.0"
+
+# 🇪🇸 Spanish OCR
+Add-WindowsCapability -Online -Name "Language.OCR~~~es-ES~0.0.1.0"
+
+# 🇮🇹 Italian OCR
+Add-WindowsCapability -Online -Name "Language.OCR~~~it-IT~0.0.1.0"
+
+# 🇯🇵 Japanese OCR
+Add-WindowsCapability -Online -Name "Language.OCR~~~ja-JP~0.0.1.0"
+
+# 🇨🇳 Chinese (Simplified) OCR
+Add-WindowsCapability -Online -Name "Language.OCR~~~zh-CN~0.0.1.0"
+
+# 🇰🇷 Korean OCR
+Add-WindowsCapability -Online -Name "Language.OCR~~~ko-KR~0.0.1.0"
+
+# 🇺🇸 English (US) OCR
+Add-WindowsCapability -Online -Name "Language.OCR~~~en-US~0.0.1.0"
+```
+
+#### How to Check Installed OCR Languages
+
+Run this command in PowerShell to inspect which OCR packs are currently available on your PC:
+
+```powershell
+Get-WindowsCapability -Online | Where-Object { $_.Name -like "Language.OCR*" -and $_.State -eq "Installed" } | Select-Object Name
+```
+
+#### Alternative: Windows Settings GUI
+
+1. Open **Windows Settings** (`Win + I`) → **Time & Language** → **Language & region**.
+2. Find the desired language in the list (or click **Add a language**).
+3. Click the **...** menu next to the language → **Language options**.
+4. Under **Language features**, locate **Optical Character Recognition (OCR)** and click **Download / Install**.
 
 ---
 
@@ -154,11 +221,12 @@
 | Key Combination | Action | Scope | Description |
 | :---: | :--- | :---: | :--- |
 | <kbd>Alt</kbd> + <kbd>C</kbd> | **Translate Selection** | Global | Primary hotkey; captures highlighted text and opens Louise near mouse |
-| <kbd>Alt</kbd> + <kbd>X</kbd> | **Toggle Window** | Global | Opens or closes Louise near cursor preserving current text (instant toggle) |
+| <kbd>Alt</kbd> + <kbd>S</kbd> | **Screen OCR Snip** | Global | Freezes screen to snip and extract text from images, videos, games, locked PDFs |
+| <kbd>Alt</kbd> + <kbd>X</kbd> | **Toggle Window** | Global | Opens or closes Louise near cursor for direct typing (instant toggle) |
 | <kbd>Ctrl</kbd> + <kbd>Enter</kbd> | **Translate Input** | In-App | Instantly triggers translation for manually typed source text |
 | <kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>V</kbd> / <kbd>A</kbd> / <kbd>X</kbd> | **Clipboard Actions** | In-App | Full bidirectional copy/paste working in both English and Ukrainian layouts |
-| <kbd>Escape</kbd> | **Dismiss to Tray** | In-App | Silently hides Louise window back to the system tray |
-| <kbd>Right Click</kbd> | **Context Menu** | In-App | Opens contextual menu for Copy, Paste, and Clear |
+| <kbd>Escape</kbd> | **Dismiss to Tray / Cancel Snip** | In-App / OCR | Silently hides Louise window back to tray, or cancels active screen snipping |
+| <kbd>Right Click</kbd> | **Cancel Snip / Context Menu** | In-App / OCR | Right-click cancels snip instantly; inside app opens Copy/Paste/Clear context menu |
 
 </div>
 

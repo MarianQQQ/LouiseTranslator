@@ -10,6 +10,7 @@ pub static ALT_X_ID: AtomicU32 = AtomicU32::new(0);
 pub static ALT_S_ID: AtomicU32 = AtomicU32::new(0);
 pub static CUSTOM_TRANSLATE_ID: AtomicU32 = AtomicU32::new(0);
 pub static CUSTOM_WINDOW_ID: AtomicU32 = AtomicU32::new(0);
+pub static CUSTOM_OCR_ID: AtomicU32 = AtomicU32::new(0);
 pub static CUSTOM_HOTKEY_ID: AtomicU32 = AtomicU32::new(0);
 pub static CUSTOM_ACTION_IS_TOGGLE: AtomicBool = AtomicBool::new(false);
 pub static IS_RECORDING_SHORTCUT: AtomicBool = AtomicBool::new(false);
@@ -90,6 +91,7 @@ pub fn sync_registered_hotkeys(
     ALT_S_ID.store(0, Ordering::Relaxed);
     CUSTOM_TRANSLATE_ID.store(0, Ordering::Relaxed);
     CUSTOM_WINDOW_ID.store(0, Ordering::Relaxed);
+    CUSTOM_OCR_ID.store(0, Ordering::Relaxed);
     CUSTOM_HOTKEY_ID.store(0, Ordering::Relaxed);
     CUSTOM_ACTION_IS_TOGGLE.store(false, Ordering::Relaxed);
     for hk in registered.drain(..) {
@@ -144,8 +146,19 @@ pub fn sync_registered_hotkeys(
         }
     }
 
-    // 3. Screen OCR (Alt+S):
-    if cfg.enable_alt_s {
+    // 3. Screen OCR:
+    // If a custom combination is defined, register it instead of Alt+S
+    if !cfg.custom_ocr_shortcut.trim().is_empty() {
+        if let Some(hk) = parse_custom_hotkey(&cfg.custom_ocr_shortcut) {
+            let id = hk.id();
+            if manager.register(hk).is_ok() {
+                registered.push(hk);
+                CUSTOM_OCR_ID.store(id, Ordering::Relaxed);
+            } else {
+                failed.push(cfg.custom_ocr_shortcut.clone());
+            }
+        }
+    } else if cfg.enable_alt_s {
         let hk = HotKey::new(Some(Modifiers::ALT), Code::KeyS);
         let id = hk.id();
         if manager.register(hk).is_ok() {

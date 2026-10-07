@@ -696,9 +696,12 @@ export component AppWindow inherits Window {
     in-out property <bool> enable-custom-translate: false;
     in-out property <string> custom-window-shortcut: "";
     in-out property <bool> enable-custom-window: false;
+    in-out property <string> custom-ocr-shortcut: "";
+    in-out property <bool> enable-custom-ocr: false;
     in-out property <bool> is-recording-custom: false;
     in-out property <bool> is-recording-translate: false;
     in-out property <bool> is-recording-window: false;
+    in-out property <bool> is-recording-ocr: false;
     in-out property <string> live-recording-text: "";
     in-out property <string> pending-combo: "";
 
@@ -783,6 +786,8 @@ export component AppWindow inherits Window {
     callback custom-translate-toggled(bool);
     callback custom-window-changed(string);
     callback custom-window-toggled(bool);
+    callback custom-ocr-changed(string);
+    callback custom-ocr-toggled(bool);
     callback custom-shortcut-changed(string);
     callback custom-shortcut-toggled(bool);
     callback custom-action-changed(string);
@@ -1002,6 +1007,12 @@ export component AppWindow inherits Window {
             if (root.is-recording-window) {
                 if (event.text == Key.Escape) {
                     root.is-recording-window = false;
+                    return EventResult.accept;
+                }
+            }
+            if (root.is-recording-ocr) {
+                if (event.text == Key.Escape) {
+                    root.is-recording-ocr = false;
                     return EventResult.accept;
                 }
             }
@@ -1279,7 +1290,9 @@ export component AppWindow inherits Window {
                                     }
 
                                     Text {
-                                        text: root.enable-alt-s ? "OCR · Alt+S" : "OCR";
+                                        text: root.enable-custom-ocr && root.custom-ocr-shortcut != ""
+                                            ? ("OCR · " + root.custom-ocr-shortcut)
+                                            : (root.enable-alt-s ? "OCR · Alt+S" : "OCR");
                                         color: ta-ocr.has-hover ? #f1ffff : #a1a1aa;
                                         font-size: 9.5px;
                                         font-family: "JetBrains Mono";
@@ -1572,6 +1585,7 @@ export component AppWindow inherits Window {
                                     clicked => {
                                         root.is-recording-translate = false;
                                         root.is-recording-window = false;
+                                        root.is-recording-ocr = false;
                                         root.live-recording-text = "";
                                         root.recording-state-changed(false);
                                         root.show-settings = false;
@@ -1607,6 +1621,7 @@ export component AppWindow inherits Window {
                                     clicked => {
                                         root.is-recording-translate = false;
                                         root.is-recording-window = false;
+                                        root.is-recording-ocr = false;
                                         root.live-recording-text = "";
                                         root.recording-state-changed(false);
                                         root.settings-tab = 0;
@@ -1634,6 +1649,7 @@ export component AppWindow inherits Window {
                                     clicked => {
                                         root.is-recording-translate = false;
                                         root.is-recording-window = false;
+                                        root.is-recording-ocr = false;
                                         root.live-recording-text = "";
                                         root.recording-state-changed(false);
                                         root.settings-tab = 1;
@@ -1661,6 +1677,7 @@ export component AppWindow inherits Window {
                                     clicked => {
                                         root.is-recording-translate = false;
                                         root.is-recording-window = false;
+                                        root.is-recording-ocr = false;
                                         root.live-recording-text = "";
                                         root.recording-state-changed(false);
                                         root.settings-tab = 2;
@@ -1688,6 +1705,7 @@ export component AppWindow inherits Window {
                                     clicked => {
                                         root.is-recording-translate = false;
                                         root.is-recording-window = false;
+                                        root.is-recording-ocr = false;
                                         root.live-recording-text = "";
                                         root.recording-state-changed(false);
                                         root.settings-tab = 3;
@@ -1832,10 +1850,13 @@ export component AppWindow inherits Window {
                             }
                         }
 
-                        // Tab 1: SHORTCUTS
+                        // Tab 1: SHORTCUTS (NO SCROLL)
                         if root.settings-tab == 1: VerticalLayout {
-                            padding: 14px;
-                            spacing: 8px;
+                            padding-top: 10px;
+                            padding-bottom: 10px;
+                            padding-left: 14px;
+                            padding-right: 14px;
+                            spacing: 7px;
                             alignment: start;
 
                             // 1. Translate selection shortcut card
@@ -1846,12 +1867,15 @@ export component AppWindow inherits Window {
                                 border-radius: 8px;
 
                                 VerticalLayout {
-                                    padding: 12px;
-                                    spacing: 8px;
+                                    padding-top: 9px;
+                                    padding-bottom: 9px;
+                                    padding-left: 12px;
+                                    padding-right: 12px;
+                                    spacing: 6px;
 
                                     // Title and action description
                                     VerticalLayout {
-                                        spacing: 2px;
+                                        spacing: 1.5px;
                                         Text {
                                             text: root.ui-lang == "en" ? "Translate selection" : "Переклад виділеного тексту";
                                             color: #f1ffff; font-family: "JetBrains Mono";
@@ -1861,7 +1885,7 @@ export component AppWindow inherits Window {
                                             text: root.ui-lang == "en"
                                                 ? "Instant popup translation of selected text in any app"
                                                 : "Миттєвий переклад виділеного тексту в будь-якій програмі";
-                                            color: #666666; font-family: "JetBrains Mono"; font-size: 10px;
+                                            color: #666666; font-family: "JetBrains Mono"; font-size: 9.5px;
                                         }
                                     }
 
@@ -1871,7 +1895,7 @@ export component AppWindow inherits Window {
 
                                         Rectangle {
                                             horizontal-stretch: 1;
-                                            height: 30px;
+                                            height: 28px;
                                             background: root.is-recording-translate ? #112233 : #141414;
                                             border-color: root.is-recording-translate ? #3388ff : #282828;
                                             border-width: 1px;
@@ -1944,6 +1968,7 @@ export component AppWindow inherits Window {
                                                 clicked => {
                                                     root.is-recording-translate = true;
                                                     root.is-recording-window = false;
+                                                    root.is-recording-ocr = false;
                                                     root.live-recording-text = "";
                                                     root.pending-combo = "";
                                                     root.recording-state-changed(true);
@@ -2033,8 +2058,8 @@ export component AppWindow inherits Window {
                                         }
 
                                         ActionButton {
-                                            width: 86px;
-                                            height: 30px;
+                                            width: 84px;
+                                            height: 28px;
                                             text: root.is-recording-translate
                                                 ? (root.ui-lang == "en" ? "Cancel" : "Скасувати")
                                                 : (root.ui-lang == "en" ? "Change" : "Змінити");
@@ -2042,6 +2067,7 @@ export component AppWindow inherits Window {
                                             clicked => {
                                                 root.is-recording-translate = !root.is-recording-translate;
                                                 root.is-recording-window = false;
+                                                root.is-recording-ocr = false;
                                                 root.live-recording-text = "";
                                                 root.pending-combo = "";
                                                 root.recording-state-changed(root.is-recording-translate);
@@ -2058,7 +2084,7 @@ export component AppWindow inherits Window {
                                         alignment: start;
                                         Text {
                                             text: root.ui-lang == "en" ? "Presets:" : "Швидко:";
-                                            color: #555555; font-family: "JetBrains Mono"; font-size: 10px;
+                                            color: #555555; font-family: "JetBrains Mono"; font-size: 9.5px;
                                             vertical-alignment: center;
                                         }
                                         PresetShortcutBtn {
@@ -2129,12 +2155,15 @@ export component AppWindow inherits Window {
                                 border-radius: 8px;
 
                                 VerticalLayout {
-                                    padding: 12px;
-                                    spacing: 8px;
+                                    padding-top: 9px;
+                                    padding-bottom: 9px;
+                                    padding-left: 12px;
+                                    padding-right: 12px;
+                                    spacing: 6px;
 
                                     // Title and action description
                                     VerticalLayout {
-                                        spacing: 2px;
+                                        spacing: 1.5px;
                                         Text {
                                             text: root.ui-lang == "en" ? "Open / hide window" : "Відкриття / приховання вікна";
                                             color: #f1ffff; font-family: "JetBrains Mono";
@@ -2144,7 +2173,7 @@ export component AppWindow inherits Window {
                                             text: root.ui-lang == "en"
                                                 ? "Toggle Louise Translator window from anywhere"
                                                 : "Швидке відкриття або приховання вікна програми";
-                                            color: #666666; font-family: "JetBrains Mono"; font-size: 10px;
+                                            color: #666666; font-family: "JetBrains Mono"; font-size: 9.5px;
                                         }
                                     }
 
@@ -2154,7 +2183,7 @@ export component AppWindow inherits Window {
 
                                         Rectangle {
                                             horizontal-stretch: 1;
-                                            height: 30px;
+                                            height: 28px;
                                             background: root.is-recording-window ? #112233 : #141414;
                                             border-color: root.is-recording-window ? #3388ff : #282828;
                                             border-width: 1px;
@@ -2227,6 +2256,7 @@ export component AppWindow inherits Window {
                                                 clicked => {
                                                     root.is-recording-window = true;
                                                     root.is-recording-translate = false;
+                                                    root.is-recording-ocr = false;
                                                     root.live-recording-text = "";
                                                     root.pending-combo = "";
                                                     root.recording-state-changed(true);
@@ -2316,8 +2346,8 @@ export component AppWindow inherits Window {
                                         }
 
                                         ActionButton {
-                                            width: 86px;
-                                            height: 30px;
+                                            width: 84px;
+                                            height: 28px;
                                             text: root.is-recording-window
                                                 ? (root.ui-lang == "en" ? "Cancel" : "Скасувати")
                                                 : (root.ui-lang == "en" ? "Change" : "Змінити");
@@ -2325,6 +2355,7 @@ export component AppWindow inherits Window {
                                             clicked => {
                                                 root.is-recording-window = !root.is-recording-window;
                                                 root.is-recording-translate = false;
+                                                root.is-recording-ocr = false;
                                                 root.live-recording-text = "";
                                                 root.pending-combo = "";
                                                 root.recording-state-changed(root.is-recording-window);
@@ -2341,7 +2372,7 @@ export component AppWindow inherits Window {
                                         alignment: start;
                                         Text {
                                             text: root.ui-lang == "en" ? "Presets:" : "Швидко:";
-                                            color: #555555; font-family: "JetBrains Mono"; font-size: 10px;
+                                            color: #555555; font-family: "JetBrains Mono"; font-size: 9.5px;
                                             vertical-alignment: center;
                                         }
                                         PresetShortcutBtn {
@@ -2404,13 +2435,291 @@ export component AppWindow inherits Window {
                                 }
                             }
 
-                            // 3. Screen OCR shortcut toggle (Alt + S)
-                            SettingItem {
-                                title: root.ui-lang == "en" ? "Screen OCR capture (Alt + S)" : "Захоплення тексту з екрана (Alt + S)";
-                                subtitle: root.ui-lang == "en" ? "Select screen area to recognize text from images/videos" : "Виділіть область екрана для розпізнавання тексту з картинок/відео";
-                                checked <=> root.enable-alt-s;
-                                toggled(v) => {
-                                    root.ocr-shortcut-toggled(v);
+                            // 3. Screen OCR shortcut card
+                            Rectangle {
+                                background: #1c1c1c;
+                                border-color: root.is-recording-ocr ? #4488ff : #282828;
+                                border-width: 1px;
+                                border-radius: 8px;
+
+                                VerticalLayout {
+                                    padding-top: 9px;
+                                    padding-bottom: 9px;
+                                    padding-left: 12px;
+                                    padding-right: 12px;
+                                    spacing: 6px;
+
+                                    // Title and action description
+                                    VerticalLayout {
+                                        spacing: 1.5px;
+                                        Text {
+                                            text: root.ui-lang == "en" ? "Screen OCR capture" : "Захоплення тексту з екрана (OCR)";
+                                            color: #f1ffff; font-family: "JetBrains Mono";
+                                            font-size: 11px; font-weight: 700;
+                                        }
+                                        Text {
+                                            text: root.ui-lang == "en"
+                                                ? "Select screen area to extract text from images/videos"
+                                                : "Виділіть область екрана для розпізнавання тексту з картинок/відео";
+                                            color: #666666; font-family: "JetBrains Mono"; font-size: 9.5px;
+                                        }
+                                    }
+
+                                    // Row: shortcut display and recording trigger
+                                    HorizontalLayout {
+                                        spacing: 8px;
+
+                                        Rectangle {
+                                            horizontal-stretch: 1;
+                                            height: 28px;
+                                            background: root.is-recording-ocr ? #112233 : #141414;
+                                            border-color: root.is-recording-ocr ? #3388ff : #282828;
+                                            border-width: 1px;
+                                            border-radius: 6px;
+
+                                            fs-ocr := FocusScope {
+                                                width: 100%;
+                                                height: 100%;
+                                                enabled: root.is-recording-ocr;
+                                                key-pressed(event) => {
+                                                    if event.text == Key.Escape {
+                                                        root.is-recording-ocr = false;
+                                                        root.live-recording-text = "";
+                                                        root.pending-combo = "";
+                                                        root.recording-state-changed(false);
+                                                        return EventResult.accept;
+                                                    }
+                                                    let key = root.normalize-key(event.text);
+                                                    if key != "" {
+                                                        root.pending-combo = root.build-combo(
+                                                            event.modifiers.control,
+                                                            event.modifiers.alt,
+                                                            event.modifiers.shift,
+                                                            event.modifiers.meta,
+                                                            key
+                                                        );
+                                                        root.live-recording-text = root.pending-combo;
+                                                        return EventResult.accept;
+                                                    } else {
+                                                        root.pending-combo = "";
+                                                        root.live-recording-text = root.build-live-modifiers(
+                                                            event.modifiers.control,
+                                                            event.modifiers.alt,
+                                                            event.modifiers.shift,
+                                                            event.modifiers.meta
+                                                        );
+                                                        return EventResult.accept;
+                                                    }
+                                                }
+                                                key-released(event) => {
+                                                    if root.is-recording-ocr {
+                                                        if root.pending-combo != "" {
+                                                            root.custom-ocr-shortcut = root.pending-combo;
+                                                            root.enable-custom-ocr = true;
+                                                            root.enable-alt-s = false;
+                                                            root.is-recording-ocr = false;
+                                                            root.live-recording-text = "";
+                                                            root.recording-state-changed(false);
+                                                            root.custom-ocr-changed(root.custom-ocr-shortcut);
+                                                            root.ocr-shortcut-toggled(false);
+                                                            root.pending-combo = "";
+                                                            return EventResult.accept;
+                                                        } else {
+                                                            root.live-recording-text = root.build-live-modifiers(
+                                                                event.modifiers.control,
+                                                                event.modifiers.alt,
+                                                                event.modifiers.shift,
+                                                                event.modifiers.meta
+                                                            );
+                                                            return EventResult.accept;
+                                                        }
+                                                    }
+                                                    EventResult.reject
+                                                }
+                                            }
+
+                                            TouchArea {
+                                                width: 100%;
+                                                height: 100%;
+                                                clicked => {
+                                                    root.is-recording-ocr = true;
+                                                    root.is-recording-translate = false;
+                                                    root.is-recording-window = false;
+                                                    root.live-recording-text = "";
+                                                    root.pending-combo = "";
+                                                    root.recording-state-changed(true);
+                                                    fs-ocr.focus();
+                                                }
+                                                mouse-cursor: pointer;
+                                            }
+
+                                            HorizontalLayout {
+                                                padding-left: 10px;
+                                                padding-right: 8px;
+                                                alignment: space-between;
+
+                                                HorizontalLayout {
+                                                    spacing: 8px;
+                                                    alignment: start;
+
+                                                    VerticalLayout {
+                                                        alignment: center;
+                                                        Text {
+                                                            text: root.is-recording-ocr
+                                                                ? (
+                                                                    root.live-recording-text != ""
+                                                                        ? ("⏳ " + root.live-recording-text)
+                                                                        : (root.ui-lang == "en" ? "⏳ Press keys on keyboard..." : "⏳ Натисніть клавіші на клавіатурі...")
+                                                                )
+                                                                : (
+                                                                    root.custom-ocr-shortcut != ""
+                                                                        ? root.custom-ocr-shortcut
+                                                                        : "Alt + S"
+                                                                );
+                                                            color: root.is-recording-ocr ? #88ccff : (root.custom-ocr-shortcut != "" ? #00c0f0 : #f1ffff);
+                                                            font-family: "JetBrains Mono";
+                                                            font-size: 11px;
+                                                            font-weight: 700;
+                                                        }
+                                                    }
+
+                                                    if !root.is-recording-ocr: VerticalLayout {
+                                                        alignment: center;
+                                                        Rectangle {
+                                                            height: 16px;
+                                                            border-radius: 3px;
+                                                            background: root.custom-ocr-shortcut != "" ? #00c0f022 : #ffffff14;
+                                                            HorizontalLayout {
+                                                                padding-left: 5px; padding-right: 5px;
+                                                                Text {
+                                                                    text: root.custom-ocr-shortcut != ""
+                                                                        ? (root.ui-lang == "en" ? "Custom" : "Власна")
+                                                                        : (root.ui-lang == "en" ? "Default" : "Стандартна");
+                                                                    color: root.custom-ocr-shortcut != "" ? #00c0f0 : #888888;
+                                                                    font-family: "JetBrains Mono"; font-size: 9px; font-weight: 600;
+                                                                    vertical-alignment: center;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+
+                                                if root.custom-ocr-shortcut != "" && !root.is-recording-ocr: VerticalLayout {
+                                                    alignment: center;
+                                                    Rectangle {
+                                                        width: 20px; height: 20px; border-radius: 4px;
+                                                        background: clear-ocr-btn.has-hover ? #ffffff22 : transparent;
+                                                        clear-ocr-btn := TouchArea {
+                                                            clicked => {
+                                                                root.custom-ocr-shortcut = "";
+                                                                root.enable-custom-ocr = false;
+                                                                root.enable-alt-s = true;
+                                                                root.is-recording-ocr = false;
+                                                                root.live-recording-text = "";
+                                                                root.pending-combo = "";
+                                                                root.recording-state-changed(false);
+                                                                root.custom-ocr-changed("");
+                                                                root.ocr-shortcut-toggled(true);
+                                                            }
+                                                            mouse-cursor: pointer;
+                                                        }
+                                                        Text {
+                                                            text: "✕"; color: #888888;
+                                                            font-family: "JetBrains Mono"; font-size: 11px; font-weight: 700;
+                                                            horizontal-alignment: center; vertical-alignment: center;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        ActionButton {
+                                            width: 84px;
+                                            height: 28px;
+                                            text: root.is-recording-ocr
+                                                ? (root.ui-lang == "en" ? "Cancel" : "Скасувати")
+                                                : (root.ui-lang == "en" ? "Change" : "Змінити");
+                                            is-primary: root.is-recording-ocr;
+                                            clicked => {
+                                                root.is-recording-ocr = !root.is-recording-ocr;
+                                                root.is-recording-translate = false;
+                                                root.is-recording-window = false;
+                                                root.live-recording-text = "";
+                                                root.pending-combo = "";
+                                                root.recording-state-changed(root.is-recording-ocr);
+                                                if root.is-recording-ocr {
+                                                    fs-ocr.focus();
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // Quick preset choices
+                                    HorizontalLayout {
+                                        spacing: 5px;
+                                        alignment: start;
+                                        Text {
+                                            text: root.ui-lang == "en" ? "Presets:" : "Швидко:";
+                                            color: #555555; font-family: "JetBrains Mono"; font-size: 9.5px;
+                                            vertical-alignment: center;
+                                        }
+                                        PresetShortcutBtn {
+                                            label: "Alt+Shift+S";
+                                            clicked => {
+                                                root.custom-ocr-shortcut = "Alt+Shift+S";
+                                                root.enable-custom-ocr = true;
+                                                root.enable-alt-s = false;
+                                                root.is-recording-ocr = false;
+                                                root.live-recording-text = "";
+                                                root.pending-combo = "";
+                                                root.recording-state-changed(false);
+                                                root.custom-ocr-changed("Alt+Shift+S");
+                                                root.ocr-shortcut-toggled(false);
+                                            }
+                                        }
+                                        PresetShortcutBtn {
+                                            label: "Ctrl+Shift+S";
+                                            clicked => {
+                                                root.custom-ocr-shortcut = "Ctrl+Shift+S";
+                                                root.enable-custom-ocr = true;
+                                                root.enable-alt-s = false;
+                                                root.is-recording-ocr = false;
+                                                root.live-recording-text = "";
+                                                root.pending-combo = "";
+                                                root.recording-state-changed(false);
+                                                root.custom-ocr-changed("Ctrl+Shift+S");
+                                                root.ocr-shortcut-toggled(false);
+                                            }
+                                        }
+                                        PresetShortcutBtn {
+                                            label: "Ctrl+Alt+S";
+                                            clicked => {
+                                                root.custom-ocr-shortcut = "Ctrl+Alt+S";
+                                                root.enable-custom-ocr = true;
+                                                root.enable-alt-s = false;
+                                                root.is-recording-ocr = false;
+                                                root.live-recording-text = "";
+                                                root.pending-combo = "";
+                                                root.recording-state-changed(false);
+                                                root.custom-ocr-changed("Ctrl+Alt+S");
+                                                root.ocr-shortcut-toggled(false);
+                                            }
+                                        }
+                                        PresetShortcutBtn {
+                                            label: "Alt+D";
+                                            clicked => {
+                                                root.custom-ocr-shortcut = "Alt+D";
+                                                root.enable-custom-ocr = true;
+                                                root.enable-alt-s = false;
+                                                root.is-recording-ocr = false;
+                                                root.live-recording-text = "";
+                                                root.pending-combo = "";
+                                                root.recording-state-changed(false);
+                                                root.custom-ocr-changed("Alt+D");
+                                                root.ocr-shortcut-toggled(false);
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -2943,11 +3252,15 @@ export component AppWindow inherits Window {
                             key: root.custom-window-shortcut;
                             desc: root.ui-lang == "en" ? "Toggle window (custom)" : "Відкрити / сховати (власна)";
                         }
-                        if root.enable-alt-s: HelpRow {
+                        if root.enable-custom-ocr && root.custom-ocr-shortcut != "": HelpRow {
+                            key: root.custom-ocr-shortcut;
+                            desc: root.ui-lang == "en" ? "Screen OCR (custom)" : "OCR з екрана (власна)";
+                        }
+                        if root.enable-alt-s && (!root.enable-custom-ocr || root.custom-ocr-shortcut == ""): HelpRow {
                             key: "Alt+S";
                             desc: root.ui-lang == "en" ? "Screen OCR (text from image/video)" : "OCR з екрана (текст із картинки/відео)";
                         }
-                        if !root.enable-alt-c && !root.enable-alt-x && !root.enable-alt-s && (!root.enable-custom-translate || root.custom-translate-shortcut == "") && (!root.enable-custom-window || root.custom-window-shortcut == ""): HelpRow {
+                        if !root.enable-alt-c && !root.enable-alt-x && !root.enable-alt-s && (!root.enable-custom-translate || root.custom-translate-shortcut == "") && (!root.enable-custom-window || root.custom-window-shortcut == "") && (!root.enable-custom-ocr || root.custom-ocr-shortcut == ""): HelpRow {
                             key: "—";
                             desc: root.ui-lang == "en" ? "No capture shortcuts enabled" : "Немає активних шорткатів";
                         }

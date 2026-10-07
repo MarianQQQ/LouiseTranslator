@@ -526,6 +526,139 @@
       transition: opacity 0.2s, color 0.2s;
     }
 
+    .ocr-btn-mock {
+      background: #1c1c1c;
+      border: 1px solid #282828;
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #a1a1aa;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-transform: none;
+    }
+
+    .ocr-btn-mock:hover {
+      background: #262626;
+      border-color: #f1ffff;
+      color: #f1ffff;
+    }
+
+    .ocr-btn-mock.active {
+      background: rgba(0, 192, 240, 0.2);
+      border-color: var(--cyan);
+      color: #f1ffff;
+    }
+
+    /* OCR Language Packs Modal */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal-card {
+      background: #121214;
+      border: 1px solid #282828;
+      border-radius: 12px;
+      max-width: 580px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 24px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-title {
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-close {
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: #888;
+      background: transparent;
+      border: none;
+      line-height: 1;
+    }
+    .modal-close:hover { color: #fff; }
+    .modal-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .ocr-cmd-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ocr-cmd-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #18181b;
+      border: 1px solid #282828;
+      border-radius: 6px;
+      padding: 8px 12px;
+      gap: 8px;
+    }
+    .ocr-cmd-item-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+    .ocr-cmd-name {
+      font-size: 0.74rem;
+      color: #d4d4d8;
+      font-weight: 600;
+    }
+    .ocr-cmd-text {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--cyan);
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .btn-copy-cmd {
+      background: #27272a;
+      border: 1px solid #3f3f46;
+      border-radius: 5px;
+      color: #fff;
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      padding: 4px 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .btn-copy-cmd:hover { background: #3f3f46; border-color: #52525b; }
+    .btn-copy-cmd.copied { background: #15803d; border-color: #22c55e; }
+
     .text-container {
       background: #1c1c1c;
       border: 1px solid #282828;
@@ -792,7 +925,7 @@
         <div class="header-center">
           <div class="badge-pill">
             <span class="dot"></span>
-            DeepL Neural AI ⚡ + Google Fallback
+            DeepL Neural AI ⚡ + Google Fallback + Windows OCR 📷
           </div>
         </div>
 
@@ -821,7 +954,7 @@
           </h1>
 
           <p class="hero-desc">
-            Discreet, keyboard-first desktop translator for Windows. Summoned directly under your mouse with zero window flicker; disappeared into the system tray when done.
+            Discreet, keyboard-first desktop translator for Windows. Instant selection capture (<kbd>Alt+C</kbd>), offline screen OCR (<kbd>Alt+S</kbd>), and deep neural translations with zero cloud latency.
           </p>
 
           <!-- Specs Metrics -->
@@ -831,8 +964,8 @@
               <div class="spec-lbl">RAM Footprint</div>
             </div>
             <div class="spec-card">
-              <div class="spec-val">&lt; 15 ms</div>
-              <div class="spec-lbl">Cold Summon</div>
+              <div class="spec-val">Native OCR</div>
+              <div class="spec-lbl">Zero Cloud Delay</div>
             </div>
             <div class="spec-card">
               <div class="spec-val">100% DPAPI</div>
@@ -902,6 +1035,16 @@
             <div class="field-section">
               <div class="field-header">
                 <span>SOURCE</span>
+                <button class="ocr-btn-mock" id="btnMockOcr" title="Screen OCR Capture (Alt + S)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+                    <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+                    <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+                    <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                  </svg>
+                  <span>OCR · Alt+S</span>
+                </button>
               </div>
               <div class="text-container">
                 <textarea class="text-area-real" id="srcInput" placeholder="Type text here or select on screen...">Language is the first weapon drawn in a conflict, or the first hand extended in understanding.</textarea>
@@ -946,6 +1089,8 @@
         </div>
         <div class="footer-links">
           <a href="https://github.com/MarianQQQ/LouiseTranslator" target="_blank">GitHub Repository</a>
+          <span>•</span>
+          <a href="javascript:void(0)" id="btnOpenOcrModal">Windows OCR Packs</a>
           <span>•</span>
           <a href="https://github.com/MarianQQQ/LouiseTranslator/releases" target="_blank">Releases</a>
           <span>•</span>
@@ -1242,6 +1387,155 @@
       requestAnimationFrame(renderCanvas);
     }
     renderCanvas();
+
+    // OCR Modal Interactivity
+    const ocrModal = document.getElementById('ocrModal');
+    const btnOpenOcrModal = document.getElementById('btnOpenOcrModal');
+    const btnCloseOcrModal = document.getElementById('btnCloseOcrModal');
+
+    btnOpenOcrModal.addEventListener('click', () => {
+      ocrModal.classList.add('show');
+    });
+
+    btnCloseOcrModal.addEventListener('click', () => {
+      ocrModal.classList.remove('show');
+    });
+
+    ocrModal.addEventListener('click', (e) => {
+      if (e.target === ocrModal) {
+        ocrModal.classList.remove('show');
+      }
+    });
+
+    // Copy PowerShell command buttons
+    document.querySelectorAll('.btn-copy-cmd').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cmd = btn.getAttribute('data-cmd');
+        if (cmd) {
+          navigator.clipboard.writeText(cmd);
+          btn.innerText = 'Copied! ✓';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.innerText = 'Copy';
+            btn.classList.remove('copied');
+          }, 1500);
+        }
+      });
+    });
+
+    // Mock OCR Button in Translator window simulation
+    const btnMockOcr = document.getElementById('btnMockOcr');
+    btnMockOcr.addEventListener('click', () => {
+      btnMockOcr.classList.add('active');
+      btnMockOcr.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>Snip captured!</span>
+      `;
+      srcInput.value = "Language is the first weapon drawn in a conflict, or the first hand extended in understanding.";
+      performLiveTranslation();
+      setTimeout(() => {
+        btnMockOcr.classList.remove('active');
+        btnMockOcr.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+            <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+            <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+            <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+          <span>OCR · Alt+S</span>
+        `;
+      }, 1800);
+    });
   </script>
+
+  <!-- Windows OCR Packs Modal -->
+  <div class="modal-backdrop" id="ocrModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>📷</span> Windows OCR Language Packs
+        </div>
+        <button class="modal-close" id="btnCloseOcrModal">&times;</button>
+      </div>
+      <p class="modal-desc">
+        Louise uses 100% native, offline <b>Windows.Media.Ocr</b>. Run <b>PowerShell as Administrator</b> and paste any command below to install official Microsoft language models:
+      </p>
+      <div class="ocr-cmd-list">
+        <div class="ocr-cmd-item">
+          <div class="ocr-cmd-item-left">
+            <span class="ocr-cmd-name">🇺🇦 Ukrainian (Українська)</span>
+            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~uk-UA~0.0.1.0"</span>
+          </div>
+          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~uk-UA~0.0.1.0&quot;">Copy</button>
+        </div>
+        <div class="ocr-cmd-item">
+          <div class="ocr-cmd-item-left">
+            <span class="ocr-cmd-name">🇵🇱 Polish (Polski)</span>
+            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~pl-PL~0.0.1.0"</span>
+          </div>
+          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~pl-PL~0.0.1.0&quot;">Copy</button>
+        </div>
+        <div class="ocr-cmd-item">
+          <div class="ocr-cmd-item-left">
+            <span class="ocr-cmd-name">🇩🇪 German (Deutsch)</span>
+            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~de-DE~0.0.1.0"</span>
+          </div>
+          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~de-DE~0.0.1.0&quot;">Copy</button>
+        </div>
+        <div class="ocr-cmd-item">
+          <div class="ocr-cmd-item-left">
+            <span class="ocr-cmd-name">🇫🇷 French (Français)</span>
+            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~fr-FR~0.0.1.0"</span>
+          </div>
+          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~fr-FR~0.0.1.0&quot;">Copy</button>
+        </div>
+        <div class="ocr-cmd-item">
+          <div class="ocr-cmd-item-left">
+            <span class="ocr-cmd-name">🇪🇸 Spanish (Español)</span>
+            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~es-ES~0.0.1.0"</span>
+          </div>
+          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~es-ES~0.0.1.0&quot;">Copy</button>
+        </div>
+        <div class="ocr-cmd-item">
+          <div class="ocr-cmd-item-left">
+            <span class="ocr-cmd-name">🇮🇹 Italian (Italiano)</span>
+            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~it-IT~0.0.1.0"</span>
+          </div>
+          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~it-IT~0.0.1.0&quot;">Copy</button>
+        </div>
+        <div class="ocr-cmd-item">
+          <div class="ocr-cmd-item-left">
+            <span class="ocr-cmd-name">🇯🇵 Japanese (日本語)</span>
+            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~ja-JP~0.0.1.0"</span>
+          </div>
+          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~ja-JP~0.0.1.0&quot;">Copy</button>
+        </div>
+        <div class="ocr-cmd-item">
+          <div class="ocr-cmd-item-left">
+            <span class="ocr-cmd-name">🇨🇳 Chinese Simplified (简体中文)</span>
+            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~zh-CN~0.0.1.0"</span>
+          </div>
+          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~zh-CN~0.0.1.0&quot;">Copy</button>
+        </div>
+        <div class="ocr-cmd-item">
+          <div class="ocr-cmd-item-left">
+            <span class="ocr-cmd-name">🇰🇷 Korean (한국어)</span>
+            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~ko-KR~0.0.1.0"</span>
+          </div>
+          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~ko-KR~0.0.1.0&quot;">Copy</button>
+        </div>
+        <div class="ocr-cmd-item">
+          <div class="ocr-cmd-item-left">
+            <span class="ocr-cmd-name">🔍 Check Installed OCR Packs</span>
+            <span class="ocr-cmd-text">Get-WindowsCapability -Online | Where-Object { $_.Name -like "Language.OCR*" -and $_.State -eq "Installed" }</span>
+          </div>
+          <button class="btn-copy-cmd" data-cmd="Get-WindowsCapability -Online | Where-Object { $_.Name -like &quot;Language.OCR*&quot; -and $_.State -eq &quot;Installed&quot; }">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

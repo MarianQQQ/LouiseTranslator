@@ -435,13 +435,16 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
         app.set_ui_lang(cfg.ui_lang.clone().into());
         let has_custom_tr = !cfg.custom_translate_shortcut.trim().is_empty();
         let has_custom_win = !cfg.custom_window_shortcut.trim().is_empty();
+        let has_custom_ocr = !cfg.custom_ocr_shortcut.trim().is_empty();
         app.set_enable_alt_c(cfg.enable_alt_c && !has_custom_tr);
         app.set_enable_alt_x(cfg.enable_alt_x && !has_custom_win);
-        app.set_enable_alt_s(cfg.enable_alt_s);
+        app.set_enable_alt_s(cfg.enable_alt_s && !has_custom_ocr);
         app.set_custom_translate_shortcut(cfg.custom_translate_shortcut.clone().into());
         app.set_enable_custom_translate(has_custom_tr);
         app.set_custom_window_shortcut(cfg.custom_window_shortcut.clone().into());
         app.set_enable_custom_window(has_custom_win);
+        app.set_custom_ocr_shortcut(cfg.custom_ocr_shortcut.clone().into());
+        app.set_enable_custom_ocr(has_custom_ocr);
         app.set_active_custom_tab(cfg.custom_action.clone().into());
         app.set_custom_shortcut(cfg.custom_shortcut.clone().into());
         app.set_enable_custom_shortcut(cfg.enable_custom_shortcut);
@@ -598,7 +601,8 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
                 *prev_window_clone.lock().unwrap() = Some(current_fg.0 as isize);
 
                 let alt_s_id = ALT_S_ID.load(Ordering::Relaxed);
-                if alt_s_id != 0 && event.id == alt_s_id {
+                let custom_ocr_id = CUSTOM_OCR_ID.load(Ordering::Relaxed);
+                if (alt_s_id != 0 && event.id == alt_s_id) || (custom_ocr_id != 0 && event.id == custom_ocr_id) {
                     // Release Alt key state in the system
                     unsafe {
                         let cancel_menu = [
@@ -736,6 +740,10 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
         app.on_ocr_shortcut_toggled(move |enabled| {
             let mut cfg = config_clone.lock().unwrap();
             cfg.enable_alt_s = enabled;
+            if enabled {
+                cfg.enable_custom_ocr = false;
+                cfg.custom_ocr_shortcut.clear();
+            }
             cfg.save();
             let mgr = hotkey_mgr_clone.lock().unwrap();
             let mut reg = reg_keys_clone.lock().unwrap();
@@ -958,6 +966,49 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
             cfg.enable_custom_window = enabled;
             if enabled {
                 cfg.enable_alt_x = false;
+            }
+            cfg.save();
+            let mgr = hotkey_mgr_clone.lock().unwrap();
+            let mut reg = reg_keys_clone.lock().unwrap();
+            sync_registered_hotkeys(&mgr, &mut reg, &cfg, app_weak.clone());
+        });
+    }
+
+    // Handler for custom OCR shortcut combination changes
+    {
+        let config_clone = config.clone();
+        let hotkey_mgr_clone = hotkey_manager.clone();
+        let reg_keys_clone = registered_keys.clone();
+        let app_weak = app.as_weak();
+        app.on_custom_ocr_changed(move |combo| {
+            let mut cfg = config_clone.lock().unwrap();
+            let val = combo.to_string();
+            cfg.custom_ocr_shortcut = val.clone();
+            if !val.trim().is_empty() {
+                cfg.enable_custom_ocr = true;
+                cfg.enable_alt_s = false;
+            } else {
+                cfg.enable_custom_ocr = false;
+                cfg.enable_alt_s = true;
+            }
+            cfg.save();
+            let mgr = hotkey_mgr_clone.lock().unwrap();
+            let mut reg = reg_keys_clone.lock().unwrap();
+            sync_registered_hotkeys(&mgr, &mut reg, &cfg, app_weak.clone());
+        });
+    }
+
+    // Handler for toggling custom OCR shortcut
+    {
+        let config_clone = config.clone();
+        let hotkey_mgr_clone = hotkey_manager.clone();
+        let reg_keys_clone = registered_keys.clone();
+        let app_weak = app.as_weak();
+        app.on_custom_ocr_toggled(move |enabled| {
+            let mut cfg = config_clone.lock().unwrap();
+            cfg.enable_custom_ocr = enabled;
+            if enabled {
+                cfg.enable_alt_s = false;
             }
             cfg.save();
             let mgr = hotkey_mgr_clone.lock().unwrap();

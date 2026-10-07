@@ -37,6 +37,10 @@ pub struct AppConfig {
     #[serde(default = "default_false")]
     pub enable_custom_window: bool,
     #[serde(default)]
+    pub custom_ocr_shortcut: String,
+    #[serde(default = "default_false")]
+    pub enable_custom_ocr: bool,
+    #[serde(default)]
     pub custom_shortcut: String,
     #[serde(default = "default_false")]
     pub enable_custom_shortcut: bool,
@@ -78,6 +82,8 @@ impl Default for AppConfig {
             enable_custom_translate: false,
             custom_window_shortcut: String::new(),
             enable_custom_window: false,
+            custom_ocr_shortcut: String::new(),
+            enable_custom_ocr: false,
             custom_shortcut: String::new(),
             enable_custom_shortcut: false,
             custom_action: "translate".to_string(),
