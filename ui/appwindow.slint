@@ -268,6 +268,24 @@ component CloseIcon inherits Path {
     MoveTo { x: 9; y: 1; } LineTo { x: 1; y: 9; }
 }
 
+// Vector viewfinder/scan icon for Screen OCR
+component ScanIcon inherits Path {
+    in property <color> icon-color: #a1a1aa;
+    width: 12px; height: 12px;
+    stroke: root.icon-color; stroke-width: 1.4px;
+    viewbox-x: 0; viewbox-y: 0; viewbox-width: 14; viewbox-height: 14;
+    // Top-left corner
+    MoveTo { x: 1; y: 4.5; } LineTo { x: 1; y: 1; } LineTo { x: 4.5; y: 1; }
+    // Top-right corner
+    MoveTo { x: 9.5; y: 1; } LineTo { x: 13; y: 1; } LineTo { x: 13; y: 4.5; }
+    // Bottom-right corner
+    MoveTo { x: 13; y: 9.5; } LineTo { x: 13; y: 13; } LineTo { x: 9.5; y: 13; }
+    // Bottom-left corner
+    MoveTo { x: 4.5; y: 13; } LineTo { x: 1; y: 13; } LineTo { x: 1; y: 9.5; }
+    // Center scan line
+    MoveTo { x: 3.5; y: 7; } LineTo { x: 10.5; y: 7; }
+}
+
 
 // Header window button (? and ⚙)
 component WindowBtn inherits Rectangle {
@@ -713,6 +731,7 @@ export component AppWindow inherits Window {
     in-out property <bool> close-on-paste: true;
     in-out property <bool> enable-alt-c: true;
     in-out property <bool> enable-alt-x: true;
+    in-out property <bool> enable-alt-s: true;
     in-out property <int> settings-tab: 0;
 
     // Context menu popup
@@ -743,6 +762,8 @@ export component AppWindow inherits Window {
     // Callbacks
     callback refresh-deepl-quota();
     callback translate-requested();
+    callback ocr-requested();
+    callback ocr-shortcut-toggled(bool);
     callback swap-languages();
     callback copy-requested();
     callback paste-back-requested();
@@ -1204,7 +1225,7 @@ export component AppWindow inherits Window {
                     spacing: 4px;
 
                     HorizontalLayout {
-                        height: 16px;
+                        height: 20px;
                         alignment: space-between;
                         HorizontalLayout {
                             spacing: 8px; alignment: start;
@@ -1229,11 +1250,49 @@ export component AppWindow inherits Window {
                                 color: #444444; font-size: 10px;
                                 font-family: "JetBrains Mono"; vertical-alignment: center;
                             }
+                            // Screen OCR trigger pill button
+                            Rectangle {
+                                height: 20px;
+                                border-radius: 4px;
+                                background: ta-ocr.pressed ? #141414 : (ta-ocr.has-hover ? #262626 : #1c1c1c);
+                                border-color: ta-ocr.has-hover ? #f1ffff : #282828;
+                                border-width: 1px;
+                                animate background { duration: 100ms; }
+                                animate border-color { duration: 100ms; }
+
+                                ta-ocr := TouchArea {
+                                    clicked => { root.ocr-requested(); }
+                                    mouse-cursor: pointer;
+                                }
+
+                                HorizontalLayout {
+                                    padding-left: 6px;
+                                    padding-right: 6px;
+                                    spacing: 5px;
+                                    alignment: center;
+
+                                    VerticalLayout {
+                                        alignment: center;
+                                        ScanIcon {
+                                            icon-color: ta-ocr.has-hover ? #f1ffff : #a1a1aa;
+                                        }
+                                    }
+
+                                    Text {
+                                        text: root.enable-alt-s ? "OCR · Alt+S" : "OCR";
+                                        color: ta-ocr.has-hover ? #f1ffff : #a1a1aa;
+                                        font-size: 9.5px;
+                                        font-family: "JetBrains Mono";
+                                        font-weight: 700;
+                                        vertical-alignment: center;
+                                    }
+                                }
+                            }
                         }
                     }
 
                     Rectangle {
-                        height: 174px;
+                        height: 170px;
                         background: #1c1c1c;
                         border-color: ti-src.has-focus ? #f1ffff : #282828;
                         border-width: 1px;
@@ -2345,39 +2404,13 @@ export component AppWindow inherits Window {
                                 }
                             }
 
-                            // 3. Info notice for Ctrl+Enter translation
-                            Rectangle {
-                                height: 44px;
-                                background: #1c1c1c;
-                                border-color: #282828;
-                                border-width: 1px;
-                                border-radius: 8px;
-
-                                HorizontalLayout {
-                                    padding-left: 14px;
-                                    padding-right: 14px;
-                                    alignment: space-between;
-
-                                    VerticalLayout {
-                                        alignment: center;
-                                        Text {
-                                            text: "Ctrl + Enter";
-                                            color: #f1ffff; font-family: "JetBrains Mono";
-                                            font-size: 11px; font-weight: 600;
-                                        }
-                                        Text {
-                                            text: root.ui-lang == "en" ? "Manual translation in source input" : "Ручний переклад у полі введення";
-                                            color: #777777; font-family: "JetBrains Mono"; font-size: 10px;
-                                        }
-                                    }
-
-                                    VerticalLayout {
-                                        alignment: center;
-                                        Text {
-                                            text: root.ui-lang == "en" ? "Built-in" : "Вбудовано";
-                                            color: #88ff88; font-family: "JetBrains Mono"; font-size: 10px; font-weight: 700;
-                                        }
-                                    }
+                            // 3. Screen OCR shortcut toggle (Alt + S)
+                            SettingItem {
+                                title: root.ui-lang == "en" ? "Screen OCR capture (Alt + S)" : "Захоплення тексту з екрана (Alt + S)";
+                                subtitle: root.ui-lang == "en" ? "Select screen area to recognize text from images/videos" : "Виділіть область екрана для розпізнавання тексту з картинок/відео";
+                                checked <=> root.enable-alt-s;
+                                toggled(v) => {
+                                    root.ocr-shortcut-toggled(v);
                                 }
                             }
                         }
@@ -2910,7 +2943,11 @@ export component AppWindow inherits Window {
                             key: root.custom-window-shortcut;
                             desc: root.ui-lang == "en" ? "Toggle window (custom)" : "Відкрити / сховати (власна)";
                         }
-                        if !root.enable-alt-c && !root.enable-alt-x && (!root.enable-custom-translate || root.custom-translate-shortcut == "") && (!root.enable-custom-window || root.custom-window-shortcut == ""): HelpRow {
+                        if root.enable-alt-s: HelpRow {
+                            key: "Alt+S";
+                            desc: root.ui-lang == "en" ? "Screen OCR (text from image/video)" : "OCR з екрана (текст із картинки/відео)";
+                        }
+                        if !root.enable-alt-c && !root.enable-alt-x && !root.enable-alt-s && (!root.enable-custom-translate || root.custom-translate-shortcut == "") && (!root.enable-custom-window || root.custom-window-shortcut == ""): HelpRow {
                             key: "—";
                             desc: root.ui-lang == "en" ? "No capture shortcuts enabled" : "Немає активних шорткатів";
                         }

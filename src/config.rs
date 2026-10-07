@@ -26,6 +26,8 @@ pub struct AppConfig {
     pub enable_alt_c: bool,
     #[serde(default = "default_true")]
     pub enable_alt_x: bool,
+    #[serde(default = "default_true")]
+    pub enable_alt_s: bool,
     #[serde(default)]
     pub custom_translate_shortcut: String,
     #[serde(default = "default_false")]
@@ -71,6 +73,7 @@ impl Default for AppConfig {
             ui_lang: "uk".to_string(),
             enable_alt_c: true,
             enable_alt_x: true,
+            enable_alt_s: true,
             custom_translate_shortcut: String::new(),
             enable_custom_translate: false,
             custom_window_shortcut: String::new(),

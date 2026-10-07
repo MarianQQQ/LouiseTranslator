@@ -108,6 +108,199 @@ fn apply_priority_langs(app: &AppWindow, langs: &[String]) {
     app.set_prio6(get(5));
 }
 
+// Presents captured or OCR-recognized text in the translator window and starts async translation
+fn present_and_translate_text(app_weak: slint::Weak<AppWindow>, captured_text: String) {
+    let _ = slint::invoke_from_event_loop(move || {
+        if let Some(app) = app_weak.upgrade() {
+            let text = captured_text.clone();
+            app.set_src_text(text.clone().into());
+
+            let cur_src = app.get_src_lang().to_string();
+            let target_lang = if cur_src == "auto" {
+                let detected = auto_detect_target_lang(&text);
+                app.set_dst_lang(detected.into());
+                app.set_dst_lang_label(get_lang_label_for(detected, &app.get_ui_lang()).into());
+                let is_en = app.get_ui_lang() == "en";
+                let detected_src = if detected == "en" {
+                    if is_en { "Cyrillic" } else { "Кирилиця" }
+                } else {
+                    if is_en { "Latin" } else { "Латиниця" }
+                };
+                app.set_detected_lang_label(detected_src.into());
+                detected.to_string()
+            } else {
+                app.set_detected_lang_label("".into());
+                app.get_dst_lang().to_string()
+            };
+
+            app.set_status_text("".into());
+            app.set_show_settings(false);
+            show_app_window(&app);
+            position_window_at_cursor(&app);
+            app.invoke_focus_input();
+
+            if !text.trim().is_empty() {
+                app.set_is_loading(true);
+                let app_weak_async = app.as_weak();
+                let s_lang = cur_src.clone();
+                let t_lang = target_lang.clone();
+                let deepl_key = app.get_deepl_key().to_string();
+                let use_deepl = app.get_use_deepl();
+
+                tokio::spawn(async move {
+                    let res = translate_text(&text, &s_lang, &t_lang, &deepl_key, use_deepl).await;
+                    let _ = slint::invoke_from_event_loop(move || {
+                        if let Some(app) = app_weak_async.upgrade() {
+                            app.set_is_loading(false);
+                            let is_en = app.get_ui_lang() == "en";
+                            match res {
+                                Ok((translated, detected_opt, engine_name, fell_back)) => {
+                                    app.set_dst_text(translated.clone().into());
+                                    app.set_engine_label(engine_name.into());
+                                    if fell_back {
+                                        let msg = if is_en {
+                                            "⚠️ DeepL unavailable, switched to Google Translate".to_string()
+                                        } else {
+                                            "⚠️ DeepL недоступний, перекладено через Google Translate".to_string()
+                                        };
+                                        show_toast(app_weak_async.clone(), msg, "warning", 3500);
+                                    }
+                                    if s_lang == "auto" {
+                                        if let Some(detected) = detected_opt {
+                                            let label = get_lang_label_for(&detected, &app.get_ui_lang());
+                                            app.set_detected_lang_label(label.into());
+                                        }
+                                    }
+                                    if app.get_auto_copy() {
+                                        if let Ok(mut clip) = Clipboard::new() {
+                                            let _ = clip.set_text(translated);
+                                            let msg = if is_en { "Copied automatically! ✓" } else { "Скопійовано автоматично! ✓" };
+                                            set_status_timed(app_weak_async.clone(), msg.to_string());
+                                        }
+                                    }
+                                    if !fell_back && use_deepl && !deepl_key.trim().is_empty() {
+                                        update_deepl_quota_display(app_weak_async.clone(), deepl_key.clone());
+                                    }
+                                }
+                                Err(err) => {
+                                    let msg = if is_en { format!("Error: {}", err) } else { format!("Помилка: {}", err) };
+                                    app.set_dst_text(msg.into());
+                                }
+                            }
+                        }
+                    });
+                });
+            } else {
+                app.set_dst_text("".into());
+                app.set_detected_lang_label("".into());
+                app.set_is_loading(false);
+            }
+        }
+    });
+}
+
+// Launches the fullscreen snipping overlay and performs Windows Media OCR on the selected region
+fn trigger_screen_ocr(app_weak: slint::Weak<AppWindow>) {
+    if is_snipping_active() {
+        return;
+    }
+
+    let was_shown = is_window_shown();
+    let state_pair: Arc<Mutex<(String, String)>> =
+        Arc::new(Mutex::new(("auto".to_string(), "uk".to_string())));
+    let state_pair_clone = state_pair.clone();
+    let app_w_prep = app_weak.clone();
+
+    let _ = slint::invoke_from_event_loop(move || {
+        if let Some(app) = app_w_prep.upgrade() {
+            let s_lang = app.get_src_lang().to_string();
+            let u_lang = app.get_ui_lang().to_string();
+            if let Ok(mut guard) = state_pair_clone.lock() {
+                *guard = (s_lang, u_lang);
+            }
+            if was_shown {
+                hide_app_window(&app);
+            }
+        }
+    });
+
+    std::thread::spawn(move || {
+        // If the translator window was open, wait briefly so it disappears before screen snapshot
+        if was_shown {
+            std::thread::sleep(Duration::from_millis(120));
+        }
+
+        let snip_res = run_snipping_overlay();
+        let (pref_lang, ui_lang) = state_pair
+            .lock()
+            .map(|g| g.clone())
+            .unwrap_or_else(|_| ("auto".to_string(), "uk".to_string()));
+        let is_en = ui_lang == "en";
+
+        match snip_res {
+            Ok(Some(snip)) => {
+                match recognize_bgra_pixels(&snip.bgra, snip.width, snip.height, Some(&pref_lang)) {
+                    Ok(recognized) => {
+                        let cleaned = recognized.trim().to_string();
+                        if !cleaned.is_empty() {
+                            present_and_translate_text(app_weak.clone(), cleaned);
+                        } else {
+                            let app_w = app_weak.clone();
+                            let _ = slint::invoke_from_event_loop(move || {
+                                if let Some(app) = app_w.upgrade() {
+                                    show_app_window(&app);
+                                    position_window_at_cursor(&app);
+                                }
+                            });
+                            let msg = if is_en {
+                                "⚠️ No text detected in the selected screen area".to_string()
+                            } else {
+                                "⚠️ На виділеній ділянці екрана текст не знайдено".to_string()
+                            };
+                            show_toast(app_weak, msg, "warning", 3500);
+                        }
+                    }
+                    Err(err) => {
+                        let app_w = app_weak.clone();
+                        let _ = slint::invoke_from_event_loop(move || {
+                            if let Some(app) = app_w.upgrade() {
+                                show_app_window(&app);
+                                position_window_at_cursor(&app);
+                            }
+                        });
+                        let msg = if is_en {
+                            format!("⚠️ OCR error: {}", err)
+                        } else {
+                            format!("⚠️ Помилка OCR: {}", err)
+                        };
+                        show_toast(app_weak, msg, "error", 4000);
+                    }
+                }
+            }
+            Ok(None) => {
+                // Cancelled by user (Escape or Right-Click): restore window if it was previously open
+                if was_shown {
+                    let app_w = app_weak.clone();
+                    let _ = slint::invoke_from_event_loop(move || {
+                        if let Some(app) = app_w.upgrade() {
+                            show_app_window(&app);
+                            app.invoke_focus_input();
+                        }
+                    });
+                }
+            }
+            Err(err) => {
+                let msg = if is_en {
+                    format!("⚠️ Screen capture failed: {}", err)
+                } else {
+                    format!("⚠️ Не вдалося захопити екран: {}", err)
+                };
+                show_toast(app_weak, msg, "error", 4000);
+            }
+        }
+    });
+}
+
 
 #[tokio::main]
 async fn main() {
@@ -237,6 +430,7 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
         let has_custom_win = !cfg.custom_window_shortcut.trim().is_empty();
         app.set_enable_alt_c(cfg.enable_alt_c && !has_custom_tr);
         app.set_enable_alt_x(cfg.enable_alt_x && !has_custom_win);
+        app.set_enable_alt_s(cfg.enable_alt_s);
         app.set_custom_translate_shortcut(cfg.custom_translate_shortcut.clone().into());
         app.set_enable_custom_translate(has_custom_tr);
         app.set_custom_window_shortcut(cfg.custom_window_shortcut.clone().into());
@@ -396,6 +590,42 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
                 let current_fg = unsafe { GetForegroundWindow() };
                 *prev_window_clone.lock().unwrap() = Some(current_fg.0 as isize);
 
+                let alt_s_id = ALT_S_ID.load(Ordering::Relaxed);
+                if alt_s_id != 0 && event.id == alt_s_id {
+                    // Release Alt key state in the system
+                    unsafe {
+                        let cancel_menu = [
+                            INPUT {
+                                r#type: INPUT_KEYBOARD,
+                                Anonymous: INPUT_0 {
+                                    ki: KEYBDINPUT {
+                                        wVk: VK_CONTROL,
+                                        wScan: 0,
+                                        dwFlags: Default::default(),
+                                        time: 0,
+                                        dwExtraInfo: 0,
+                                    },
+                                },
+                            },
+                            INPUT {
+                                r#type: INPUT_KEYBOARD,
+                                Anonymous: INPUT_0 {
+                                    ki: KEYBDINPUT {
+                                        wVk: VK_CONTROL,
+                                        wScan: 0,
+                                        dwFlags: KEYEVENTF_KEYUP,
+                                        time: 0,
+                                        dwExtraInfo: 0,
+                                    },
+                                },
+                            },
+                        ];
+                        let _ = SendInput(&cancel_menu, std::mem::size_of::<INPUT>() as i32);
+                    }
+                    trigger_screen_ocr(app_weak.clone());
+                    continue;
+                }
+
                 let alt_x_id = ALT_X_ID.load(std::sync::atomic::Ordering::Relaxed);
                 let custom_win_id = CUSTOM_WINDOW_ID.load(std::sync::atomic::Ordering::Relaxed);
                 let is_open_only = (alt_x_id != 0 && event.id == alt_x_id)
@@ -479,99 +709,32 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
                     continue;
                 }
 
-                let app_weak_inner = app_weak.clone();
-                let _ = slint::invoke_from_event_loop(move || {
-                    if let Some(app) = app_weak_inner.upgrade() {
-                        let text = captured.clone();
-                        app.set_src_text(text.clone().into());
-
-                        let cur_src = app.get_src_lang().to_string();
-                        let target_lang = if cur_src == "auto" {
-                            let detected = auto_detect_target_lang(&text);
-                            app.set_dst_lang(detected.into());
-                            app.set_dst_lang_label(get_lang_label_for(detected, &app.get_ui_lang()).into());
-                            let is_en = app.get_ui_lang() == "en";
-                            let detected_src = if detected == "en" {
-                                if is_en { "Cyrillic" } else { "Кирилиця" }
-                            } else {
-                                if is_en { "Latin" } else { "Латиниця" }
-                            };
-                            app.set_detected_lang_label(detected_src.into());
-                            detected.to_string()
-                        } else {
-                            app.set_detected_lang_label("".into());
-                            app.get_dst_lang().to_string()
-                        };
-
-                        app.set_status_text("".into());
-                        show_app_window(&app);
-
-                        position_window_at_cursor(&app);
-
-                        app.invoke_focus_input();
-
-                        // Launch translation
-                        if !text.trim().is_empty() {
-                            app.set_is_loading(true);
-                            let app_weak_async = app.as_weak();
-                            let s_lang = cur_src.clone();
-                            let t_lang = target_lang.clone();
-                            let deepl_key = app.get_deepl_key().to_string();
-                            let use_deepl = app.get_use_deepl();
-
-                            tokio::spawn(async move {
-                                let res = translate_text(&text, &s_lang, &t_lang, &deepl_key, use_deepl).await;
-                                let _ = slint::invoke_from_event_loop(move || {
-                                    if let Some(app) = app_weak_async.upgrade() {
-                                        app.set_is_loading(false);
-                                        match res {
-                                            Ok((translated, detected_opt, engine_name, fell_back)) => {
-                                                app.set_dst_text(translated.clone().into());
-                                                app.set_engine_label(engine_name.into());
-                                                if fell_back {
-                                                    let is_en = app.get_ui_lang() == "en";
-                                                    let msg = if is_en {
-                                                        "⚠️ DeepL unavailable, switched to Google Translate".to_string()
-                                                    } else {
-                                                        "⚠️ DeepL недоступний, перекладено через Google Translate".to_string()
-                                                    };
-                                                    show_toast(app_weak_async.clone(), msg, "warning", 3500);
-                                                }
-                                                if s_lang == "auto" {
-                                                    if let Some(detected) = detected_opt {
-                                                        let label = get_lang_label_for(&detected, &app.get_ui_lang());
-                                                        app.set_detected_lang_label(label.into());
-                                                    }
-                                                }
-                                                if app.get_auto_copy() {
-                                                    if let Ok(mut clip) = Clipboard::new() {
-                                                        let _ = clip.set_text(translated);
-                                                        let msg = if is_en { "Copied automatically! ✓" } else { "Скопійовано автоматично! ✓" };
-                                                        set_status_timed(app_weak_async.clone(), msg.to_string());
-                                                    }
-                                                }
-                                                if !fell_back && use_deepl && !deepl_key.trim().is_empty() {
-                                                    update_deepl_quota_display(app_weak_async.clone(), deepl_key.clone());
-                                                }
-                                            }
-                                            Err(err) => {
-                                                let msg = if is_en { format!("Error: {}", err) } else { format!("Помилка: {}", err) };
-                                                app.set_dst_text(msg.into());
-                                            }
-                                        }
-                                    }
-                                });
-                            });
-                        } else {
-                            app.set_dst_text("".into());
-                            app.set_detected_lang_label("".into());
-                            app.set_is_loading(false);
-                        }
-                    }
-                });
+                present_and_translate_text(app_weak.clone(), captured);
             }
         }
     });
+
+    // 2b. Screen OCR button & shortcut toggle handlers
+    {
+        let app_weak = app.as_weak();
+        app.on_ocr_requested(move || {
+            trigger_screen_ocr(app_weak.clone());
+        });
+    }
+    {
+        let config_clone = config.clone();
+        let hotkey_mgr_clone = hotkey_manager.clone();
+        let reg_keys_clone = registered_keys.clone();
+        let app_weak = app.as_weak();
+        app.on_ocr_shortcut_toggled(move |enabled| {
+            let mut cfg = config_clone.lock().unwrap();
+            cfg.enable_alt_s = enabled;
+            cfg.save();
+            let mgr = hotkey_mgr_clone.lock().unwrap();
+            let mut reg = reg_keys_clone.lock().unwrap();
+            sync_registered_hotkeys(&mgr, &mut reg, &cfg, app_weak.clone());
+        });
+    }
 
     // 3. "Translate" handler (with 400ms debounce for typing)
     {

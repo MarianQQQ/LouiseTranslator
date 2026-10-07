@@ -23,6 +23,10 @@ use windows::Win32::UI::WindowsAndMessaging::{
 
 pub static SNIPPING_ACTIVE: AtomicBool = AtomicBool::new(false);
 
+pub fn is_snipping_active() -> bool {
+    SNIPPING_ACTIVE.load(std::sync::atomic::Ordering::SeqCst)
+}
+
 #[derive(Debug, Clone)]
 pub struct SnipCapture {
     pub bgra: Vec<u8>,

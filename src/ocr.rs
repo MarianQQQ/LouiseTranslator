@@ -4,11 +4,12 @@ use windows::Graphics::Imaging::{BitmapAlphaMode, BitmapPixelFormat, SoftwareBit
 use windows::Media::Ocr::OcrEngine;
 use windows::Storage::Streams::DataWriter;
 use windows::Win32::Graphics::Gdi::{
-    BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, GetDC, GetDIBits,
-    ReleaseDC, SelectObject, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, SRCCOPY,
+    BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, GetDIBits,
+    SelectObject, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, SRCCOPY,
 };
 
 /// Lists all supported OCR language tags installed on this Windows machine.
+#[allow(dead_code)]
 pub fn get_available_ocr_languages() -> Vec<String> {
     let mut langs = Vec::new();
     if let Ok(vec_langs) = OcrEngine::AvailableRecognizerLanguages() {
@@ -202,6 +203,7 @@ fn map_translator_lang_to_ocr_tag(lang: &str) -> Option<&'static str> {
     match lang.trim().to_uppercase().as_str() {
         "EN" => Some("en"),
         "UK" => Some("uk"),
+        "RU" => Some("ru"),
         "PL" => Some("pl"),
         "DE" => Some("de"),
         "FR" => Some("fr"),
@@ -214,9 +216,103 @@ fn map_translator_lang_to_ocr_tag(lang: &str) -> Option<&'static str> {
         "TR" => Some("tr"),
         "NL" => Some("nl"),
         "CS" => Some("cs"),
+        "SK" => Some("sk"),
+        "RO" => Some("ro"),
+        "HU" => Some("hu"),
+        "EL" => Some("el"),
+        "BG" => Some("bg"),
         "SV" => Some("sv"),
+        "NO" => Some("no"),
+        "DA" => Some("da"),
+        "FI" => Some("fi"),
+        "LT" => Some("lt"),
+        "LV" => Some("lv"),
+        "ET" => Some("et"),
+        "AR" => Some("ar"),
+        "HE" => Some("he"),
+        "HI" => Some("hi"),
         _ => None,
     }
+}
+
+/// Helper to find an installed OCR engine by BCP-47 prefix (e.g. "uk", "ru", "en").
+fn try_create_engine_by_prefix(prefix: &str) -> Option<OcrEngine> {
+    let prefix_low = prefix.trim().to_lowercase();
+    if let Ok(lang) = Language::CreateLanguage(&HSTRING::from(prefix_low.as_str())) {
+        if OcrEngine::IsLanguageSupported(&lang).unwrap_or(false) {
+            if let Ok(engine) = OcrEngine::TryCreateFromLanguage(&lang) {
+                return Some(engine);
+            }
+        }
+    }
+    let short_prefix = prefix_low.split('-').next().unwrap_or(&prefix_low);
+    if let Ok(vec_langs) = OcrEngine::AvailableRecognizerLanguages() {
+        for lang in vec_langs {
+            if let Ok(avail_tag) = lang.LanguageTag() {
+                let avail_str = avail_tag.to_string().to_lowercase();
+                if avail_str == short_prefix || avail_str.starts_with(&format!("{}-", short_prefix)) {
+                    if let Ok(engine) = OcrEngine::TryCreateFromLanguage(&lang) {
+                        return Some(engine);
+                    }
+                }
+            }
+        }
+    }
+    None
+}
+
+/// Creates a Cyrillic-capable OCR engine ("uk" preferred, falling back to "ru" or "bg" if installed).
+fn try_create_cyrillic_ocr_engine() -> Option<OcrEngine> {
+    try_create_engine_by_prefix("uk")
+        .or_else(|| try_create_engine_by_prefix("ru"))
+        .or_else(|| try_create_engine_by_prefix("bg"))
+}
+
+/// Detects whether output from a Latin-only OCR engine (like `en-US`) looks like misread Cyrillic text.
+/// When a Latin OCR model reads Cyrillic words (e.g., "Система розпізнавання тексту"),
+/// lowercase Cyrillic letters (`в, н, т, м, я, г, п, и`) are recognized as uppercase Latin letters
+/// (`B, H, T, M, R`) or digits (`3, 0, 6`) embedded inside lowercase words ("ChCTeMa p03ni3HaBaHHR TeKCTY").
+pub fn looks_like_misread_cyrillic(text: &str) -> bool {
+    let mut total_alpha_words = 0usize;
+    let mut ransom_words = 0usize;
+
+    for raw_word in text.split_whitespace() {
+        let word: String = raw_word
+            .chars()
+            .filter(|c| c.is_ascii_alphanumeric())
+            .collect();
+        if word.len() < 3 {
+            continue;
+        }
+        let has_alpha = word.chars().any(|c| c.is_ascii_alphabetic());
+        if !has_alpha {
+            continue;
+        }
+        total_alpha_words += 1;
+
+        let chars: Vec<char> = word.chars().collect();
+        let has_lower = chars.iter().any(|c| c.is_ascii_lowercase());
+        let has_upper_after_first = chars.iter().skip(1).any(|c| c.is_ascii_uppercase());
+        // Digits mixed inside letters (e.g. "p03ni3HaBaHHR")
+        let has_digit_mixed = chars.iter().any(|c| c.is_ascii_digit())
+            && chars.iter().filter(|c| c.is_ascii_alphabetic()).count() >= 2;
+        // Unusual consonant clusters typical of Cyrillic-as-Latin (e.g. "ChCT", "TeKCT")
+        let upper_count = chars.iter().filter(|c| c.is_ascii_uppercase()).count();
+        let lower_count = chars.iter().filter(|c| c.is_ascii_lowercase()).count();
+
+        if (has_lower && has_upper_after_first && (upper_count >= 2 || lower_count >= 2))
+            || has_digit_mixed
+        {
+            ransom_words += 1;
+        }
+    }
+
+    if total_alpha_words == 0 {
+        return false;
+    }
+
+    // If at least half of words (or >=2 words) exhibit the mixed-case/digit ransom-note pattern
+    ransom_words * 2 >= total_alpha_words
 }
 
 /// Creates an OcrEngine for a preferred language tag (e.g., "uk", "en-US", "EN"),
@@ -227,26 +323,14 @@ pub fn create_ocr_engine(preferred_lang: Option<&str>) -> Result<OcrEngine, Stri
         .filter(|l| !l.is_empty() && !l.eq_ignore_ascii_case("auto"));
 
     if let Some(tag_trimmed) = resolved_tag {
-        // Try exact match first
-        if let Ok(lang) = Language::CreateLanguage(&HSTRING::from(tag_trimmed)) {
-            if OcrEngine::IsLanguageSupported(&lang).unwrap_or(false) {
-                if let Ok(engine) = OcrEngine::TryCreateFromLanguage(&lang) {
-                    return Ok(engine);
-                }
-            }
+        if let Some(engine) = try_create_engine_by_prefix(tag_trimmed) {
+            return Ok(engine);
         }
-        // Try prefix match (e.g. "uk" -> "uk-UA", "en" -> "en-US")
-        let prefix = tag_trimmed.split('-').next().unwrap_or(tag_trimmed).to_lowercase();
-        if let Ok(vec_langs) = OcrEngine::AvailableRecognizerLanguages() {
-            for lang in vec_langs {
-                if let Ok(avail_tag) = lang.LanguageTag() {
-                    let avail_str = avail_tag.to_string().to_lowercase();
-                    if avail_str == prefix || avail_str.starts_with(&format!("{}-", prefix)) {
-                        if let Ok(engine) = OcrEngine::TryCreateFromLanguage(&lang) {
-                            return Ok(engine);
-                        }
-                    }
-                }
+        // If user requested Ukrainian/Bulgarian/Russian and that exact pack isn't installed,
+        // fall back to any installed Cyrillic recognizer before falling back to Latin.
+        if matches!(tag_trimmed, "uk" | "ru" | "bg") {
+            if let Some(cyr_engine) = try_create_cyrillic_ocr_engine() {
+                return Ok(cyr_engine);
             }
         }
     }
@@ -254,17 +338,8 @@ pub fn create_ocr_engine(preferred_lang: Option<&str>) -> Result<OcrEngine, Stri
     // When preferred_lang is None or "Auto":
     // Prefer English ("en-US" / "en") if available since most screen OCR translations are from English/Latin,
     // or fallback to UserProfileLanguages.
-    if let Ok(vec_langs) = OcrEngine::AvailableRecognizerLanguages() {
-        for lang in vec_langs {
-            if let Ok(avail_tag) = lang.LanguageTag() {
-                let s = avail_tag.to_string().to_lowercase();
-                if s == "en" || s.starts_with("en-") {
-                    if let Ok(engine) = OcrEngine::TryCreateFromLanguage(&lang) {
-                        return Ok(engine);
-                    }
-                }
-            }
-        }
+    if let Some(en_engine) = try_create_engine_by_prefix("en") {
+        return Ok(en_engine);
     }
 
     if let Ok(engine) = OcrEngine::TryCreateFromUserProfileLanguages() {
@@ -280,6 +355,39 @@ pub fn create_ocr_engine(preferred_lang: Option<&str>) -> Result<OcrEngine, Stri
     }
 
     Err("No Windows OCR language packs are installed on this system.".to_string())
+}
+
+fn run_engine_on_bitmap(engine: &OcrEngine, bitmap: &SoftwareBitmap) -> Result<String, String> {
+    let async_op = engine
+        .RecognizeAsync(bitmap)
+        .map_err(|e| format!("RecognizeAsync failed: {}", e))?;
+    let ocr_result = async_op
+        .join()
+        .map_err(|e| format!("OCR join failed: {}", e))?;
+
+    let mut lines_out = Vec::new();
+    if let Ok(lines) = ocr_result.Lines() {
+        for line in lines {
+            if let Ok(text) = line.Text() {
+                let s = text.to_string();
+                if !s.trim().is_empty() {
+                    lines_out.push(s);
+                }
+            }
+        }
+    }
+
+    if lines_out.is_empty() {
+        if let Ok(full_text) = ocr_result.Text() {
+            let s = full_text.to_string();
+            if !s.trim().is_empty() {
+                return Ok(s);
+            }
+        }
+        return Ok(String::new());
+    }
+
+    Ok(lines_out.join("\n"))
 }
 
 /// Runs Windows Media OCR on raw BGRA8 pixel buffer of size `width` x `height`.
@@ -320,40 +428,31 @@ pub fn recognize_bgra_pixels(
     )
     .map_err(|e| format!("CreateCopyWithAlphaFromBuffer failed: {}", e))?;
 
-    let engine = create_ocr_engine(preferred_lang)?;
-    let async_op = engine
-        .RecognizeAsync(&bitmap)
-        .map_err(|e| format!("RecognizeAsync failed: {}", e))?;
-    let ocr_result = async_op
-        .join()
-        .map_err(|e| format!("OCR join failed: {}", e))?;
+    let is_auto = preferred_lang
+        .map(|l| l.trim().is_empty() || l.eq_ignore_ascii_case("auto"))
+        .unwrap_or(true);
 
-    let mut lines_out = Vec::new();
-    if let Ok(lines) = ocr_result.Lines() {
-        for line in lines {
-            if let Ok(text) = line.Text() {
-                let s = text.to_string();
-                if !s.trim().is_empty() {
-                    lines_out.push(s);
+    let engine = create_ocr_engine(preferred_lang)?;
+    let primary_text = run_engine_on_bitmap(&engine, &bitmap)?;
+
+    // Smart Auto-Cyrillic fallback: when in "auto" mode, if the Latin OCR output looks like
+    // misread Cyrillic ("ChCTeMa p03ni3HaBaHHR TeKCTY"), re-run with an installed Cyrillic engine.
+    if is_auto && looks_like_misread_cyrillic(&primary_text) {
+        if let Some(cyr_engine) = try_create_cyrillic_ocr_engine() {
+            if let Ok(cyr_text) = run_engine_on_bitmap(&cyr_engine, &bitmap) {
+                let has_cyrillic = cyr_text.chars().any(|c| ('\u{0400}'..='\u{04FF}').contains(&c));
+                if !cyr_text.trim().is_empty() && has_cyrillic {
+                    return Ok(cyr_text);
                 }
             }
         }
     }
 
-    if lines_out.is_empty() {
-        if let Ok(full_text) = ocr_result.Text() {
-            let s = full_text.to_string();
-            if !s.trim().is_empty() {
-                return Ok(s);
-            }
-        }
-        return Ok(String::new());
-    }
-
-    Ok(lines_out.join("\n"))
+    Ok(primary_text)
 }
 
 /// Captures a screen rectangle and performs OCR on it in one step.
+#[allow(dead_code)]
 pub fn capture_and_recognize_rect(
     x: i32,
     y: i32,
@@ -371,9 +470,9 @@ mod tests {
     use windows::core::PCWSTR;
     use windows::Win32::Foundation::{COLORREF, RECT};
     use windows::Win32::Graphics::Gdi::{
-        CreateFontW, CreateSolidBrush, FillRect, SetBkMode, SetTextColor, TextOutW,
-        ANSI_CHARSET, CLIP_DEFAULT_PRECIS, DEFAULT_PITCH, FF_DONTCARE, FW_BOLD,
-        OUT_DEFAULT_PRECIS, TRANSPARENT, CLEARTYPE_QUALITY,
+        CreateFontW, CreateSolidBrush, FillRect, GetDC, ReleaseDC, SetBkMode, SetTextColor,
+        TextOutW, ANSI_CHARSET, CLEARTYPE_QUALITY, CLIP_DEFAULT_PRECIS, DEFAULT_PITCH,
+        FF_DONTCARE, FW_BOLD, OUT_DEFAULT_PRECIS, TRANSPARENT,
     };
 
     /// Helper that renders text onto a white GDI bitmap and returns BGRA8 pixels
@@ -489,10 +588,23 @@ mod tests {
         println!("Recognized English text (RU engine): '{}'", ru_on_en);
 
         let cyr_pixels = render_text_to_bgra("Система розпізнавання тексту", 480, 64);
-        let en_on_cyr = recognize_bgra_pixels(&cyr_pixels, 480, 64, Some("EN")).unwrap_or_default();
-        let ru_on_cyr = recognize_bgra_pixels(&cyr_pixels, 480, 64, Some("ru")).unwrap_or_default();
-        println!("Recognized Cyrillic text (EN engine): '{}'", en_on_cyr);
-        println!("Recognized Cyrillic text (RU engine): '{}'", ru_on_cyr);
+        let auto_on_cyr = recognize_bgra_pixels(&cyr_pixels, 480, 64, Some("auto")).unwrap_or_default();
+        println!("Recognized Cyrillic text (Auto engine with fallback): '{}'", auto_on_cyr);
+        if try_create_cyrillic_ocr_engine().is_some() {
+            assert!(
+                auto_on_cyr.chars().any(|c| ('\u{0400}'..='\u{04FF}').contains(&c)),
+                "Expected auto OCR to fallback to Cyrillic engine, got '{}'",
+                auto_on_cyr
+            );
+        }
+    }
+
+    #[test]
+    fn test_looks_like_misread_cyrillic() {
+        assert!(looks_like_misread_cyrillic("ChCTeMa p03ni3HaBaHHR TeKCTY"));
+        assert!(looks_like_misread_cyrillic("npBiT CBiT"));
+        assert!(!looks_like_misread_cyrillic("Louise Translator OCR Test"));
+        assert!(!looks_like_misread_cyrillic("Hello world, this is normal English text!"));
     }
 
     #[test]

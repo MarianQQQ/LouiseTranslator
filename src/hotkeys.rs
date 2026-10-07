@@ -7,6 +7,7 @@ use crate::config::AppConfig;
 use crate::AppWindow;
 
 pub static ALT_X_ID: AtomicU32 = AtomicU32::new(0);
+pub static ALT_S_ID: AtomicU32 = AtomicU32::new(0);
 pub static CUSTOM_TRANSLATE_ID: AtomicU32 = AtomicU32::new(0);
 pub static CUSTOM_WINDOW_ID: AtomicU32 = AtomicU32::new(0);
 pub static CUSTOM_HOTKEY_ID: AtomicU32 = AtomicU32::new(0);
@@ -86,6 +87,7 @@ pub fn sync_registered_hotkeys(
     app_weak: slint::Weak<AppWindow>,
 ) {
     ALT_X_ID.store(0, Ordering::Relaxed);
+    ALT_S_ID.store(0, Ordering::Relaxed);
     CUSTOM_TRANSLATE_ID.store(0, Ordering::Relaxed);
     CUSTOM_WINDOW_ID.store(0, Ordering::Relaxed);
     CUSTOM_HOTKEY_ID.store(0, Ordering::Relaxed);
@@ -139,6 +141,18 @@ pub fn sync_registered_hotkeys(
             ALT_X_ID.store(id, Ordering::Relaxed);
         } else {
             failed.push("Alt+X".to_string());
+        }
+    }
+
+    // 3. Screen OCR (Alt+S):
+    if cfg.enable_alt_s {
+        let hk = HotKey::new(Some(Modifiers::ALT), Code::KeyS);
+        let id = hk.id();
+        if manager.register(hk).is_ok() {
+            registered.push(hk);
+            ALT_S_ID.store(id, Ordering::Relaxed);
+        } else {
+            failed.push("Alt+S".to_string());
         }
     }
 
