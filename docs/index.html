@@ -1162,7 +1162,7 @@
         </div>
 
         <div class="header-actions">
-          <button class="btn-gh" id="btnHeaderOcr" style="border-color: rgba(0, 192, 240, 0.35); color: #00c0f0;" title="View all 30 Windows OCR language pack commands">
+          <button class="btn-gh" id="btnHeaderOcr" type="button" onclick="openOcrModal(event)" style="border-color: rgba(0, 192, 240, 0.35); color: #00c0f0; cursor: pointer;" title="View all 30 Windows OCR language pack commands">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
               <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
@@ -1200,7 +1200,7 @@
           </p>
 
           <!-- Screen OCR Feature Spotlight Card -->
-          <div class="ocr-spotlight" id="ocrSpotlightCard" title="Click to view all 30 Windows OCR Language Packs">
+          <div class="ocr-spotlight" id="ocrSpotlightCard" onclick="openOcrModal(event)" title="Click to view all 30 Windows OCR Language Packs">
             <div class="ocr-spotlight-top">
               <div class="ocr-tag-group">
                 <span class="ocr-pulse-dot"></span>
@@ -1213,7 +1213,7 @@
                 <div class="ocr-spotlight-head">Instant Freeze & Snip Recognition</div>
                 <div class="ocr-spotlight-sub">Snip text from YouTube videos, PDFs, games & images. 100% offline via native Windows Media OCR with zero cloud tokens.</div>
               </div>
-              <button class="ocr-spotlight-btn" id="btnHeroOpenOcr" type="button">
+              <button class="ocr-spotlight-btn" id="btnHeroOpenOcr" type="button" onclick="openOcrModal(event)">
                 <span>30 Langs</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
@@ -1353,13 +1353,70 @@
         <div class="footer-links">
           <a href="https://github.com/MarianQQQ/LouiseTranslator" target="_blank">GitHub Repository</a>
           <span>•</span>
-          <a href="javascript:void(0)" id="btnOpenOcrModal">Windows OCR Packs</a>
+          <a href="javascript:void(0)" id="btnOpenOcrModal" onclick="openOcrModal(event)">Windows OCR Packs</a>
           <span>•</span>
           <a href="https://github.com/MarianQQQ/LouiseTranslator/releases" target="_blank">Releases</a>
           <span>•</span>
           <a href="https://github.com/MarianQQQ/LouiseTranslator/blob/main/LICENSE" target="_blank">MIT License</a>
         </div>
       </footer>
+
+    </div>
+  </div>
+
+  <!-- Windows OCR Packs Interactive Modal -->
+  <div class="modal-backdrop" id="ocrModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>📷</span> Windows OCR Language Packs (30+ Languages)
+        </div>
+        <button class="modal-close" id="btnCloseOcrModal" onclick="closeOcrModal(event)" aria-label="Close modal">&times;</button>
+      </div>
+
+      <p class="modal-desc">
+        Louise uses 100% native, offline <b>Windows.Media.Ocr</b>. Run <b>PowerShell as Administrator</b> and run any command below to install official Microsoft neural models:
+      </p>
+
+      <!-- 1-Click Multi-Pack -->
+      <div class="ocr-batch-box">
+        <div class="ocr-batch-title">⚡ 1-Click Multi-Language Pack (Popular European + CJK + Ukrainian)</div>
+        <div class="ocr-batch-desc">Installs Ukrainian, English, Polish, German, French, Spanish, Italian & Japanese simultaneously:</div>
+        <div class="ocr-batch-cmd-row">
+          <div class="ocr-cmd-text">@("uk-UA","en-US","pl-PL","de-DE","fr-FR","es-ES","it-IT","ja-JP") | % { Add-WindowsCapability -Online -Name "Language.OCR~~~$_~0.0.1.0" }</div>
+          <button class="btn-copy-cmd" data-cmd="@('uk-UA','en-US','pl-PL','de-DE','fr-FR','es-ES','it-IT','ja-JP') | ForEach-Object { Add-WindowsCapability -Online -Name &quot;Language.OCR~~~$_~0.0.1.0&quot; }">Copy</button>
+        </div>
+      </div>
+
+      <!-- Check Installed Pack Command -->
+      <div class="ocr-batch-box" style="border-color: rgba(255,255,255,0.12);">
+        <div class="ocr-batch-title">🔍 Check Currently Installed OCR Languages</div>
+        <div class="ocr-batch-cmd-row">
+          <div class="ocr-cmd-text">Get-WindowsCapability -Online | Where-Object { $_.Name -like "Language.OCR*" -and $_.State -eq "Installed" }</div>
+          <button class="btn-copy-cmd" data-cmd="Get-WindowsCapability -Online | Where-Object { $_.Name -like &quot;Language.OCR*&quot; -and $_.State -eq &quot;Installed&quot; }">Copy</button>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="ocr-search-wrap">
+        <input type="text" id="ocrSearchInput" class="ocr-search-input" placeholder="🔍 Search by language, country or code (e.g. uk, Ukrainian, Deutsch, ja, ar, polski)...">
+      </div>
+
+      <div class="ocr-filter-chips">
+        <button class="ocr-chip active" data-filter="all">All (30+)</button>
+        <button class="ocr-chip" data-filter="popular">⚡ Popular Set</button>
+        <button class="ocr-chip" data-filter="europe">Europe</button>
+        <button class="ocr-chip" data-filter="asia">Asia & Mid-East</button>
+        <button class="ocr-chip" data-filter="americas">Americas</button>
+      </div>
+
+      <!-- Dynamic Commands List (Populated via JS) -->
+      <div class="ocr-cmd-list" id="ocrCmdListContainer"></div>
+
+      <!-- Alternative GUI Note -->
+      <div style="font-size: 0.73rem; color: var(--text-dim); line-height: 1.4; border-top: 1px solid #22242e; padding-top: 8px;">
+        💡 <b>GUI Alternative:</b> Windows Settings (<kbd>Win+I</kbd>) → <b>Time & language</b> → <b>Language & region</b> → Click language <b>...</b> → <b>Language options</b> → Download <b>OCR</b>.
+      </div>
 
     </div>
   </div>
@@ -1702,29 +1759,37 @@
 
     let currentOcrFilter = 'all';
 
-    function openModal() {
-      ocrModal.classList.add('show');
-      if (ocrSearchInput) {
-        setTimeout(() => ocrSearchInput.focus(), 100);
-      }
-    }
+    window.openOcrModal = function(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      const modal = document.getElementById('ocrModal') || ocrModal;
+      if (modal) modal.classList.add('show');
+      const search = document.getElementById('ocrSearchInput') || ocrSearchInput;
+      if (search) setTimeout(() => search.focus(), 80);
+    };
 
-    function closeModal() {
-      ocrModal.classList.remove('show');
-    }
+    window.closeOcrModal = function(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      const modal = document.getElementById('ocrModal') || ocrModal;
+      if (modal) modal.classList.remove('show');
+    };
+
+    const openModal = window.openOcrModal;
+    const closeModal = window.closeOcrModal;
 
     if (btnOpenOcrModal) btnOpenOcrModal.addEventListener('click', openModal);
     if (btnCloseOcrModal) btnCloseOcrModal.addEventListener('click', closeModal);
     if (btnHeaderOcr) btnHeaderOcr.addEventListener('click', openModal);
-    if (btnHeroOpenOcr) btnHeroOpenOcr.addEventListener('click', (e) => { e.stopPropagation(); openModal(); });
+    if (btnHeroOpenOcr) btnHeroOpenOcr.addEventListener('click', openModal);
     if (ocrSpotlightCard) ocrSpotlightCard.addEventListener('click', openModal);
 
-    ocrModal.addEventListener('click', (e) => {
-      if (e.target === ocrModal) closeModal();
-    });
+    if (ocrModal) {
+      ocrModal.addEventListener('click', (e) => {
+        if (e.target === ocrModal) closeModal(e);
+      });
+    }
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && ocrModal.classList.contains('show')) closeModal();
+      if (e.key === 'Escape') closeModal(e);
     });
 
     function renderOcrList() {
@@ -1854,62 +1919,5 @@
       }, 1800);
     });
   </script>
-
-  <!-- Windows OCR Packs Interactive Modal -->
-  <div class="modal-backdrop" id="ocrModal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <div class="modal-title">
-          <span>📷</span> Windows OCR Language Packs (30+ Languages)
-        </div>
-        <button class="modal-close" id="btnCloseOcrModal" aria-label="Close modal">&times;</button>
-      </div>
-
-      <p class="modal-desc">
-        Louise uses 100% native, offline <b>Windows.Media.Ocr</b>. Run <b>PowerShell as Administrator</b> and run any command below to install official Microsoft neural models:
-      </p>
-
-      <!-- 1-Click Multi-Pack -->
-      <div class="ocr-batch-box">
-        <div class="ocr-batch-title">⚡ 1-Click Multi-Language Pack (Popular European + CJK + Ukrainian)</div>
-        <div class="ocr-batch-desc">Installs Ukrainian, English, Polish, German, French, Spanish, Italian & Japanese simultaneously:</div>
-        <div class="ocr-batch-cmd-row">
-          <div class="ocr-cmd-text">@("uk-UA","en-US","pl-PL","de-DE","fr-FR","es-ES","it-IT","ja-JP") | % { Add-WindowsCapability -Online -Name "Language.OCR~~~$_~0.0.1.0" }</div>
-          <button class="btn-copy-cmd" data-cmd="@('uk-UA','en-US','pl-PL','de-DE','fr-FR','es-ES','it-IT','ja-JP') | ForEach-Object { Add-WindowsCapability -Online -Name &quot;Language.OCR~~~$_~0.0.1.0&quot; }">Copy</button>
-        </div>
-      </div>
-
-      <!-- Check Installed Pack Command -->
-      <div class="ocr-batch-box" style="border-color: rgba(255,255,255,0.12);">
-        <div class="ocr-batch-title">🔍 Check Currently Installed OCR Languages</div>
-        <div class="ocr-batch-cmd-row">
-          <div class="ocr-cmd-text">Get-WindowsCapability -Online | Where-Object { $_.Name -like "Language.OCR*" -and $_.State -eq "Installed" }</div>
-          <button class="btn-copy-cmd" data-cmd="Get-WindowsCapability -Online | Where-Object { $_.Name -like &quot;Language.OCR*&quot; -and $_.State -eq &quot;Installed&quot; }">Copy</button>
-        </div>
-      </div>
-
-      <!-- Search & Filters -->
-      <div class="ocr-search-wrap">
-        <input type="text" id="ocrSearchInput" class="ocr-search-input" placeholder="🔍 Search by language, country or code (e.g. uk, Ukrainian, Deutsch, ja, ar, polski)...">
-      </div>
-
-      <div class="ocr-filter-chips">
-        <button class="ocr-chip active" data-filter="all">All (30+)</button>
-        <button class="ocr-chip" data-filter="popular">⚡ Popular Set</button>
-        <button class="ocr-chip" data-filter="europe">Europe</button>
-        <button class="ocr-chip" data-filter="asia">Asia & Mid-East</button>
-        <button class="ocr-chip" data-filter="americas">Americas</button>
-      </div>
-
-      <!-- Dynamic Commands List (Populated via JS) -->
-      <div class="ocr-cmd-list" id="ocrCmdListContainer"></div>
-
-      <!-- Alternative GUI Note -->
-      <div style="font-size: 0.73rem; color: var(--text-dim); line-height: 1.4; border-top: 1px solid #22242e; padding-top: 8px;">
-        💡 <b>GUI Alternative:</b> Windows Settings (<kbd>Win+I</kbd>) → <b>Time & language</b> → <b>Language & region</b> → Click language <b>...</b> → <b>Language options</b> → Download <b>OCR</b>.
-      </div>
-
-    </div>
-  </div>
 </body>
 </html>
