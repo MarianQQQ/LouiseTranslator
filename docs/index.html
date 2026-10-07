@@ -555,13 +555,129 @@
       color: #f1ffff;
     }
 
+    /* OCR Feature Spotlight Banner in Hero */
+    .ocr-spotlight {
+      background: linear-gradient(135deg, rgba(17, 24, 39, 0.88) 0%, rgba(13, 15, 22, 0.92) 100%);
+      border: 1px solid rgba(0, 192, 240, 0.3);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      position: relative;
+      overflow: hidden;
+      margin: 1px 0;
+    }
+    .ocr-spotlight::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0, 192, 240, 0.6), transparent);
+    }
+    .ocr-spotlight:hover {
+      border-color: rgba(0, 192, 240, 0.65);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 192, 240, 0.18);
+    }
+    .ocr-spotlight-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .ocr-tag-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--cyan);
+      letter-spacing: 0.06em;
+    }
+    .ocr-pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 12px var(--cyan); }
+    }
+    .ocr-hotkey-badge {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: #fff;
+    }
+    .ocr-hotkey-badge kbd {
+      background: #1b1e28;
+      border: 1px solid #363b4d;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      color: #f1ffff;
+    }
+    .ocr-spotlight-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .ocr-spotlight-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .ocr-spotlight-head {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ocr-spotlight-sub {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+    .ocr-spotlight-btn {
+      background: rgba(0, 192, 240, 0.12);
+      border: 1px solid rgba(0, 192, 240, 0.35);
+      border-radius: 6px;
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 5px 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .ocr-spotlight-btn:hover {
+      background: var(--cyan);
+      color: #041017;
+      border-color: var(--cyan);
+    }
+
     /* OCR Language Packs Modal */
     .modal-backdrop {
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(8px);
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
       z-index: 100;
       display: none;
       align-items: center;
@@ -570,18 +686,20 @@
     }
     .modal-backdrop.show { display: flex; }
     .modal-card {
-      background: #121214;
-      border: 1px solid #282828;
-      border-radius: 12px;
-      max-width: 580px;
+      background: #111216;
+      border: 1px solid #282a36;
+      border-radius: 14px;
+      max-width: 680px;
       width: 100%;
-      max-height: 85vh;
+      max-height: 88vh;
       overflow-y: auto;
       padding: 24px;
-      box-shadow: 0 24px 60px rgba(0,0,0,0.9);
+      box-shadow: 0 28px 75px rgba(0,0,0,0.95);
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
     }
     .modal-header {
       display: flex;
@@ -590,20 +708,21 @@
     }
     .modal-title {
       font-family: var(--font-mono);
-      font-size: 1.05rem;
+      font-size: 1.1rem;
       font-weight: 700;
       color: #fff;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 9px;
     }
     .modal-close {
       cursor: pointer;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       color: #888;
       background: transparent;
       border: none;
       line-height: 1;
+      padding: 4px;
     }
     .modal-close:hover { color: #fff; }
     .modal-desc {
@@ -611,53 +730,166 @@
       color: var(--text-muted);
       line-height: 1.45;
     }
+
+    /* Search & Filter Controls in Modal */
+    .ocr-search-wrap {
+      width: 100%;
+    }
+    .ocr-search-input {
+      width: 100%;
+      background: #181920;
+      border: 1px solid #2e303d;
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #f1ffff;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .ocr-search-input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px rgba(0, 192, 240, 0.2);
+    }
+    .ocr-search-input::placeholder {
+      color: #64687a;
+    }
+
+    .ocr-filter-chips {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .ocr-chip {
+      background: #181920;
+      border: 1px solid #2e303d;
+      color: #9ca3af;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ocr-chip:hover {
+      background: #232530;
+      color: #f1ffff;
+      border-color: #3f4254;
+    }
+    .ocr-chip.active {
+      background: rgba(0, 192, 240, 0.15);
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    /* Batch 1-Click Card */
+    .ocr-batch-box {
+      background: linear-gradient(135deg, rgba(0, 192, 240, 0.08) 0%, rgba(17, 24, 39, 0.6) 100%);
+      border: 1px solid rgba(0, 192, 240, 0.3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ocr-batch-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #f1ffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ocr-batch-desc {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+    .ocr-batch-cmd-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: #0f1014;
+      border: 1px solid #252834;
+      border-radius: 6px;
+      padding: 6px 10px;
+    }
+
+    /* OCR Commands List */
     .ocr-cmd-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 7px;
+      max-height: 340px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+      padding-right: 2px;
     }
     .ocr-cmd-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: #18181b;
-      border: 1px solid #282828;
-      border-radius: 6px;
+      background: #16171d;
+      border: 1px solid #262833;
+      border-radius: 7px;
       padding: 8px 12px;
-      gap: 8px;
+      gap: 10px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .ocr-cmd-item:hover {
+      border-color: #3b3e4f;
+      background: #1b1c24;
     }
     .ocr-cmd-item-left {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 3px;
       overflow: hidden;
+      flex: 1;
+    }
+    .ocr-cmd-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .ocr-cmd-name {
-      font-size: 0.74rem;
-      color: #d4d4d8;
+      font-size: 0.76rem;
+      color: #f1ffff;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ocr-native-name {
+      font-size: 0.72rem;
+      color: var(--text-dim);
     }
     .ocr-cmd-text {
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: 0.71rem;
       color: var(--cyan);
       overflow-x: auto;
       white-space: nowrap;
     }
     .btn-copy-cmd {
-      background: #27272a;
-      border: 1px solid #3f3f46;
+      background: #242630;
+      border: 1px solid #373a4b;
       border-radius: 5px;
-      color: #fff;
+      color: #f1ffff;
       font-size: 0.72rem;
       font-family: var(--font-mono);
-      padding: 4px 10px;
+      font-weight: 600;
+      padding: 5px 11px;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.15s;
+      flex-shrink: 0;
     }
-    .btn-copy-cmd:hover { background: #3f3f46; border-color: #52525b; }
-    .btn-copy-cmd.copied { background: #15803d; border-color: #22c55e; }
+    .btn-copy-cmd:hover { background: #323545; border-color: #4c5166; }
+    .btn-copy-cmd.copied { background: #15803d; border-color: #22c55e; color: #fff; }
 
     .text-container {
       background: #1c1c1c;
@@ -918,7 +1150,7 @@
           </div>
           <div class="brand-title">
             Louise Translator
-            <span class="version-tag">v1.0.0</span>
+            <span class="version-tag">v1.1.0</span>
           </div>
         </a>
 
@@ -930,6 +1162,16 @@
         </div>
 
         <div class="header-actions">
+          <button class="btn-gh" id="btnHeaderOcr" style="border-color: rgba(0, 192, 240, 0.35); color: #00c0f0;" title="View all 30 Windows OCR language pack commands">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+              <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+              <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+              <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            <span>OCR Packs (30)</span>
+          </button>
           <a href="https://github.com/MarianQQQ/LouiseTranslator" target="_blank" class="btn-gh">
             <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
               <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
@@ -957,6 +1199,27 @@
             Discreet, keyboard-first desktop translator for Windows. Instant selection capture (<kbd>Alt+C</kbd>), offline screen OCR (<kbd>Alt+S</kbd>), and deep neural translations with zero cloud latency.
           </p>
 
+          <!-- Screen OCR Feature Spotlight Card -->
+          <div class="ocr-spotlight" id="ocrSpotlightCard" title="Click to view all 30 Windows OCR Language Packs">
+            <div class="ocr-spotlight-top">
+              <div class="ocr-tag-group">
+                <span class="ocr-pulse-dot"></span>
+                <span class="ocr-tag-text">NEW IN V1.1 · OFFLINE SCREEN OCR</span>
+              </div>
+              <span class="ocr-hotkey-badge"><kbd>Alt</kbd>+<kbd>S</kbd></span>
+            </div>
+            <div class="ocr-spotlight-main">
+              <div class="ocr-spotlight-left">
+                <div class="ocr-spotlight-head">Instant Freeze & Snip Recognition</div>
+                <div class="ocr-spotlight-sub">Snip text from YouTube videos, PDFs, games & images. 100% offline via native Windows Media OCR with zero cloud tokens.</div>
+              </div>
+              <button class="ocr-spotlight-btn" id="btnHeroOpenOcr" type="button">
+                <span>30 Langs</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+
           <!-- Specs Metrics -->
           <div class="specs-grid">
             <div class="spec-card">
@@ -975,7 +1238,7 @@
 
           <!-- Centered Direct Download Button -->
           <div class="cta-row">
-            <a href="https://github.com/MarianQQQ/LouiseTranslator/releases/download/v1.0.0/Louise.Translator.exe" class="btn-download">
+            <a href="https://github.com/MarianQQQ/LouiseTranslator/releases/download/v1.1.0/Louise.Translator.exe" class="btn-download">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="7 10 12 15 17 10"></polyline>
@@ -983,7 +1246,7 @@
               </svg>
               <div>
                 <span>Download for Windows (.exe)</span>
-                <span class="btn-sub">Louise.Translator.exe • Free & Portable • v1.0.0</span>
+                <span class="btn-sub">Louise.Translator.exe • Free & Portable • v1.1.0</span>
               </div>
             </a>
           </div>
@@ -1388,27 +1651,168 @@
     }
     renderCanvas();
 
-    // OCR Modal Interactivity
+    // OCR Modal Interactivity with Full 30+ Language Packs & Instant Search
+    const ocrLanguages = [
+      { code: 'uk', tag: 'uk-UA', name: 'Ukrainian', native: 'Українська', region: 'europe', popular: true },
+      { code: 'en', tag: 'en-US', name: 'English (US)', native: 'English (United States)', region: 'americas', popular: true },
+      { code: 'en', tag: 'en-GB', name: 'English (UK)', native: 'English (United Kingdom)', region: 'europe', popular: true },
+      { code: 'pl', tag: 'pl-PL', name: 'Polish', native: 'Polski', region: 'europe', popular: true },
+      { code: 'de', tag: 'de-DE', name: 'German', native: 'Deutsch', region: 'europe', popular: true },
+      { code: 'fr', tag: 'fr-FR', name: 'French', native: 'Français', region: 'europe', popular: true },
+      { code: 'fr', tag: 'fr-CA', name: 'French (Canada)', native: 'Français (Canada)', region: 'americas', popular: false },
+      { code: 'es', tag: 'es-ES', name: 'Spanish', native: 'Español', region: 'europe', popular: true },
+      { code: 'es', tag: 'es-MX', name: 'Spanish (Mexico)', native: 'Español (México)', region: 'americas', popular: false },
+      { code: 'it', tag: 'it-IT', name: 'Italian', native: 'Italiano', region: 'europe', popular: true },
+      { code: 'pt', tag: 'pt-PT', name: 'Portuguese (Portugal)', native: 'Português', region: 'europe', popular: false },
+      { code: 'pt', tag: 'pt-BR', name: 'Portuguese (Brazil)', native: 'Português (Brasil)', region: 'americas', popular: false },
+      { code: 'nl', tag: 'nl-NL', name: 'Dutch', native: 'Nederlands', region: 'europe', popular: false },
+      { code: 'cs', tag: 'cs-CZ', name: 'Czech', native: 'Čeština', region: 'europe', popular: false },
+      { code: 'sk', tag: 'sk-SK', name: 'Slovak', native: 'Slovenčina', region: 'europe', popular: false },
+      { code: 'ro', tag: 'ro-RO', name: 'Romanian', native: 'Română', region: 'europe', popular: false },
+      { code: 'hu', tag: 'hu-HU', name: 'Hungarian', native: 'Magyar', region: 'europe', popular: false },
+      { code: 'tr', tag: 'tr-TR', name: 'Turkish', native: 'Türkçe', region: 'europe', popular: false },
+      { code: 'el', tag: 'el-GR', name: 'Greek', native: 'Ελληνικά', region: 'europe', popular: false },
+      { code: 'bg', tag: 'bg-BG', name: 'Bulgarian', native: 'Български', region: 'europe', popular: false },
+      { code: 'sv', tag: 'sv-SE', name: 'Swedish', native: 'Svenska', region: 'europe', popular: false },
+      { code: 'no', tag: 'nb-NO', name: 'Norwegian', native: 'Norsk (Bokmål)', region: 'europe', popular: false },
+      { code: 'da', tag: 'da-DK', name: 'Danish', native: 'Dansk', region: 'europe', popular: false },
+      { code: 'fi', tag: 'fi-FI', name: 'Finnish', native: 'Suomi', region: 'europe', popular: false },
+      { code: 'ja', tag: 'ja-JP', name: 'Japanese', native: '日本語', region: 'asia', popular: true },
+      { code: 'zh', tag: 'zh-CN', name: 'Chinese Simplified', native: '简体中文', region: 'asia', popular: true },
+      { code: 'zh', tag: 'zh-TW', name: 'Chinese Traditional', native: '繁體中文', region: 'asia', popular: false },
+      { code: 'zh', tag: 'zh-HK', name: 'Chinese (Hong Kong)', native: '香港中文', region: 'asia', popular: false },
+      { code: 'ko', tag: 'ko-KR', name: 'Korean', native: '한국어', region: 'asia', popular: true },
+      { code: 'ar', tag: 'ar-SA', name: 'Arabic', native: 'العربية', region: 'asia', popular: false },
+      { code: 'he', tag: 'he-IL', name: 'Hebrew', native: 'עברית', region: 'asia', popular: false },
+      { code: 'ru', tag: 'ru-RU', name: 'Russian', native: 'Русский', region: 'europe', popular: false },
+      { code: 'lt', tag: 'lt-LT', name: 'Lithuanian', native: 'Lietuvių', region: 'europe', isBasic: true },
+      { code: 'lv', tag: 'lv-LV', name: 'Latvian', native: 'Latviešu', region: 'europe', isBasic: true },
+      { code: 'et', tag: 'et-EE', name: 'Estonian', native: 'Eesti', region: 'europe', isBasic: true },
+      { code: 'hi', tag: 'hi-IN', name: 'Hindi', native: 'हिन्दी', region: 'asia', isBasic: true }
+    ];
+
     const ocrModal = document.getElementById('ocrModal');
     const btnOpenOcrModal = document.getElementById('btnOpenOcrModal');
     const btnCloseOcrModal = document.getElementById('btnCloseOcrModal');
+    const btnHeaderOcr = document.getElementById('btnHeaderOcr');
+    const btnHeroOpenOcr = document.getElementById('btnHeroOpenOcr');
+    const ocrSpotlightCard = document.getElementById('ocrSpotlightCard');
+    const ocrCmdListContainer = document.getElementById('ocrCmdListContainer');
+    const ocrSearchInput = document.getElementById('ocrSearchInput');
 
-    btnOpenOcrModal.addEventListener('click', () => {
+    let currentOcrFilter = 'all';
+
+    function openModal() {
       ocrModal.classList.add('show');
-    });
+      if (ocrSearchInput) {
+        setTimeout(() => ocrSearchInput.focus(), 100);
+      }
+    }
 
-    btnCloseOcrModal.addEventListener('click', () => {
+    function closeModal() {
       ocrModal.classList.remove('show');
-    });
+    }
+
+    if (btnOpenOcrModal) btnOpenOcrModal.addEventListener('click', openModal);
+    if (btnCloseOcrModal) btnCloseOcrModal.addEventListener('click', closeModal);
+    if (btnHeaderOcr) btnHeaderOcr.addEventListener('click', openModal);
+    if (btnHeroOpenOcr) btnHeroOpenOcr.addEventListener('click', (e) => { e.stopPropagation(); openModal(); });
+    if (ocrSpotlightCard) ocrSpotlightCard.addEventListener('click', openModal);
 
     ocrModal.addEventListener('click', (e) => {
-      if (e.target === ocrModal) {
-        ocrModal.classList.remove('show');
-      }
+      if (e.target === ocrModal) closeModal();
     });
 
-    // Copy PowerShell command buttons
-    document.querySelectorAll('.btn-copy-cmd').forEach(btn => {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && ocrModal.classList.contains('show')) closeModal();
+    });
+
+    function renderOcrList() {
+      if (!ocrCmdListContainer) return;
+      const query = (ocrSearchInput ? ocrSearchInput.value.trim().toLowerCase() : '');
+
+      const filtered = ocrLanguages.filter(item => {
+        if (currentOcrFilter === 'popular' && !item.popular) return false;
+        if (currentOcrFilter === 'europe' && item.region !== 'europe') return false;
+        if (currentOcrFilter === 'asia' && item.region !== 'asia') return false;
+        if (currentOcrFilter === 'americas' && item.region !== 'americas') return false;
+
+        if (query) {
+          const matchName = item.name.toLowerCase().includes(query);
+          const matchNative = item.native.toLowerCase().includes(query);
+          const matchCode = item.code.toLowerCase().includes(query);
+          const matchTag = item.tag.toLowerCase().includes(query);
+          return matchName || matchNative || matchCode || matchTag;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        ocrCmdListContainer.innerHTML = `
+          <div style="text-align: center; padding: 24px 10px; color: var(--text-dim); font-size: 0.85rem;">
+            No matching language pack found. You can install it via Windows Settings → Time & Language.
+          </div>
+        `;
+        return;
+      }
+
+      ocrCmdListContainer.innerHTML = filtered.map(item => {
+        const flag = flagSvgs[item.code] || '';
+        const capType = item.isBasic ? 'Language.Basic' : 'Language.OCR';
+        const cmd = `Add-WindowsCapability -Online -Name "${capType}~~~${item.tag}~0.0.1.0"`;
+        return `
+          <div class="ocr-cmd-item">
+            <div class="ocr-cmd-item-left">
+              <div class="ocr-cmd-name-row">
+                <span class="ocr-cmd-name">
+                  ${flag}
+                  <span>${item.name}</span>
+                </span>
+                <span class="ocr-native-name">(${item.native})</span>
+              </div>
+              <div class="ocr-cmd-text">${cmd}</div>
+            </div>
+            <button class="btn-copy-cmd" data-cmd="${cmd.replace(/"/g, '&quot;')}">Copy</button>
+          </div>
+        `;
+      }).join('');
+
+      // Wire up copy buttons
+      ocrCmdListContainer.querySelectorAll('.btn-copy-cmd').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const cmd = btn.getAttribute('data-cmd');
+          if (cmd) {
+            navigator.clipboard.writeText(cmd);
+            btn.innerText = 'Copied! ✓';
+            btn.classList.add('copied');
+            setTimeout(() => {
+              btn.innerText = 'Copy';
+              btn.classList.remove('copied');
+            }, 1400);
+          }
+        });
+      });
+    }
+
+    if (ocrSearchInput) {
+      ocrSearchInput.addEventListener('input', () => {
+        renderOcrList();
+      });
+    }
+
+    document.querySelectorAll('.ocr-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.ocr-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentOcrFilter = chip.getAttribute('data-filter');
+        renderOcrList();
+      });
+    });
+
+    renderOcrList();
+
+    // Copy command buttons in static modal sections
+    document.querySelectorAll('.modal-card > .ocr-batch-box .btn-copy-cmd').forEach(btn => {
       btn.addEventListener('click', () => {
         const cmd = btn.getAttribute('data-cmd');
         if (cmd) {
@@ -1418,7 +1822,7 @@
           setTimeout(() => {
             btn.innerText = 'Copy';
             btn.classList.remove('copied');
-          }, 1500);
+          }, 1400);
         }
       });
     });
@@ -1451,90 +1855,60 @@
     });
   </script>
 
-  <!-- Windows OCR Packs Modal -->
+  <!-- Windows OCR Packs Interactive Modal -->
   <div class="modal-backdrop" id="ocrModal">
     <div class="modal-card">
       <div class="modal-header">
         <div class="modal-title">
-          <span>📷</span> Windows OCR Language Packs
+          <span>📷</span> Windows OCR Language Packs (30+ Languages)
         </div>
-        <button class="modal-close" id="btnCloseOcrModal">&times;</button>
+        <button class="modal-close" id="btnCloseOcrModal" aria-label="Close modal">&times;</button>
       </div>
+
       <p class="modal-desc">
-        Louise uses 100% native, offline <b>Windows.Media.Ocr</b>. Run <b>PowerShell as Administrator</b> and paste any command below to install official Microsoft language models:
+        Louise uses 100% native, offline <b>Windows.Media.Ocr</b>. Run <b>PowerShell as Administrator</b> and run any command below to install official Microsoft neural models:
       </p>
-      <div class="ocr-cmd-list">
-        <div class="ocr-cmd-item">
-          <div class="ocr-cmd-item-left">
-            <span class="ocr-cmd-name">🇺🇦 Ukrainian (Українська)</span>
-            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~uk-UA~0.0.1.0"</span>
-          </div>
-          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~uk-UA~0.0.1.0&quot;">Copy</button>
+
+      <!-- 1-Click Multi-Pack -->
+      <div class="ocr-batch-box">
+        <div class="ocr-batch-title">⚡ 1-Click Multi-Language Pack (Popular European + CJK + Ukrainian)</div>
+        <div class="ocr-batch-desc">Installs Ukrainian, English, Polish, German, French, Spanish, Italian & Japanese simultaneously:</div>
+        <div class="ocr-batch-cmd-row">
+          <div class="ocr-cmd-text">@("uk-UA","en-US","pl-PL","de-DE","fr-FR","es-ES","it-IT","ja-JP") | % { Add-WindowsCapability -Online -Name "Language.OCR~~~$_~0.0.1.0" }</div>
+          <button class="btn-copy-cmd" data-cmd="@('uk-UA','en-US','pl-PL','de-DE','fr-FR','es-ES','it-IT','ja-JP') | ForEach-Object { Add-WindowsCapability -Online -Name &quot;Language.OCR~~~$_~0.0.1.0&quot; }">Copy</button>
         </div>
-        <div class="ocr-cmd-item">
-          <div class="ocr-cmd-item-left">
-            <span class="ocr-cmd-name">🇵🇱 Polish (Polski)</span>
-            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~pl-PL~0.0.1.0"</span>
-          </div>
-          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~pl-PL~0.0.1.0&quot;">Copy</button>
-        </div>
-        <div class="ocr-cmd-item">
-          <div class="ocr-cmd-item-left">
-            <span class="ocr-cmd-name">🇩🇪 German (Deutsch)</span>
-            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~de-DE~0.0.1.0"</span>
-          </div>
-          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~de-DE~0.0.1.0&quot;">Copy</button>
-        </div>
-        <div class="ocr-cmd-item">
-          <div class="ocr-cmd-item-left">
-            <span class="ocr-cmd-name">🇫🇷 French (Français)</span>
-            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~fr-FR~0.0.1.0"</span>
-          </div>
-          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~fr-FR~0.0.1.0&quot;">Copy</button>
-        </div>
-        <div class="ocr-cmd-item">
-          <div class="ocr-cmd-item-left">
-            <span class="ocr-cmd-name">🇪🇸 Spanish (Español)</span>
-            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~es-ES~0.0.1.0"</span>
-          </div>
-          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~es-ES~0.0.1.0&quot;">Copy</button>
-        </div>
-        <div class="ocr-cmd-item">
-          <div class="ocr-cmd-item-left">
-            <span class="ocr-cmd-name">🇮🇹 Italian (Italiano)</span>
-            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~it-IT~0.0.1.0"</span>
-          </div>
-          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~it-IT~0.0.1.0&quot;">Copy</button>
-        </div>
-        <div class="ocr-cmd-item">
-          <div class="ocr-cmd-item-left">
-            <span class="ocr-cmd-name">🇯🇵 Japanese (日本語)</span>
-            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~ja-JP~0.0.1.0"</span>
-          </div>
-          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~ja-JP~0.0.1.0&quot;">Copy</button>
-        </div>
-        <div class="ocr-cmd-item">
-          <div class="ocr-cmd-item-left">
-            <span class="ocr-cmd-name">🇨🇳 Chinese Simplified (简体中文)</span>
-            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~zh-CN~0.0.1.0"</span>
-          </div>
-          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~zh-CN~0.0.1.0&quot;">Copy</button>
-        </div>
-        <div class="ocr-cmd-item">
-          <div class="ocr-cmd-item-left">
-            <span class="ocr-cmd-name">🇰🇷 Korean (한국어)</span>
-            <span class="ocr-cmd-text">Add-WindowsCapability -Online -Name "Language.OCR~~~ko-KR~0.0.1.0"</span>
-          </div>
-          <button class="btn-copy-cmd" data-cmd="Add-WindowsCapability -Online -Name &quot;Language.OCR~~~ko-KR~0.0.1.0&quot;">Copy</button>
-        </div>
-        <div class="ocr-cmd-item">
-          <div class="ocr-cmd-item-left">
-            <span class="ocr-cmd-name">🔍 Check Installed OCR Packs</span>
-            <span class="ocr-cmd-text">Get-WindowsCapability -Online | Where-Object { $_.Name -like "Language.OCR*" -and $_.State -eq "Installed" }</span>
-          </div>
+      </div>
+
+      <!-- Check Installed Pack Command -->
+      <div class="ocr-batch-box" style="border-color: rgba(255,255,255,0.12);">
+        <div class="ocr-batch-title">🔍 Check Currently Installed OCR Languages</div>
+        <div class="ocr-batch-cmd-row">
+          <div class="ocr-cmd-text">Get-WindowsCapability -Online | Where-Object { $_.Name -like "Language.OCR*" -and $_.State -eq "Installed" }</div>
           <button class="btn-copy-cmd" data-cmd="Get-WindowsCapability -Online | Where-Object { $_.Name -like &quot;Language.OCR*&quot; -and $_.State -eq &quot;Installed&quot; }">Copy</button>
         </div>
       </div>
+
+      <!-- Search & Filters -->
+      <div class="ocr-search-wrap">
+        <input type="text" id="ocrSearchInput" class="ocr-search-input" placeholder="🔍 Search by language, country or code (e.g. uk, Ukrainian, Deutsch, ja, ar, polski)...">
+      </div>
+
+      <div class="ocr-filter-chips">
+        <button class="ocr-chip active" data-filter="all">All (30+)</button>
+        <button class="ocr-chip" data-filter="popular">⚡ Popular Set</button>
+        <button class="ocr-chip" data-filter="europe">Europe</button>
+        <button class="ocr-chip" data-filter="asia">Asia & Mid-East</button>
+        <button class="ocr-chip" data-filter="americas">Americas</button>
+      </div>
+
+      <!-- Dynamic Commands List (Populated via JS) -->
+      <div class="ocr-cmd-list" id="ocrCmdListContainer"></div>
+
+      <!-- Alternative GUI Note -->
+      <div style="font-size: 0.73rem; color: var(--text-dim); line-height: 1.4; border-top: 1px solid #22242e; padding-top: 8px;">
+        💡 <b>GUI Alternative:</b> Windows Settings (<kbd>Win+I</kbd>) → <b>Time & language</b> → <b>Language & region</b> → Click language <b>...</b> → <b>Language options</b> → Download <b>OCR</b>.
+      </div>
+
     </div>
   </div>
 </body>

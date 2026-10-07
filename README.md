@@ -126,60 +126,174 @@
 
 ## 📷 Screen OCR & Windows Language Packs
 
-Louise utilizes native **Windows.Media.Ocr** APIs directly from the Windows OS. This delivers **100% offline, zero-latency, private recognition** without consuming any cloud tokens.
+Louise incorporates native **Windows.Media.Ocr** APIs directly from the Windows OS. This delivers **100% offline, zero-latency, private text recognition** with **zero cloud tokens** and zero external dependencies.
 
-### 📥 Installing OCR Language Packs for Windows
+- **Global Hotkey**: Press <kbd>Alt</kbd>+<kbd>S</kbd> anywhere (or customize in *Settings → Shortcuts*).
+- **Multi-Monitor Freeze-Frame**: Freezes all connected monitors with a high-contrast crosshair cursor; drag to select any rectangular area.
+- **Works Everywhere**: Capture subtitles from YouTube videos or streams, unselectable PDF documents, video games, Discord/Telegram image memes, and software error dialogs.
+- **Sub-50ms Response**: Background pre-warmed recognition engines process pixels instantly and route directly to your chosen translation engine.
 
-Windows ships with your system display languages by default. If you frequently translate text from images in specific languages (such as Ukrainian, Polish, German, Japanese, etc.), you can install the official Microsoft OCR models in seconds.
+---
 
-#### Quick Method: PowerShell (Run as Administrator)
+### 📥 Installing Official Windows OCR Language Packs
+
+Windows automatically includes the OCR pack for your Windows display language. To translate screen text from any of Louise's **30 supported languages**, install the official Microsoft OCR models in seconds.
+
+#### Method 1: PowerShell (Run as Administrator)
 
 Open **PowerShell as Administrator** and run the one-line command for your desired language:
 
+<details open>
+<summary><b>🇺🇦 Ukrainian & Eastern Europe</b></summary>
+
 ```powershell
-# 🇺🇦 Ukrainian OCR
+# 🇺🇦 Ukrainian (Українська)
 Add-WindowsCapability -Online -Name "Language.OCR~~~uk-UA~0.0.1.0"
 
-# 🇵🇱 Polish OCR
+# 🇵🇱 Polish (Polski)
 Add-WindowsCapability -Online -Name "Language.OCR~~~pl-PL~0.0.1.0"
 
-# 🇩🇪 German OCR
+# 🇨🇿 Czech (Čeština)
+Add-WindowsCapability -Online -Name "Language.OCR~~~cs-CZ~0.0.1.0"
+
+# 🇸🇰 Slovak (Slovenčina)
+Add-WindowsCapability -Online -Name "Language.OCR~~~sk-SK~0.0.1.0"
+
+# 🇷🇴 Romanian (Română)
+Add-WindowsCapability -Online -Name "Language.OCR~~~ro-RO~0.0.1.0"
+
+# 🇭🇺 Hungarian (Magyar)
+Add-WindowsCapability -Online -Name "Language.OCR~~~hu-HU~0.0.1.0"
+
+# 🇧🇬 Bulgarian (Български)
+Add-WindowsCapability -Online -Name "Language.OCR~~~bg-BG~0.0.1.0"
+
+# 🇷🇸 Serbian (Српски / Srpski)
+Add-WindowsCapability -Online -Name "Language.OCR~~~sr-Cyrl-RS~0.0.1.0"
+Add-WindowsCapability -Online -Name "Language.OCR~~~sr-Latn-RS~0.0.1.0"
+
+# 🇷🇺 Russian (Русский)
+Add-WindowsCapability -Online -Name "Language.OCR~~~ru-RU~0.0.1.0"
+```
+</details>
+
+<details open>
+<summary><b>🇬🇧 Western & Northern Europe</b></summary>
+
+```powershell
+# 🇺🇸 English (United States) / 🇬🇧 English (United Kingdom)
+Add-WindowsCapability -Online -Name "Language.OCR~~~en-US~0.0.1.0"
+Add-WindowsCapability -Online -Name "Language.OCR~~~en-GB~0.0.1.0"
+
+# 🇩🇪 German (Deutsch)
 Add-WindowsCapability -Online -Name "Language.OCR~~~de-DE~0.0.1.0"
 
-# 🇫🇷 French OCR
+# 🇫🇷 French (Français) / 🇨🇦 French (Canada)
 Add-WindowsCapability -Online -Name "Language.OCR~~~fr-FR~0.0.1.0"
+Add-WindowsCapability -Online -Name "Language.OCR~~~fr-CA~0.0.1.0"
 
-# 🇪🇸 Spanish OCR
+# 🇪🇸 Spanish (Español) / 🇲🇽 Spanish (Mexico)
 Add-WindowsCapability -Online -Name "Language.OCR~~~es-ES~0.0.1.0"
+Add-WindowsCapability -Online -Name "Language.OCR~~~es-MX~0.0.1.0"
 
-# 🇮🇹 Italian OCR
+# 🇮🇹 Italian (Italiano)
 Add-WindowsCapability -Online -Name "Language.OCR~~~it-IT~0.0.1.0"
 
-# 🇯🇵 Japanese OCR
+# 🇵🇹 Portuguese (Portugal) / 🇧🇷 Portuguese (Brazil)
+Add-WindowsCapability -Online -Name "Language.OCR~~~pt-PT~0.0.1.0"
+Add-WindowsCapability -Online -Name "Language.OCR~~~pt-BR~0.0.1.0"
+
+# 🇳🇱 Dutch (Nederlands)
+Add-WindowsCapability -Online -Name "Language.OCR~~~nl-NL~0.0.1.0"
+
+# 🇸🇪 Swedish (Svenska)
+Add-WindowsCapability -Online -Name "Language.OCR~~~sv-SE~0.0.1.0"
+
+# 🇳🇴 Norwegian (Norsk Bokmål)
+Add-WindowsCapability -Online -Name "Language.OCR~~~nb-NO~0.0.1.0"
+
+# 🇩🇰 Danish (Dansk)
+Add-WindowsCapability -Online -Name "Language.OCR~~~da-DK~0.0.1.0"
+
+# 🇫🇮 Finnish (Suomi)
+Add-WindowsCapability -Online -Name "Language.OCR~~~fi-FI~0.0.1.0"
+
+# 🇬🇷 Greek (Ελληνικά)
+Add-WindowsCapability -Online -Name "Language.OCR~~~el-GR~0.0.1.0"
+
+# 🇹🇷 Turkish (Türkçe)
+Add-WindowsCapability -Online -Name "Language.OCR~~~tr-TR~0.0.1.0"
+```
+</details>
+
+<details open>
+<summary><b>🇯🇵 Asia & Middle East</b></summary>
+
+```powershell
+# 🇯🇵 Japanese (日本語)
 Add-WindowsCapability -Online -Name "Language.OCR~~~ja-JP~0.0.1.0"
 
-# 🇨🇳 Chinese (Simplified) OCR
+# 🇨🇳 Chinese Simplified (简体中文)
 Add-WindowsCapability -Online -Name "Language.OCR~~~zh-CN~0.0.1.0"
 
-# 🇰🇷 Korean OCR
+# 🇹🇼 Chinese Traditional (繁體中文) / 🇭🇰 Hong Kong
+Add-WindowsCapability -Online -Name "Language.OCR~~~zh-TW~0.0.1.0"
+Add-WindowsCapability -Online -Name "Language.OCR~~~zh-HK~0.0.1.0"
+
+# 🇰🇷 Korean (한국어)
 Add-WindowsCapability -Online -Name "Language.OCR~~~ko-KR~0.0.1.0"
 
-# 🇺🇸 English (US) OCR
-Add-WindowsCapability -Online -Name "Language.OCR~~~en-US~0.0.1.0"
+# 🇸🇦 Arabic (العربية)
+Add-WindowsCapability -Online -Name "Language.OCR~~~ar-SA~0.0.1.0"
+
+# 🇮🇱 Hebrew (עברית)
+Add-WindowsCapability -Online -Name "Language.OCR~~~he-IL~0.0.1.0"
+```
+</details>
+
+> [!NOTE]
+> **Baltic Languages (Lithuanian, Latvian, Estonian)**: Microsoft packages recognition for these languages inside the standard Basic language feature pack. To install them, use Windows Settings GUI or run:
+> ```powershell
+> Add-WindowsCapability -Online -Name "Language.Basic~~~lt-LT~0.0.1.0" # Lithuanian
+> Add-WindowsCapability -Online -Name "Language.Basic~~~lv-LV~0.0.1.0" # Latvian
+> Add-WindowsCapability -Online -Name "Language.Basic~~~et-EE~0.0.1.0" # Estonian
+> ```
+
+---
+
+#### ⚡ 1-Click Multi-Language Pack (Popular European + CJK + Ukrainian)
+
+If you frequently translate across multiple languages, install the most popular set in a single command:
+
+```powershell
+@(
+  "Language.OCR~~~uk-UA~0.0.1.0",
+  "Language.OCR~~~en-US~0.0.1.0",
+  "Language.OCR~~~pl-PL~0.0.1.0",
+  "Language.OCR~~~de-DE~0.0.1.0",
+  "Language.OCR~~~fr-FR~0.0.1.0",
+  "Language.OCR~~~es-ES~0.0.1.0",
+  "Language.OCR~~~it-IT~0.0.1.0",
+  "Language.OCR~~~ja-JP~0.0.1.0"
+) | ForEach-Object { Add-WindowsCapability -Online -Name $_ }
 ```
 
-#### How to Check Installed OCR Languages
+---
 
-Run this command in PowerShell to inspect which OCR packs are currently available on your PC:
+#### 🔍 How to Check Currently Installed OCR Languages
+
+Run this command in PowerShell to inspect which OCR packs are already active on your machine:
 
 ```powershell
 Get-WindowsCapability -Online | Where-Object { $_.Name -like "Language.OCR*" -and $_.State -eq "Installed" } | Select-Object Name
 ```
 
-#### Alternative: Windows Settings GUI
+---
 
-1. Open **Windows Settings** (`Win + I`) → **Time & Language** → **Language & region**.
-2. Find the desired language in the list (or click **Add a language**).
+#### Method 2: Windows Settings GUI
+
+1. Open **Windows Settings** (<kbd>Win</kbd>+<kbd>I</kbd>) → **Time & Language** → **Language & region**.
+2. Locate the desired language (or click **Add a language**).
 3. Click the **...** menu next to the language → **Language options**.
 4. Under **Language features**, locate **Optical Character Recognition (OCR)** and click **Download / Install**.
 
