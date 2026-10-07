@@ -470,6 +470,11 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
                 // Capture selected text from active application
                 let captured = capture_selected_text();
 
+                // Only summon window if text was actually selected on screen!
+                if captured.trim().is_empty() {
+                    continue;
+                }
+
                 let app_weak_inner = app_weak.clone();
                 let _ = slint::invoke_from_event_loop(move || {
                     if let Some(app) = app_weak_inner.upgrade() {

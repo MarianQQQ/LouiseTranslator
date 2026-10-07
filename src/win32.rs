@@ -17,6 +17,7 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
     VK_CONTROL, VK_MENU,
 };
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
+use windows::Win32::System::DataExchange::GetClipboardSequenceNumber;
 use windows::Win32::UI::WindowsAndMessaging::{
     CreateWindowExW, DefWindowProcW, EnumWindows, GetCursorPos, GetSystemMetrics,
     GetWindowLongPtrW, GetWindowLongW, GetWindowThreadProcessId, IsWindowVisible, RegisterClassW,
@@ -476,20 +477,31 @@ pub fn capture_selected_text() -> String {
         };
 
         let backup = clip.get_text().unwrap_or_default();
+        let seq_before = GetClipboardSequenceNumber();
 
         // Emulate Ctrl+C
         simulate_ctrl_key(VK_C);
 
-        // Wait for clipboard update
+        // Wait for clipboard update (Ctrl+C to take effect in active window)
         for _ in 0..25 {
             std::thread::sleep(Duration::from_millis(15));
-            if let Ok(new_text) = clip.get_text() {
+            let seq_after = GetClipboardSequenceNumber();
+            if seq_after != seq_before {
+                // Clipboard sequence number changed: an actual copy occurred!
+                if let Ok(new_text) = clip.get_text() {
+                    if !new_text.trim().is_empty() {
+                        return new_text;
+                    }
+                }
+            } else if let Ok(new_text) = clip.get_text() {
+                // Fallback check if text content changed
                 if new_text != backup && !new_text.trim().is_empty() {
                     return new_text;
                 }
             }
         }
 
-        clip.get_text().unwrap_or_default()
+        // No new text was selected or copied -> return empty string (never fallback to stale clipboard!)
+        String::new()
     }
 }
