@@ -1,0 +1,2017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Louise Translator — Discreet Desktop Translator for Windows</title>
+  <meta name="description" content="Keyboard-first instant desktop translator for Windows. Powered by DeepL Neural AI and Google Fallback, crafted in pure Rust and Slint UI.">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <!-- Fonts: JetBrains Mono & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #090a0c;
+      --card-bg: #101010;
+      --card-inner: #161616;
+      --field-bg: #1c1c1c;
+      --border: #282828;
+      --border-subtle: #202020;
+      --border-focus: #f1ffff;
+      --text: #f1ffff;
+      --text-muted: #888888;
+      --text-dim: #555555;
+      --cyan: #00c0f0;
+      --cyan-hover: #38bdf8;
+      --cyan-glow: rgba(0, 192, 240, 0.28);
+      --green: #2ea043;
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* Ambient Canvas */
+    #ambient-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.55;
+    }
+
+    /* Subtle rotating Heptapod background watermark */
+    .heptapod-bg {
+      position: fixed;
+      right: 5vw;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48vw;
+      height: 48vw;
+      max-width: 720px;
+      max-height: 720px;
+      background: url('assets/heptapod_circle.svg') center/contain no-repeat;
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 0;
+      animation: slowRotate 240s linear infinite;
+    }
+
+    @keyframes slowRotate {
+      from { transform: translateY(-50%) rotate(0deg); }
+      to { transform: translateY(-50%) rotate(360deg); }
+    }
+
+    /* Viewport Outer Frame (Fits 100vh, zero vertical scrollbar) */
+    .viewport {
+      position: relative;
+      z-index: 1;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(12px, 2vh, 24px) clamp(20px, 3vw, 40px);
+    }
+
+    /* Centered Inner Container with Max Width */
+    .container {
+      width: 100%;
+      max-width: 1220px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: clamp(8px, 1.5vh, 20px);
+    }
+
+    /* 1. Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 46px;
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .logo-ring {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
+
+    .logo-ring img {
+      width: 20px;
+      height: 20px;
+    }
+
+    .brand-title {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .version-tag {
+      font-size: 0.68rem;
+      padding: 2px 7px;
+      background: rgba(0, 192, 240, 0.12);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 192, 240, 0.3);
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    .header-center {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-gh {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 7px 14px;
+      border-radius: 7px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-gh:hover {
+      background: #1c1d24;
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    /* 2. Main Content Layout */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1.08fr;
+      gap: clamp(24px, 4vw, 56px);
+      align-items: center;
+      width: 100%;
+      min-height: 0;
+    }
+
+    /* Left Column: Hero Information */
+    .hero-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: clamp(10px, 1.8vh, 18px);
+      max-width: 540px;
+    }
+
+    .sub-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .hero-title {
+      font-size: clamp(2rem, 3.2vw, 2.85rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+      color: #fff;
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, #00c0f0 0%, #38bdf8 55%, #e0f2fe 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: clamp(0.88rem, 1.1vw, 0.98rem);
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+
+    /* Specs Cards */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 2px 0;
+    }
+
+    .spec-card {
+      background: rgba(17, 18, 22, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .spec-card:hover {
+      border-color: rgba(0, 192, 240, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .spec-val {
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .spec-lbl {
+      font-size: 0.68rem;
+      color: var(--text-dim);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Single Large Download Button */
+    .cta-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      background: linear-gradient(135deg, #00c0f0 0%, #0095c7 100%);
+      color: #041017;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 16px 32px;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px var(--cyan-glow), inset 0 1px 0 rgba(255,255,255,0.45);
+      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      cursor: pointer;
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+    }
+
+    .btn-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 38px rgba(0, 192, 240, 0.5);
+      background: linear-gradient(135deg, #28d5ff 0%, #00aae3 100%);
+    }
+
+    .btn-download .btn-sub {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 500;
+      opacity: 0.85;
+      margin-top: 3px;
+    }
+
+    /* Right Column: 100% Authentic Louise Window Simulator */
+    .showcase-wrapper {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      perspective: 1200px;
+      width: 100%;
+    }
+
+    .app-window {
+      width: 100%;
+      max-width: 485px;
+      background: #101010;
+      border: 1px solid #282828;
+      border-radius: 10px;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.9), 0 0 1px rgba(255, 255, 255, 0.12);
+      display: flex;
+      flex-direction: column;
+      transform-style: preserve-3d;
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s;
+      padding: 10px;
+      gap: 8px;
+      position: relative;
+    }
+
+    .app-window:hover {
+      border-color: #383838;
+      box-shadow: 0 32px 85px rgba(0, 0, 0, 0.95);
+    }
+
+    /* Titlebar */
+    .win-titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 32px;
+      background: #1c1c1c;
+      border: 1px solid #282828;
+      border-radius: 6px;
+      padding: 0 8px;
+    }
+
+    .win-title-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.82rem;
+      color: #f1ffff;
+    }
+
+    .app-titlebar-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 3px;
+      object-fit: contain;
+    }
+
+    .win-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #888888;
+      font-size: 0.82rem;
+    }
+
+    .win-ctrl-icon {
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .win-ctrl-icon:hover {
+      color: #f1ffff;
+    }
+
+    /* STRICTLY SYMMETRIC Top Language Dropdowns Row */
+    .lang-row {
+      display: grid;
+      grid-template-columns: 1fr 38px 1fr;
+      gap: 8px;
+      align-items: center;
+      width: 100%;
+    }
+
+    .lang-pill-btn {
+      background: #1c1c1c;
+      border: 1px solid #282828;
+      border-radius: 8px;
+      height: 38px;
+      padding: 0 10px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #f1ffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      min-width: 0;
+    }
+
+    .lang-pill-btn.static {
+      cursor: default;
+      background: #1c1c1c;
+      border-color: #282828;
+    }
+
+    .lang-pill-btn:not(.static):hover {
+      border-color: #3c3c3c;
+      background: #222222;
+    }
+
+    .flag-svg {
+      width: 19px;
+      height: 13px;
+      border-radius: 2px;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16);
+      display: inline-block;
+      flex-shrink: 0;
+      vertical-align: middle;
+      overflow: hidden;
+    }
+
+    .swap-btn {
+      background: #1c1c1c;
+      border: 1px solid #282828;
+      border-radius: 8px;
+      height: 38px;
+      width: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888888;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.15s;
+    }
+
+    .swap-btn:hover {
+      color: #f1ffff;
+      border-color: #f1ffff;
+      background: #242424;
+    }
+
+    /* Field Sections */
+    .field-section {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #777777;
+      text-transform: uppercase;
+      padding: 0 2px;
+    }
+
+    .engine-tag {
+      color: #888888;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      text-transform: none;
+      transition: opacity 0.2s, color 0.2s;
+    }
+
+    .ocr-btn-mock {
+      background: #1c1c1c;
+      border: 1px solid #282828;
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #a1a1aa;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-transform: none;
+    }
+
+    .ocr-btn-mock:hover {
+      background: #262626;
+      border-color: #f1ffff;
+      color: #f1ffff;
+    }
+
+    .ocr-btn-mock.active {
+      background: rgba(0, 192, 240, 0.2);
+      border-color: var(--cyan);
+      color: #f1ffff;
+    }
+
+    /* OCR Feature Spotlight Banner in Hero */
+    .ocr-spotlight {
+      background: linear-gradient(135deg, rgba(17, 24, 39, 0.88) 0%, rgba(13, 15, 22, 0.92) 100%);
+      border: 1px solid rgba(0, 192, 240, 0.3);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      position: relative;
+      overflow: hidden;
+      margin: 1px 0;
+    }
+    .ocr-spotlight::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0, 192, 240, 0.6), transparent);
+    }
+    .ocr-spotlight:hover {
+      border-color: rgba(0, 192, 240, 0.65);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 192, 240, 0.18);
+    }
+    .ocr-spotlight-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .ocr-tag-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--cyan);
+      letter-spacing: 0.06em;
+    }
+    .ocr-pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 12px var(--cyan); }
+    }
+    .ocr-hotkey-badge {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: #fff;
+    }
+    .ocr-hotkey-badge kbd {
+      background: #1b1e28;
+      border: 1px solid #363b4d;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      color: #f1ffff;
+    }
+    .ocr-spotlight-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .ocr-spotlight-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .ocr-spotlight-head {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ocr-spotlight-sub {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+    .ocr-spotlight-btn {
+      background: rgba(0, 192, 240, 0.12);
+      border: 1px solid rgba(0, 192, 240, 0.35);
+      border-radius: 6px;
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 5px 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .ocr-spotlight-btn:hover {
+      background: var(--cyan);
+      color: #041017;
+      border-color: var(--cyan);
+    }
+
+    /* OCR Language Packs Modal */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal-card {
+      background: #111216;
+      border: 1px solid #282a36;
+      border-radius: 14px;
+      max-width: 680px;
+      width: 100%;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 24px;
+      box-shadow: 0 28px 75px rgba(0,0,0,0.95);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-title {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .modal-close {
+      cursor: pointer;
+      font-size: 1.3rem;
+      color: #888;
+      background: transparent;
+      border: none;
+      line-height: 1;
+      padding: 4px;
+    }
+    .modal-close:hover { color: #fff; }
+    .modal-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Search & Filter Controls in Modal */
+    .ocr-search-wrap {
+      width: 100%;
+    }
+    .ocr-search-input {
+      width: 100%;
+      background: #181920;
+      border: 1px solid #2e303d;
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #f1ffff;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .ocr-search-input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px rgba(0, 192, 240, 0.2);
+    }
+    .ocr-search-input::placeholder {
+      color: #64687a;
+    }
+
+    .ocr-filter-chips {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .ocr-chip {
+      background: #181920;
+      border: 1px solid #2e303d;
+      color: #9ca3af;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ocr-chip:hover {
+      background: #232530;
+      color: #f1ffff;
+      border-color: #3f4254;
+    }
+    .ocr-chip.active {
+      background: rgba(0, 192, 240, 0.15);
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    /* Batch 1-Click Card */
+    .ocr-batch-box {
+      background: linear-gradient(135deg, rgba(0, 192, 240, 0.08) 0%, rgba(17, 24, 39, 0.6) 100%);
+      border: 1px solid rgba(0, 192, 240, 0.3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ocr-batch-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #f1ffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ocr-batch-desc {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+    .ocr-batch-cmd-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: #0f1014;
+      border: 1px solid #252834;
+      border-radius: 6px;
+      padding: 6px 10px;
+    }
+
+    /* OCR Commands List */
+    .ocr-cmd-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      max-height: 340px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+      padding-right: 2px;
+    }
+    .ocr-cmd-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #16171d;
+      border: 1px solid #262833;
+      border-radius: 7px;
+      padding: 8px 12px;
+      gap: 10px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .ocr-cmd-item:hover {
+      border-color: #3b3e4f;
+      background: #1b1c24;
+    }
+    .ocr-cmd-item-left {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      overflow: hidden;
+      flex: 1;
+    }
+    .ocr-cmd-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ocr-cmd-name {
+      font-size: 0.76rem;
+      color: #f1ffff;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ocr-native-name {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+    }
+    .ocr-cmd-text {
+      font-family: var(--font-mono);
+      font-size: 0.71rem;
+      color: var(--cyan);
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .btn-copy-cmd {
+      background: #242630;
+      border: 1px solid #373a4b;
+      border-radius: 5px;
+      color: #f1ffff;
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 5px 11px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-copy-cmd:hover { background: #323545; border-color: #4c5166; }
+    .btn-copy-cmd.copied { background: #15803d; border-color: #22c55e; color: #fff; }
+
+    .text-container {
+      background: #1c1c1c;
+      border: 1px solid #282828;
+      border-radius: 7px;
+      padding: 10px 12px;
+      transition: border-color 0.15s;
+    }
+
+    .text-container:focus-within {
+      border-color: #f1ffff;
+    }
+
+    .text-area-real {
+      width: 100%;
+      height: 72px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #f1ffff;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.45;
+      resize: none;
+    }
+
+    .text-area-real::placeholder {
+      color: #555555;
+    }
+
+    .dst-output-real {
+      height: 72px;
+      color: #f1ffff;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.45;
+      overflow-y: auto;
+      user-select: text;
+      transition: opacity 0.15s;
+    }
+
+    /* Bottom Action Bar */
+    .action-row {
+      display: grid;
+      grid-template-columns: 88px 1fr 88px;
+      gap: 8px;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .btn-action-sec {
+      background: #1c1c1c;
+      border: 1px solid #282828;
+      color: #d4d4d8;
+      border-radius: 7px;
+      height: 38px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-action-sec:hover {
+      background: #252525;
+      color: #f1ffff;
+      border-color: #383838;
+    }
+
+    .btn-action-sec.active {
+      background: rgba(46, 160, 67, 0.2);
+      color: #4ade80;
+      border-color: rgba(46, 160, 67, 0.4);
+    }
+
+    .btn-action-pri {
+      background: #f1ffff;
+      color: #101010;
+      border: 1px solid #f1ffff;
+      border-radius: 7px;
+      height: 38px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.84rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(241, 255, 255, 0.08);
+      transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .btn-action-pri:hover {
+      background: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(241, 255, 255, 0.18);
+    }
+
+    .btn-action-pri.active {
+      background: #d0e0e0;
+      color: #101010;
+    }
+
+    /* Target Language Dropdown Menu (Scrollable with crisp list) */
+    .dropdown-menu {
+      position: absolute;
+      top: 86px;
+      right: 12px;
+      background: #161616;
+      border: 1px solid #282828;
+      border-radius: 8px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.9);
+      display: none;
+      flex-direction: column;
+      z-index: 50;
+      width: 195px;
+      max-height: 275px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
+
+    .dropdown-menu::-webkit-scrollbar {
+      width: 5px;
+    }
+    .dropdown-menu::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .dropdown-menu::-webkit-scrollbar-thumb {
+      background: #282828;
+      border-radius: 3px;
+    }
+
+    .dropdown-menu.show {
+      display: flex;
+    }
+
+    .dropdown-item {
+      padding: 7px 12px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #d4d4d8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .dropdown-item:hover {
+      background: #242424;
+      color: #f1ffff;
+    }
+
+    .dropdown-item.active {
+      background: #2c2c2c;
+      color: #f1ffff;
+      font-weight: 600;
+    }
+
+    /* 3. Footer */
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 38px;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    .quote {
+      font-style: italic;
+      color: var(--text-muted);
+      letter-spacing: -0.01em;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-links a:hover {
+      color: var(--cyan);
+    }
+
+    /* Responsive Overrides */
+    @media (max-width: 960px) {
+      html, body {
+        overflow-y: auto;
+        height: auto;
+      }
+      .viewport {
+        height: auto;
+        min-height: 100vh;
+        padding: 20px;
+      }
+      main {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        padding: 24px 0;
+      }
+      .hero-info {
+        max-width: 100%;
+        text-align: center;
+        align-items: center;
+      }
+      .specs-grid {
+        width: 100%;
+      }
+      .cta-row {
+        justify-content: center;
+      }
+      .heptapod-bg {
+        display: none;
+      }
+      footer {
+        flex-direction: column;
+        height: auto;
+        padding: 16px 0;
+        gap: 8px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Canvas Background -->
+  <canvas id="ambient-canvas"></canvas>
+
+  <!-- Rotating Heptapod Watermark -->
+  <div class="heptapod-bg"></div>
+
+  <div class="viewport">
+    <div class="container">
+      
+      <!-- 1. Header -->
+      <header>
+        <a href="https://github.com/MarianQQQ/LouiseTranslator" class="brand">
+          <div class="logo-ring">
+            <img src="assets/app_icon.ico" onerror="this.src='assets/app-icon.png'" alt="Louise Icon">
+          </div>
+          <div class="brand-title">
+            Louise Translator
+            <span class="version-tag">v1.1.0</span>
+          </div>
+        </a>
+
+        <div class="header-center">
+          <div class="badge-pill">
+            <span class="dot"></span>
+            DeepL Neural AI ⚡ + Google Fallback + Windows OCR 📷 + Neural TTS 🔊
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="btn-gh" id="btnHeaderOcr" type="button" onclick="openOcrModal(event)" style="border-color: rgba(0, 192, 240, 0.35); color: #00c0f0; cursor: pointer;" title="View all 30 Windows OCR language pack commands">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+              <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+              <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+              <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            <span>OCR Packs (30)</span>
+          </button>
+          <a href="https://github.com/MarianQQQ/LouiseTranslator" target="_blank" class="btn-gh">
+            <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
+            </svg>
+            GitHub Star
+          </a>
+        </div>
+      </header>
+
+      <!-- 2. Main Content Grid -->
+      <main>
+        
+        <!-- Left Column: Story & Download -->
+        <div class="hero-info">
+          <div class="sub-tag">
+            <span>🌌</span> Inspired by Dr. Louise Banks (Arrival)
+          </div>
+
+          <h1 class="hero-title">
+            Language isn't a barrier.<br>
+            It's an <span>instant bridge.</span>
+          </h1>
+
+          <p class="hero-desc">
+            Discreet, keyboard-first desktop translator for Windows. Instant selection capture (<kbd>Alt+C</kbd>), offline screen OCR (<kbd>Alt+S</kbd>), and deep neural translations with zero cloud latency.
+          </p>
+
+          <!-- Screen OCR Feature Spotlight Card -->
+          <div class="ocr-spotlight" id="ocrSpotlightCard" onclick="openOcrModal(event)" title="Click to view all 30 Windows OCR Language Packs">
+            <div class="ocr-spotlight-top">
+              <div class="ocr-tag-group">
+                <span class="ocr-pulse-dot"></span>
+                <span class="ocr-tag-text">NEW IN V1.1 · OFFLINE SCREEN OCR</span>
+              </div>
+              <span class="ocr-hotkey-badge"><kbd>Alt</kbd>+<kbd>S</kbd></span>
+            </div>
+            <div class="ocr-spotlight-main">
+              <div class="ocr-spotlight-left">
+                <div class="ocr-spotlight-head">Instant Freeze & Snip Recognition</div>
+                <div class="ocr-spotlight-sub">Snip text from YouTube videos, PDFs, games & images. 100% offline via native Windows Media OCR with zero cloud tokens.</div>
+              </div>
+              <button class="ocr-spotlight-btn" id="btnHeroOpenOcr" type="button" onclick="openOcrModal(event)">
+                <span>30 Langs</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Specs Metrics -->
+          <div class="specs-grid">
+            <div class="spec-card">
+              <div class="spec-val">~60 MB</div>
+              <div class="spec-lbl">RAM Footprint</div>
+            </div>
+            <div class="spec-card">
+              <div class="spec-val">Native OCR</div>
+              <div class="spec-lbl">Zero Cloud Delay</div>
+            </div>
+            <div class="spec-card">
+              <div class="spec-val">100% DPAPI</div>
+              <div class="spec-lbl">Local Privacy</div>
+            </div>
+          </div>
+
+          <!-- Centered Direct Download Button -->
+          <div class="cta-row">
+            <a href="https://github.com/MarianQQQ/LouiseTranslator/releases/download/v1.1.0/Louise.Translator.exe" class="btn-download">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <div>
+                <span>Download for Windows (.exe)</span>
+                <span class="btn-sub">Louise.Translator.exe • Free & Portable • v1.1.0</span>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Right Column: 1-to-1 Louise Window Replica -->
+        <div class="showcase-wrapper">
+          <div class="app-window" id="appMock">
+            
+            <!-- Window Titlebar with Original Translator Icon -->
+            <div class="win-titlebar">
+              <div class="win-title-left">
+                <img src="assets/app_icon.ico" onerror="this.src='assets/app-icon.png'" class="app-titlebar-icon" alt="Louise Icon">
+                <span>Louise Translator</span>
+              </div>
+              <div class="win-controls">
+                <span id="engineBadge" style="font-family:var(--font-mono);font-size:0.72rem;font-weight:700;color:#888;margin-right:2px;">Google</span>
+                <span class="win-ctrl-icon" title="About / Shortcuts">?</span>
+                <span class="win-ctrl-icon" title="Settings">⚙</span>
+                <span class="win-ctrl-icon" title="Close to tray">✕</span>
+              </div>
+            </div>
+
+            <!-- Strictly Symmetric Language Selectors Row -->
+            <div class="lang-row">
+              <div class="lang-pill-btn" id="srcLangBtn" title="Auto-detect source language" style="justify-content:space-between;">
+                <span id="srcLangContent" style="display:inline-flex; align-items:center; justify-content:center; flex:1;">
+                  <span>Auto-detect</span>
+                </span>
+                <span style="font-size: 0.7rem; color: #717782;">▾</span>
+              </div>
+
+              <div class="swap-btn" id="btnSwap" title="Swap languages">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+              </div>
+
+              <div class="lang-pill-btn" id="dstLangBtn" title="Select target language">
+                <span id="dstLangContent" style="display:inline-flex; align-items:center; gap:8px;">
+                  <svg viewBox="0 0 21 14" class="flag-svg"><rect width="7" height="14" fill="#009246"/><rect x="7" width="7" height="14" fill="#ffffff"/><rect x="14" width="7" height="14" fill="#ce2b37"/></svg>
+                  <span>Italian</span>
+                </span>
+                <span style="font-size: 0.7rem; color: #717782;">▾</span>
+              </div>
+            </div>
+
+            <!-- Target Language Dropdown Menu (Populated dynamically) -->
+            <div class="dropdown-menu" id="dropdownMenu"></div>
+
+            <!-- SOURCE Section -->
+            <div class="field-section">
+              <div class="field-header">
+                <span>SOURCE <span id="detectedLangLabel" style="color:#555;font-weight:400;text-transform:none;font-size:0.65rem;">→ English</span></span>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span id="charCount" style="font-size:0.65rem;color:#555;font-weight:400;">91 chars</span>
+                  <button class="ocr-btn-mock" id="btnMockOcr" title="Screen OCR Capture (Alt + S)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+                      <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+                      <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+                      <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+                      <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                    <span>OCR · Alt+S</span>
+                  </button>
+                </div>
+              </div>
+              <div class="text-container">
+                <textarea class="text-area-real" id="srcInput" placeholder="Type text here or select on screen...">Language is the first weapon drawn in a conflict, or the first hand extended in understanding.</textarea>
+              </div>
+            </div>
+
+            <!-- TRANSLATION Section -->
+            <div class="field-section">
+              <div class="field-header">
+                <span>TRANSLATION</span>
+                <button class="ocr-btn-mock" id="btnListen" title="Listen (Neural TTS)" style="gap:5px;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                  </svg>
+                  <span>Listen</span>
+                </button>
+              </div>
+              <div class="text-container">
+                <div class="dst-output-real" id="dstOutput">Il linguaggio è la prima arma impugnata in un conflitto, o la prima mano tesa alla comprensione.</div>
+              </div>
+            </div>
+
+            <!-- Bottom Action Buttons Bar -->
+            <div class="action-row">
+              <button class="btn-action-sec" id="btnCopy" title="Copy translated text to clipboard">
+                Copy
+              </button>
+
+              <button class="btn-action-pri" id="btnReplace" title="Simulates in-place text replacement in your active app">
+                Paste as replacement
+              </button>
+
+              <button class="btn-action-sec" id="btnClear" title="Clear input and output">
+                Clear
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </main>
+
+      <!-- 3. Footer -->
+      <footer>
+        <div class="quote">
+          «If you could see your whole life from start to finish, would you change things?» — Dr. Louise Banks
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/MarianQQQ/LouiseTranslator" target="_blank">GitHub Repository</a>
+          <span>•</span>
+          <a href="javascript:void(0)" id="btnOpenOcrModal" onclick="openOcrModal(event)">Windows OCR Packs</a>
+          <span>•</span>
+          <a href="https://github.com/MarianQQQ/LouiseTranslator/releases" target="_blank">Releases</a>
+          <span>•</span>
+          <a href="https://github.com/MarianQQQ/LouiseTranslator/blob/main/LICENSE" target="_blank">MIT License</a>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- Windows OCR Packs Interactive Modal -->
+  <div class="modal-backdrop" id="ocrModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>📷</span> Windows OCR Language Packs (30+ Languages)
+        </div>
+        <button class="modal-close" id="btnCloseOcrModal" onclick="closeOcrModal(event)" aria-label="Close modal">&times;</button>
+      </div>
+
+      <p class="modal-desc">
+        Louise uses 100% native, offline <b>Windows.Media.Ocr</b>. Run <b>PowerShell as Administrator</b> and run any command below to install official Microsoft neural models:
+      </p>
+
+      <!-- 1-Click Multi-Pack -->
+      <div class="ocr-batch-box">
+        <div class="ocr-batch-title">⚡ 1-Click Multi-Language Pack (Popular European + CJK + Ukrainian)</div>
+        <div class="ocr-batch-desc">Installs Ukrainian, English, Polish, German, French, Spanish, Italian & Japanese simultaneously:</div>
+        <div class="ocr-batch-cmd-row">
+          <div class="ocr-cmd-text">@("uk-UA","en-US","pl-PL","de-DE","fr-FR","es-ES","it-IT","ja-JP") | % { Add-WindowsCapability -Online -Name "Language.OCR~~~$_~0.0.1.0" }</div>
+          <button class="btn-copy-cmd" data-cmd="@('uk-UA','en-US','pl-PL','de-DE','fr-FR','es-ES','it-IT','ja-JP') | ForEach-Object { Add-WindowsCapability -Online -Name &quot;Language.OCR~~~$_~0.0.1.0&quot; }">Copy</button>
+        </div>
+      </div>
+
+      <!-- Check Installed Pack Command -->
+      <div class="ocr-batch-box" style="border-color: rgba(255,255,255,0.12);">
+        <div class="ocr-batch-title">🔍 Check Currently Installed OCR Languages</div>
+        <div class="ocr-batch-cmd-row">
+          <div class="ocr-cmd-text">Get-WindowsCapability -Online | Where-Object { $_.Name -like "Language.OCR*" -and $_.State -eq "Installed" }</div>
+          <button class="btn-copy-cmd" data-cmd="Get-WindowsCapability -Online | Where-Object { $_.Name -like &quot;Language.OCR*&quot; -and $_.State -eq &quot;Installed&quot; }">Copy</button>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="ocr-search-wrap">
+        <input type="text" id="ocrSearchInput" class="ocr-search-input" placeholder="🔍 Search by language, country or code (e.g. uk, Ukrainian, Deutsch, ja, ar, polski)...">
+      </div>
+
+      <div class="ocr-filter-chips">
+        <button class="ocr-chip active" data-filter="all">All (30+)</button>
+        <button class="ocr-chip" data-filter="popular">⚡ Popular Set</button>
+        <button class="ocr-chip" data-filter="europe">Europe</button>
+        <button class="ocr-chip" data-filter="asia">Asia & Mid-East</button>
+        <button class="ocr-chip" data-filter="americas">Americas</button>
+      </div>
+
+      <!-- Dynamic Commands List (Populated via JS) -->
+      <div class="ocr-cmd-list" id="ocrCmdListContainer"></div>
+
+      <!-- Alternative GUI Note -->
+      <div style="font-size: 0.73rem; color: var(--text-dim); line-height: 1.4; border-top: 1px solid #22242e; padding-top: 8px;">
+        💡 <b>GUI Alternative:</b> Windows Settings (<kbd>Win+I</kbd>) → <b>Time & language</b> → <b>Language & region</b> → Click language <b>...</b> → <b>Language options</b> → Download <b>OCR</b>.
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Vector SVG Flags matching Louise Translator Slint FlagBadge
+    const flagSvgs = {
+      it: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="7" height="14" fill="#009246"/><rect x="7" width="7" height="14" fill="#ffffff"/><rect x="14" width="7" height="14" fill="#ce2b37"/></svg>`,
+      uk: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="7" fill="#0057b7"/><rect y="7" width="21" height="7" fill="#ffd700"/></svg>`,
+      en: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#012169"/><path d="M0,0 L21,14 M21,0 L0,14" stroke="#ffffff" stroke-width="2.5"/><path d="M0,0 L21,14 M21,0 L0,14" stroke="#c8102e" stroke-width="1.2"/><rect x="8.5" width="4" height="14" fill="#ffffff"/><rect y="5" width="21" height="4" fill="#ffffff"/><rect x="9.5" width="2" height="14" fill="#c8102e"/><rect y="6" width="21" height="2" fill="#c8102e"/></svg>`,
+      pl: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="7" fill="#ffffff"/><rect y="7" width="21" height="7" fill="#dc143c"/></svg>`,
+      de: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#111111"/><rect y="4.66" width="21" height="4.66" fill="#dd0000"/><rect y="9.33" width="21" height="4.67" fill="#ffce00"/></svg>`,
+      fr: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="7" height="14" fill="#002395"/><rect x="7" width="7" height="14" fill="#ffffff"/><rect x="14" width="7" height="14" fill="#ed2939"/></svg>`,
+      es: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="3.5" fill="#aa151b"/><rect y="3.5" width="21" height="7" fill="#f1bf00"/><rect y="10.5" width="21" height="3.5" fill="#aa151b"/></svg>`,
+      pt: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="8.4" height="14" fill="#046a38"/><rect x="8.4" width="12.6" height="14" fill="#da291c"/><circle cx="8.4" cy="7" r="2.8" fill="#ffd700"/></svg>`,
+      nl: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#ae1c28"/><rect y="4.66" width="21" height="4.66" fill="#ffffff"/><rect y="9.33" width="21" height="4.67" fill="#21468b"/></svg>`,
+      cs: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="7" fill="#ffffff"/><rect y="7" width="21" height="7" fill="#d7141a"/><polygon points="0,0 9.5,7 0,14" fill="#11457e"/></svg>`,
+      sk: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#ffffff"/><rect y="4.66" width="21" height="4.66" fill="#0b4ea2"/><rect y="9.33" width="21" height="4.67" fill="#ee1c25"/></svg>`,
+      ro: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="7" height="14" fill="#002b7f"/><rect x="7" width="7" height="14" fill="#fcd116"/><rect x="14" width="7" height="14" fill="#ce1126"/></svg>`,
+      hu: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#ce2939"/><rect y="4.66" width="21" height="4.66" fill="#ffffff"/><rect y="9.33" width="21" height="4.67" fill="#477050"/></svg>`,
+      tr: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#e30a17"/><circle cx="8" cy="7" r="3.8" fill="#ffffff"/><circle cx="9.2" cy="7" r="3" fill="#e30a17"/><polygon points="12,7 13.5,6.2 13,7.8 14.2,6.7 12.8,7.3" fill="#ffffff"/></svg>`,
+      el: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#0d5eaf"/><rect y="1.55" width="21" height="1.55" fill="#ffffff"/><rect y="4.65" width="21" height="1.55" fill="#ffffff"/><rect y="7.75" width="21" height="1.55" fill="#ffffff"/><rect y="10.85" width="21" height="1.55" fill="#ffffff"/><rect width="7" height="7" fill="#0d5eaf"/><rect x="2.6" width="1.8" height="7" fill="#ffffff"/><rect y="2.6" width="7" height="1.8" fill="#ffffff"/></svg>`,
+      bg: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#ffffff"/><rect y="4.66" width="21" height="4.66" fill="#00966e"/><rect y="9.33" width="21" height="4.67" fill="#d62612"/></svg>`,
+      sv: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#006aa7"/><rect x="6" width="3" height="14" fill="#fecc00"/><rect y="5.5" width="21" height="3" fill="#fecc00"/></svg>`,
+      no: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#ba0c2f"/><rect x="5.5" width="4" height="14" fill="#ffffff"/><rect y="5" width="21" height="4" fill="#ffffff"/><rect x="6.5" width="2" height="14" fill="#00205b"/><rect y="6" width="21" height="2" fill="#00205b"/></svg>`,
+      da: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#c60c30"/><rect x="6" width="2.6" height="14" fill="#ffffff"/><rect y="5.7" width="21" height="2.6" fill="#ffffff"/></svg>`,
+      fi: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#ffffff"/><rect x="5.5" width="3.5" height="14" fill="#003580"/><rect y="5.25" width="21" height="3.5" fill="#003580"/></svg>`,
+      lt: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#fdb913"/><rect y="4.66" width="21" height="4.66" fill="#006a44"/><rect y="9.33" width="21" height="4.67" fill="#c1272d"/></svg>`,
+      lv: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="5.6" fill="#9e3039"/><rect y="5.6" width="21" height="2.8" fill="#ffffff"/><rect y="8.4" width="21" height="5.6" fill="#9e3039"/></svg>`,
+      et: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#0072ce"/><rect y="4.66" width="21" height="4.66" fill="#000000"/><rect y="9.33" width="21" height="4.67" fill="#ffffff"/></svg>`,
+      ja: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#ffffff"/><circle cx="10.5" cy="7" r="4.2" fill="#bc002d"/></svg>`,
+      zh: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#de2910"/><polygon points="4,2 4.6,3.8 3,2.7 5,2.7 3.4,3.8" fill="#ffde00"/></svg>`,
+      ko: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#ffffff"/><circle cx="10.5" cy="7" r="3.5" fill="#c60c30"/><path d="M7,7 A3.5,3.5 0 0,0 14,7 Z" fill="#003478"/></svg>`,
+      ar: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#006c35"/><line x1="5" y1="7" x2="16" y2="7" stroke="#ffffff" stroke-width="1.8"/></svg>`,
+      he: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="14" fill="#ffffff"/><rect y="1.8" width="21" height="1.8" fill="#0038b8"/><rect y="10.4" width="21" height="1.8" fill="#0038b8"/><polygon points="10.5,4.6 12.6,8.2 8.4,8.2" fill="none" stroke="#0038b8" stroke-width="0.8"/><polygon points="10.5,9 12.6,5.4 8.4,5.4" fill="none" stroke="#0038b8" stroke-width="0.8"/></svg>`,
+      hi: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#ff9933"/><rect y="4.66" width="21" height="4.66" fill="#ffffff"/><rect y="9.33" width="21" height="4.67" fill="#138808"/><circle cx="10.5" cy="7" r="1.8" fill="none" stroke="#000080" stroke-width="0.8"/></svg>`,
+      ru: `<svg viewBox="0 0 21 14" class="flag-svg"><rect width="21" height="4.66" fill="#ffffff"/><rect y="4.66" width="21" height="4.66" fill="#0039a6"/><rect y="9.33" width="21" height="4.67" fill="#d52b1e"/></svg>`
+    };
+
+    // Full List of 30 Languages Supported by Louise Translator
+    const languages = [
+      { code: 'it', name: 'Italian' },
+      { code: 'uk', name: 'Ukrainian' },
+      { code: 'en', name: 'English' },
+      { code: 'pl', name: 'Polish' },
+      { code: 'de', name: 'German' },
+      { code: 'fr', name: 'French' },
+      { code: 'es', name: 'Spanish' },
+      { code: 'pt', name: 'Portuguese' },
+      { code: 'nl', name: 'Dutch' },
+      { code: 'cs', name: 'Czech' },
+      { code: 'sk', name: 'Slovak' },
+      { code: 'ro', name: 'Romanian' },
+      { code: 'hu', name: 'Hungarian' },
+      { code: 'tr', name: 'Turkish' },
+      { code: 'el', name: 'Greek' },
+      { code: 'bg', name: 'Bulgarian' },
+      { code: 'sv', name: 'Swedish' },
+      { code: 'no', name: 'Norwegian' },
+      { code: 'da', name: 'Danish' },
+      { code: 'fi', name: 'Finnish' },
+      { code: 'lt', name: 'Lithuanian' },
+      { code: 'lv', name: 'Latvian' },
+      { code: 'et', name: 'Estonian' },
+      { code: 'ja', name: 'Japanese' },
+      { code: 'zh', name: 'Chinese' },
+      { code: 'ko', name: 'Korean' },
+      { code: 'ar', name: 'Arabic' },
+      { code: 'he', name: 'Hebrew' },
+      { code: 'hi', name: 'Hindi' },
+      { code: 'ru', name: 'Russian' }
+    ];
+
+    let targetLang = 'it';
+    const srcInput = document.getElementById('srcInput');
+    const dstOutput = document.getElementById('dstOutput');
+    const dstLangBtn = document.getElementById('dstLangBtn');
+    const dstLangContent = document.getElementById('dstLangContent');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    const engineTag = document.getElementById('engineTag');
+    const btnCopy = document.getElementById('btnCopy');
+    const btnReplace = document.getElementById('btnReplace');
+    const btnClear = document.getElementById('btnClear');
+    const btnSwap = document.getElementById('btnSwap');
+
+    // Populate Target Dropdown Menu with Full 30 Languages & SVG Flag Badges
+    function renderDropdown() {
+      dropdownMenu.innerHTML = languages.map(lang => `
+        <div class="dropdown-item ${lang.code === targetLang ? 'active' : ''}" data-code="${lang.code}">
+          ${flagSvgs[lang.code] || ''}
+          <span>${lang.name}</span>
+        </div>
+      `).join('');
+
+      dropdownMenu.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          targetLang = item.dataset.code;
+          updateTargetPill();
+          dropdownMenu.classList.remove('show');
+          renderDropdown();
+          performLiveTranslation();
+        });
+      });
+    }
+
+    function updateTargetPill() {
+      const current = languages.find(l => l.code === targetLang) || languages[0];
+      dstLangContent.innerHTML = `
+        ${flagSvgs[current.code] || ''}
+        <span>${current.name}</span>
+      `;
+    }
+
+    // Toggle Dropdown
+    dstLangBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdownMenu.classList.toggle('show');
+    });
+
+    document.addEventListener('click', () => {
+      dropdownMenu.classList.remove('show');
+    });
+
+    // Initialize Dropdown
+    renderDropdown();
+    updateTargetPill();
+
+    // Initialize char count on page load
+    setTimeout(() => {
+      if (charCount) charCount.textContent = srcInput.value.length + ' chars';
+    }, 0);
+
+    // REAL LIVE GOOGLE TRANSLATE API WITH DEBOUNCE
+    let debounceTimer;
+    const charCount = document.getElementById('charCount');
+    const detectedLangLabel = document.getElementById('detectedLangLabel');
+    const engineBadge = document.getElementById('engineBadge');
+
+    const langNames = { en:'English', uk:'Ukrainian', pl:'Polish', de:'German', fr:'French', es:'Spanish', it:'Italian', pt:'Portuguese', nl:'Dutch', cs:'Czech', sk:'Slovak', ro:'Romanian', hu:'Hungarian', tr:'Turkish', el:'Greek', bg:'Bulgarian', sv:'Swedish', no:'Norwegian', da:'Danish', fi:'Finnish', lt:'Lithuanian', lv:'Latvian', et:'Estonian', ja:'Japanese', zh:'Chinese', ko:'Korean', ar:'Arabic', he:'Hebrew', hi:'Hindi', ru:'Russian' };
+
+    function updateCharCount() {
+      const n = srcInput.value.length;
+      if (charCount) charCount.textContent = n > 0 ? `${n} chars` : '';
+    }
+
+    srcInput.addEventListener('input', () => {
+      updateCharCount();
+      clearTimeout(debounceTimer);
+      const text = srcInput.value.trim();
+      if (!text) {
+        dstOutput.innerText = "";
+        if (detectedLangLabel) detectedLangLabel.textContent = '';
+        return;
+      }
+      dstOutput.style.opacity = "0.5";
+      debounceTimer = setTimeout(() => { performLiveTranslation(); }, 350);
+    });
+
+    async function performLiveTranslation() {
+      const text = srcInput.value.trim();
+      if (!text) {
+        dstOutput.innerText = "";
+        dstOutput.style.opacity = "1";
+        return;
+      }
+
+      // Default phrase shortcut
+      if (text.startsWith("Language is the first weapon") && targetLang === 'it') {
+        dstOutput.innerText = "Il linguaggio è la prima arma impugnata in un conflitto, o la prima mano tesa alla comprensione.";
+        dstOutput.style.opacity = "1";
+        if (detectedLangLabel) detectedLangLabel.textContent = '→ English';
+        if (engineBadge) { engineBadge.textContent = 'Google'; engineBadge.style.color = '#888'; }
+        return;
+      }
+
+      try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&hl=en&q=${encodeURIComponent(text)}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Network response not ok");
+        const data = await res.json();
+        let translated = "";
+        if (Array.isArray(data) && Array.isArray(data[0])) {
+          for (const part of data[0]) { if (part && part[0]) translated += part[0]; }
+        }
+        dstOutput.innerText = translated || "Translation complete.";
+        const detected = data[2] || 'en';
+        if (detectedLangLabel) detectedLangLabel.textContent = `→ ${langNames[detected] || detected.toUpperCase()}`;
+        if (engineBadge) { engineBadge.textContent = 'Google'; engineBadge.style.color = '#888'; }
+      } catch (err) {
+        dstOutput.innerText = text;
+        if (engineBadge) { engineBadge.textContent = 'Google'; engineBadge.style.color = '#888'; }
+      } finally {
+        dstOutput.style.opacity = "1";
+      }
+    }
+
+    // Copy Button Interaction
+    btnCopy.addEventListener('click', () => {
+      const textToCopy = dstOutput.innerText.trim();
+      if (!textToCopy) return;
+      navigator.clipboard.writeText(textToCopy);
+      btnCopy.classList.add('active');
+      btnCopy.innerText = 'Copied! ✓';
+      setTimeout(() => {
+        btnCopy.classList.remove('active');
+        btnCopy.innerText = 'Copy';
+      }, 1500);
+    });
+
+    // Paste as Replacement Simulation
+    btnReplace.addEventListener('click', () => {
+      const textToReplace = dstOutput.innerText.trim();
+      if (!textToReplace) return;
+      btnReplace.classList.add('active');
+      btnReplace.innerText = 'Injected into active app! ✓';
+      setTimeout(() => {
+        btnReplace.classList.remove('active');
+        btnReplace.innerText = 'Paste as replacement';
+      }, 1400);
+    });
+
+    // Clear Button
+    btnClear.addEventListener('click', () => {
+      srcInput.value = '';
+      dstOutput.innerText = '';
+      srcInput.placeholder = 'Type anything here in any language...';
+      srcInput.focus();
+      if (charCount) charCount.textContent = '';
+      if (detectedLangLabel) detectedLangLabel.textContent = '';
+      if (engineBadge) { engineBadge.textContent = 'Google'; engineBadge.style.color = '#888'; }
+      window.speechSynthesis.cancel();
+    });
+
+    // Swap / Cycle Languages Button
+    btnSwap.addEventListener('click', () => {
+      if (targetLang === 'it') {
+        targetLang = 'uk';
+      } else if (targetLang === 'uk') {
+        targetLang = 'en';
+      } else {
+        targetLang = 'it';
+      }
+      updateTargetPill();
+      renderDropdown();
+      performLiveTranslation();
+    });
+
+    // Listen Button — Web Speech API with Google online voices
+    const btnListen = document.getElementById('btnListen');
+    const ttsLangMap = {
+      en:'en-US', uk:'uk-UA', pl:'pl-PL', de:'de-DE', fr:'fr-FR', es:'es-ES',
+      it:'it-IT', pt:'pt-PT', nl:'nl-NL', cs:'cs-CZ', sk:'sk-SK', ro:'ro-RO',
+      hu:'hu-HU', tr:'tr-TR', el:'el-GR', bg:'bg-BG', sv:'sv-SE', no:'nb-NO',
+      da:'da-DK', fi:'fi-FI', lt:'lt-LT', lv:'lv-LV', et:'et-EE', ja:'ja-JP',
+      zh:'zh-CN', ko:'ko-KR', ar:'ar-SA', he:'he-IL', hi:'hi-IN', ru:'ru-RU'
+    };
+
+    function setListenActive(active) {
+      btnListen.classList.toggle('active', active);
+      btnListen.querySelector('span').textContent = active ? 'Stop' : 'Listen';
+    }
+
+    // Voices load async in Chrome — pre-load them
+    let voicesReady = false;
+    function loadVoices() {
+      const v = window.speechSynthesis.getVoices();
+      if (v.length > 0) voicesReady = true;
+      return v;
+    }
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    function getBestVoice(langCode) {
+      const voices = window.speechSynthesis.getVoices();
+      const prefix = langCode.slice(0, 2);
+      // Prefer Google online voices (they are neural quality in Chrome/Edge)
+      return voices.find(v => v.lang === langCode && !v.localService)
+          || voices.find(v => v.lang.startsWith(prefix) && !v.localService)
+          || voices.find(v => v.lang === langCode)
+          || voices.find(v => v.lang.startsWith(prefix))
+          || null;
+    }
+
+    btnListen.addEventListener('click', () => {
+      const synth = window.speechSynthesis;
+      if (synth.speaking || synth.pending) {
+        synth.cancel();
+        setListenActive(false);
+        return;
+      }
+      const text = dstOutput.innerText.trim();
+      if (!text) return;
+
+      const langCode = ttsLangMap[targetLang] || 'en-US';
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = langCode;
+      utter.rate = 1.05;
+
+      const voice = getBestVoice(langCode);
+      if (voice) utter.voice = voice;
+
+      utter.onstart  = () => setListenActive(true);
+      utter.onend    = () => setListenActive(false);
+      utter.onerror  = () => setListenActive(false);
+
+      synth.speak(utter);
+      // Chrome quirk: needs a tiny kick to start
+      setTimeout(() => { if (synth.paused) synth.resume(); }, 100);
+    });
+
+    // Stop TTS when switching language
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#dropdownMenu')) {
+        window.speechSynthesis.cancel();
+        setListenActive(false);
+      }
+    });
+
+    // 2. 3D Perspective Tilt on Mouse Movement
+    const appMock = document.getElementById('appMock');
+    document.addEventListener('mousemove', (e) => {
+      if (window.innerWidth < 960) return;
+      const xAxis = (window.innerWidth / 2 - e.pageX) / 55;
+      const yAxis = (window.innerHeight / 2 - e.pageY) / 55;
+      appMock.style.transform = `rotateY(${-xAxis}deg) rotateX(${yAxis}deg)`;
+    });
+
+    document.addEventListener('mouseleave', () => {
+      appMock.style.transform = 'rotateY(0deg) rotateX(0deg)';
+    });
+
+    // 3. Canvas Ambient Particles
+    const canvas = document.getElementById('ambient-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    for (let i = 0; i < 42; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: Math.random() * 1.5 + 0.5,
+        dx: (Math.random() - 0.5) * 0.2,
+        dy: (Math.random() - 0.5) * 0.2,
+        alpha: Math.random() * 0.45 + 0.1
+      });
+    }
+
+    function renderCanvas() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.x += p.dx;
+        p.y += p.dy;
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(241, 255, 255, ${p.alpha * 0.45})`;
+        ctx.fill();
+      });
+      requestAnimationFrame(renderCanvas);
+    }
+    renderCanvas();
+
+    // OCR Modal Interactivity with Full 30+ Language Packs & Instant Search
+    const ocrLanguages = [
+      { code: 'uk', tag: 'uk-UA', name: 'Ukrainian', native: 'Українська', region: 'europe', popular: true },
+      { code: 'en', tag: 'en-US', name: 'English (US)', native: 'English (United States)', region: 'americas', popular: true },
+      { code: 'en', tag: 'en-GB', name: 'English (UK)', native: 'English (United Kingdom)', region: 'europe', popular: true },
+      { code: 'pl', tag: 'pl-PL', name: 'Polish', native: 'Polski', region: 'europe', popular: true },
+      { code: 'de', tag: 'de-DE', name: 'German', native: 'Deutsch', region: 'europe', popular: true },
+      { code: 'fr', tag: 'fr-FR', name: 'French', native: 'Français', region: 'europe', popular: true },
+      { code: 'fr', tag: 'fr-CA', name: 'French (Canada)', native: 'Français (Canada)', region: 'americas', popular: false },
+      { code: 'es', tag: 'es-ES', name: 'Spanish', native: 'Español', region: 'europe', popular: true },
+      { code: 'es', tag: 'es-MX', name: 'Spanish (Mexico)', native: 'Español (México)', region: 'americas', popular: false },
+      { code: 'it', tag: 'it-IT', name: 'Italian', native: 'Italiano', region: 'europe', popular: true },
+      { code: 'pt', tag: 'pt-PT', name: 'Portuguese (Portugal)', native: 'Português', region: 'europe', popular: false },
+      { code: 'pt', tag: 'pt-BR', name: 'Portuguese (Brazil)', native: 'Português (Brasil)', region: 'americas', popular: false },
+      { code: 'nl', tag: 'nl-NL', name: 'Dutch', native: 'Nederlands', region: 'europe', popular: false },
+      { code: 'cs', tag: 'cs-CZ', name: 'Czech', native: 'Čeština', region: 'europe', popular: false },
+      { code: 'sk', tag: 'sk-SK', name: 'Slovak', native: 'Slovenčina', region: 'europe', popular: false },
+      { code: 'ro', tag: 'ro-RO', name: 'Romanian', native: 'Română', region: 'europe', popular: false },
+      { code: 'hu', tag: 'hu-HU', name: 'Hungarian', native: 'Magyar', region: 'europe', popular: false },
+      { code: 'tr', tag: 'tr-TR', name: 'Turkish', native: 'Türkçe', region: 'europe', popular: false },
+      { code: 'el', tag: 'el-GR', name: 'Greek', native: 'Ελληνικά', region: 'europe', popular: false },
+      { code: 'bg', tag: 'bg-BG', name: 'Bulgarian', native: 'Български', region: 'europe', popular: false },
+      { code: 'sv', tag: 'sv-SE', name: 'Swedish', native: 'Svenska', region: 'europe', popular: false },
+      { code: 'no', tag: 'nb-NO', name: 'Norwegian', native: 'Norsk (Bokmål)', region: 'europe', popular: false },
+      { code: 'da', tag: 'da-DK', name: 'Danish', native: 'Dansk', region: 'europe', popular: false },
+      { code: 'fi', tag: 'fi-FI', name: 'Finnish', native: 'Suomi', region: 'europe', popular: false },
+      { code: 'ja', tag: 'ja-JP', name: 'Japanese', native: '日本語', region: 'asia', popular: true },
+      { code: 'zh', tag: 'zh-CN', name: 'Chinese Simplified', native: '简体中文', region: 'asia', popular: true },
+      { code: 'zh', tag: 'zh-TW', name: 'Chinese Traditional', native: '繁體中文', region: 'asia', popular: false },
+      { code: 'zh', tag: 'zh-HK', name: 'Chinese (Hong Kong)', native: '香港中文', region: 'asia', popular: false },
+      { code: 'ko', tag: 'ko-KR', name: 'Korean', native: '한국어', region: 'asia', popular: true },
+      { code: 'ar', tag: 'ar-SA', name: 'Arabic', native: 'العربية', region: 'asia', popular: false },
+      { code: 'he', tag: 'he-IL', name: 'Hebrew', native: 'עברית', region: 'asia', popular: false },
+      { code: 'ru', tag: 'ru-RU', name: 'Russian', native: 'Русский', region: 'europe', popular: false },
+      { code: 'lt', tag: 'lt-LT', name: 'Lithuanian', native: 'Lietuvių', region: 'europe', isBasic: true },
+      { code: 'lv', tag: 'lv-LV', name: 'Latvian', native: 'Latviešu', region: 'europe', isBasic: true },
+      { code: 'et', tag: 'et-EE', name: 'Estonian', native: 'Eesti', region: 'europe', isBasic: true },
+      { code: 'hi', tag: 'hi-IN', name: 'Hindi', native: 'हिन्दी', region: 'asia', isBasic: true }
+    ];
+
+    const ocrModal = document.getElementById('ocrModal');
+    const btnOpenOcrModal = document.getElementById('btnOpenOcrModal');
+    const btnCloseOcrModal = document.getElementById('btnCloseOcrModal');
+    const btnHeaderOcr = document.getElementById('btnHeaderOcr');
+    const btnHeroOpenOcr = document.getElementById('btnHeroOpenOcr');
+    const ocrSpotlightCard = document.getElementById('ocrSpotlightCard');
+    const ocrCmdListContainer = document.getElementById('ocrCmdListContainer');
+    const ocrSearchInput = document.getElementById('ocrSearchInput');
+
+    let currentOcrFilter = 'all';
+
+    window.openOcrModal = function(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      const modal = document.getElementById('ocrModal') || ocrModal;
+      if (modal) modal.classList.add('show');
+      const search = document.getElementById('ocrSearchInput') || ocrSearchInput;
+      if (search) setTimeout(() => search.focus(), 80);
+    };
+
+    window.closeOcrModal = function(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      const modal = document.getElementById('ocrModal') || ocrModal;
+      if (modal) modal.classList.remove('show');
+    };
+
+    const openModal = window.openOcrModal;
+    const closeModal = window.closeOcrModal;
+
+    if (btnOpenOcrModal) btnOpenOcrModal.addEventListener('click', openModal);
+    if (btnCloseOcrModal) btnCloseOcrModal.addEventListener('click', closeModal);
+    if (btnHeaderOcr) btnHeaderOcr.addEventListener('click', openModal);
+    if (btnHeroOpenOcr) btnHeroOpenOcr.addEventListener('click', openModal);
+    if (ocrSpotlightCard) ocrSpotlightCard.addEventListener('click', openModal);
+
+    if (ocrModal) {
+      ocrModal.addEventListener('click', (e) => {
+        if (e.target === ocrModal) closeModal(e);
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal(e);
+    });
+
+    function renderOcrList() {
+      if (!ocrCmdListContainer) return;
+      const query = (ocrSearchInput ? ocrSearchInput.value.trim().toLowerCase() : '');
+
+      const filtered = ocrLanguages.filter(item => {
+        if (currentOcrFilter === 'popular' && !item.popular) return false;
+        if (currentOcrFilter === 'europe' && item.region !== 'europe') return false;
+        if (currentOcrFilter === 'asia' && item.region !== 'asia') return false;
+        if (currentOcrFilter === 'americas' && item.region !== 'americas') return false;
+
+        if (query) {
+          const matchName = item.name.toLowerCase().includes(query);
+          const matchNative = item.native.toLowerCase().includes(query);
+          const matchCode = item.code.toLowerCase().includes(query);
+          const matchTag = item.tag.toLowerCase().includes(query);
+          return matchName || matchNative || matchCode || matchTag;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        ocrCmdListContainer.innerHTML = `
+          <div style="text-align: center; padding: 24px 10px; color: var(--text-dim); font-size: 0.85rem;">
+            No matching language pack found. You can install it via Windows Settings → Time & Language.
+          </div>
+        `;
+        return;
+      }
+
+      ocrCmdListContainer.innerHTML = filtered.map(item => {
+        const flag = flagSvgs[item.code] || '';
+        const capType = item.isBasic ? 'Language.Basic' : 'Language.OCR';
+        const cmd = `Add-WindowsCapability -Online -Name "${capType}~~~${item.tag}~0.0.1.0"`;
+        return `
+          <div class="ocr-cmd-item">
+            <div class="ocr-cmd-item-left">
+              <div class="ocr-cmd-name-row">
+                <span class="ocr-cmd-name">
+                  ${flag}
+                  <span>${item.name}</span>
+                </span>
+                <span class="ocr-native-name">(${item.native})</span>
+              </div>
+              <div class="ocr-cmd-text">${cmd}</div>
+            </div>
+            <button class="btn-copy-cmd" data-cmd="${cmd.replace(/"/g, '&quot;')}">Copy</button>
+          </div>
+        `;
+      }).join('');
+
+      // Wire up copy buttons
+      ocrCmdListContainer.querySelectorAll('.btn-copy-cmd').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const cmd = btn.getAttribute('data-cmd');
+          if (cmd) {
+            navigator.clipboard.writeText(cmd);
+            btn.innerText = 'Copied! ✓';
+            btn.classList.add('copied');
+            setTimeout(() => {
+              btn.innerText = 'Copy';
+              btn.classList.remove('copied');
+            }, 1400);
+          }
+        });
+      });
+    }
+
+    if (ocrSearchInput) {
+      ocrSearchInput.addEventListener('input', () => {
+        renderOcrList();
+      });
+    }
+
+    document.querySelectorAll('.ocr-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.ocr-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentOcrFilter = chip.getAttribute('data-filter');
+        renderOcrList();
+      });
+    });
+
+    renderOcrList();
+
+    // Copy command buttons in static modal sections
+    document.querySelectorAll('.modal-card > .ocr-batch-box .btn-copy-cmd').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cmd = btn.getAttribute('data-cmd');
+        if (cmd) {
+          navigator.clipboard.writeText(cmd);
+          btn.innerText = 'Copied! ✓';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.innerText = 'Copy';
+            btn.classList.remove('copied');
+          }, 1400);
+        }
+      });
+    });
+
+    // Mock OCR Button in Translator window simulation
+    const btnMockOcr = document.getElementById('btnMockOcr');
+    btnMockOcr.addEventListener('click', () => {
+      btnMockOcr.classList.add('active');
+      btnMockOcr.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>Snip captured!</span>
+      `;
+      srcInput.value = "Language is the first weapon drawn in a conflict, or the first hand extended in understanding.";
+      performLiveTranslation();
+      setTimeout(() => {
+        btnMockOcr.classList.remove('active');
+        btnMockOcr.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+            <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+            <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+            <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+          <span>OCR · Alt+S</span>
+        `;
+      }, 1800);
+    });
+  </script>
+</body>
+</html>
