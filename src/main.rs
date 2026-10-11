@@ -184,9 +184,12 @@ fn present_and_translate_text(app_weak: slint::Weak<AppWindow>, captured_text: S
                                     }
                                     if s_lang == "auto" {
                                         if let Some(detected) = detected_opt {
+                                            app.set_detected_src_lang_code(detected.clone().into());
                                             let label = get_lang_label_for(&detected, &app.get_ui_lang());
                                             app.set_detected_lang_label(label.into());
                                         }
+                                    } else {
+                                        app.set_detected_src_lang_code(s_lang.clone().into());
                                     }
                                     if app.get_auto_copy() {
                                         if let Ok(mut clip) = Clipboard::new() {
@@ -210,6 +213,7 @@ fn present_and_translate_text(app_weak: slint::Weak<AppWindow>, captured_text: S
             } else {
                 app.set_dst_text("".into());
                 app.set_detected_lang_label("".into());
+                app.set_detected_src_lang_code("".into());
                 app.set_is_loading(false);
             }
         }
@@ -777,6 +781,7 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
                     *seq += 1;
                     app.set_dst_text("".into());
                     app.set_detected_lang_label("".into());
+                    app.set_detected_src_lang_code("".into());
                     app.set_is_loading(false);
                     return;
                 }
@@ -837,9 +842,12 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
                                     }
                                     if s_lang == "auto" {
                                         if let Some(detected) = detected_opt {
+                                            app.set_detected_src_lang_code(detected.clone().into());
                                             let label = get_lang_label_for(&detected, &app.get_ui_lang());
                                             app.set_detected_lang_label(label.into());
                                         }
+                                    } else {
+                                        app.set_detected_src_lang_code(s_lang.clone().into());
                                     }
                                     if app.get_auto_copy() {
                                         if let Ok(mut clip) = Clipboard::new() {
@@ -1234,6 +1242,7 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
             stop_tts();
             if let Some(app) = app_weak.upgrade() {
                 app.set_is_tts_playing(false);
+                app.set_is_src_tts_playing(false);
                 app.set_is_tts_loading(false);
                 app.set_is_src_tts_loading(false);
                 hide_app_window(&app);
@@ -1367,7 +1376,9 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
             if let Some(app) = app_weak.upgrade() {
                 app.set_status_text("".into());
                 app.set_detected_lang_label("".into());
+                app.set_detected_src_lang_code("".into());
                 app.set_is_tts_playing(false);
+                app.set_is_src_tts_playing(false);
                 app.set_is_tts_loading(false);
                 app.set_is_src_tts_loading(false);
             }
@@ -1402,15 +1413,22 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
             let app_weak_load = app_weak.clone();
             let app_weak_err = app_weak.clone();
             let app_weak_play = app_weak.clone();
-            let text_check = text.clone();
+            // Check whether source or translation audio was requested
+            let is_src = {
+                if let Some(app) = app_weak.upgrade() {
+                    text == app.get_src_text().to_string()
+                } else {
+                    false
+                }
+            };
 
             // Set loading state depending on whether target or source is requested
             let _ = slint::invoke_from_event_loop(move || {
                 if let Some(app) = app_weak_load.upgrade() {
-                    if app.get_dst_text().to_string() == text_check {
-                        app.set_is_tts_loading(true);
-                    } else {
+                    if is_src {
                         app.set_is_src_tts_loading(true);
+                    } else {
+                        app.set_is_tts_loading(true);
                     }
                 }
             });
@@ -1424,7 +1442,11 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
                             let app_w = app_w_cb.clone();
                             let _ = slint::invoke_from_event_loop(move || {
                                 if let Some(app) = app_w.upgrade() {
-                                    app.set_is_tts_playing(is_playing);
+                                    if is_src {
+                                        app.set_is_src_tts_playing(is_playing);
+                                    } else {
+                                        app.set_is_tts_playing(is_playing);
+                                    }
                                     if !is_playing {
                                         app.set_is_tts_loading(false);
                                         app.set_is_src_tts_loading(false);
@@ -1438,6 +1460,7 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
                             let _ = slint::invoke_from_event_loop(move || {
                                 if let Some(app) = app_w.upgrade() {
                                     app.set_is_tts_playing(false);
+                                    app.set_is_src_tts_playing(false);
                                     app.set_is_tts_loading(false);
                                     app.set_is_src_tts_loading(false);
                                     let is_en = app.get_ui_lang() == "en";
@@ -1464,6 +1487,7 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
                         let _ = slint::invoke_from_event_loop(move || {
                             if let Some(app) = app_w.upgrade() {
                                 app.set_is_tts_playing(false);
+                                app.set_is_src_tts_playing(false);
                                 app.set_is_tts_loading(false);
                                 app.set_is_src_tts_loading(false);
                                 let is_en = app.get_ui_lang() == "en";
@@ -1487,6 +1511,7 @@ async fn run_app(log: &impl Fn(&str)) -> Result<(), Box<dyn std::error::Error>> 
             stop_tts();
             if let Some(app) = app_weak.upgrade() {
                 app.set_is_tts_playing(false);
+                app.set_is_src_tts_playing(false);
                 app.set_is_tts_loading(false);
                 app.set_is_src_tts_loading(false);
             }

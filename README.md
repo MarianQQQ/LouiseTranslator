@@ -37,7 +37,7 @@
   <img src="assets/ui_settings.png" alt="Louise Settings" width="47%" style="border-radius: 8px;" />
 </p>
 <p align="center">
-  <i>Left: Main UI — Auto-detect, DeepL ⚡ badge, OCR button, inline TTS playback. Right: Engine & API settings with TTS provider selector.</i>
+  <i>Left: Main UI — Auto-detect, DeepL ⚡ badge, Screen OCR button, dual source & target Neural TTS audio playback. Right: Engine & API settings with TTS provider selector.</i>
 </p>
 
 ---

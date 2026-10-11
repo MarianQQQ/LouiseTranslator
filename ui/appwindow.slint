@@ -775,6 +775,7 @@ export component AppWindow inherits Window {
     in-out property <bool> is-loading: false;
     in-out property <string> status-text: "";
     in-out property <string> detected-lang-label: "";
+    in-out property <string> detected-src-lang-code: "";
 
     always-on-top: root.pin-on-top;
     in-out property <bool> show-src-picker: false;
@@ -820,6 +821,7 @@ export component AppWindow inherits Window {
     // TTS audio playback state
     in-out property <bool> use-edge-tts: true;
     in-out property <bool> is-tts-playing: false;
+    in-out property <bool> is-src-tts-playing: false;
     in-out property <bool> is-tts-loading: false;
     in-out property <bool> is-src-tts-loading: false;
 
@@ -1339,7 +1341,7 @@ export component AppWindow inherits Window {
                                 font-family: "JetBrains Mono"; vertical-alignment: center;
                             }
 
-                            // Screen OCR trigger pill button
+                            // Screen OCR trigger button
                             Rectangle {
                                 height: 20px;
                                 border-radius: 4px;
@@ -1368,14 +1370,30 @@ export component AppWindow inherits Window {
                                     }
 
                                     Text {
-                                        text: root.enable-custom-ocr && root.custom-ocr-shortcut != ""
-                                            ? ("OCR · " + root.custom-ocr-shortcut)
-                                            : (root.enable-alt-s ? "OCR · Alt+S" : "OCR");
+                                        text: "OCR";
                                         color: ta-ocr.has-hover ? #f1ffff : #a1a1aa;
                                         font-size: 9.5px;
                                         font-family: "JetBrains Mono";
                                         font-weight: 700;
                                         vertical-alignment: center;
+                                    }
+                                }
+                            }
+
+                            // Source Text-to-Speech audio button (Listen / Stop)
+                            TtsPillButton {
+                                text-idle: root.ui-lang == "en" ? "Listen" : "Слухати";
+                                text-stop: root.ui-lang == "en" ? "Stop" : "Стоп";
+                                is-playing: root.is-src-tts-playing;
+                                is-loading: root.is-src-tts-loading;
+                                clicked => {
+                                    if (root.is-src-tts-playing || root.is-src-tts-loading) {
+                                        root.stop-tts-requested();
+                                    } else {
+                                        if (root.src-text != "") {
+                                            let play-lang = root.src-lang != "auto" ? root.src-lang : (root.detected-src-lang-code != "" ? root.detected-src-lang-code : "en");
+                                            root.play-tts-requested(root.src-text, play-lang);
+                                        }
                                     }
                                 }
                             }
