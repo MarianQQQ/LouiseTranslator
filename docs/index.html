@@ -1299,7 +1299,7 @@
             <div class="field-section">
               <div class="field-header">
                 <span>SOURCE <span id="detectedLangLabel" style="color:#555;font-weight:400;text-transform:none;font-size:0.65rem;">→ English</span></span>
-                <div style="display:flex;align-items:center;gap:8px;">
+                <div style="display:flex;align-items:center;gap:6px;">
                   <span id="charCount" style="font-size:0.65rem;color:#555;font-weight:400;">91 chars</span>
                   <button class="ocr-btn-mock" id="btnMockOcr" title="Screen OCR Capture (Alt + S)">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1309,7 +1309,15 @@
                       <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
                       <line x1="8" y1="12" x2="16" y2="12"></line>
                     </svg>
-                    <span>OCR · Alt+S</span>
+                    <span>OCR</span>
+                  </button>
+                  <button class="ocr-btn-mock" id="btnSrcListen" title="Listen source text" style="gap:5px;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                    </svg>
+                    <span>Listen</span>
                   </button>
                 </div>
               </div>
@@ -1660,6 +1668,8 @@
       if (detectedLangLabel) detectedLangLabel.textContent = '';
       if (engineBadge) { engineBadge.textContent = 'Google'; engineBadge.style.color = '#888'; }
       window.speechSynthesis.cancel();
+      setListenActive(false);
+      setSrcListenActive(false);
     });
 
     // Swap / Cycle Languages Button
@@ -1678,6 +1688,7 @@
 
     // Listen Button — Web Speech API with Google online voices
     const btnListen = document.getElementById('btnListen');
+    const btnSrcListen = document.getElementById('btnSrcListen');
     const ttsLangMap = {
       en:'en-US', uk:'uk-UA', pl:'pl-PL', de:'de-DE', fr:'fr-FR', es:'es-ES',
       it:'it-IT', pt:'pt-PT', nl:'nl-NL', cs:'cs-CZ', sk:'sk-SK', ro:'ro-RO',
@@ -1687,8 +1698,17 @@
     };
 
     function setListenActive(active) {
-      btnListen.classList.toggle('active', active);
-      btnListen.querySelector('span').textContent = active ? 'Stop' : 'Listen';
+      if (btnListen) {
+        btnListen.classList.toggle('active', active);
+        btnListen.querySelector('span').textContent = active ? 'Stop' : 'Listen';
+      }
+    }
+
+    function setSrcListenActive(active) {
+      if (btnSrcListen) {
+        btnSrcListen.classList.toggle('active', active);
+        btnSrcListen.querySelector('span').textContent = active ? 'Stop' : 'Listen';
+      }
     }
 
     // Voices load async in Chrome — pre-load them
@@ -1712,11 +1732,13 @@
           || null;
     }
 
+    // Target text TTS
     btnListen.addEventListener('click', () => {
       const synth = window.speechSynthesis;
       if (synth.speaking || synth.pending) {
         synth.cancel();
         setListenActive(false);
+        setSrcListenActive(false);
         return;
       }
       const text = dstOutput.innerText.trim();
@@ -1730,20 +1752,59 @@
       const voice = getBestVoice(langCode);
       if (voice) utter.voice = voice;
 
-      utter.onstart  = () => setListenActive(true);
+      utter.onstart  = () => { setListenActive(true); setSrcListenActive(false); };
       utter.onend    = () => setListenActive(false);
       utter.onerror  = () => setListenActive(false);
 
       synth.speak(utter);
-      // Chrome quirk: needs a tiny kick to start
       setTimeout(() => { if (synth.paused) synth.resume(); }, 100);
     });
+
+    // Source text TTS
+    if (btnSrcListen) {
+      btnSrcListen.addEventListener('click', () => {
+        const synth = window.speechSynthesis;
+        if (synth.speaking || synth.pending) {
+          synth.cancel();
+          setListenActive(false);
+          setSrcListenActive(false);
+          return;
+        }
+        const text = srcInput.value.trim();
+        if (!text) return;
+
+        // Auto-detect lang code or default to English
+        const detLabel = detectedLangLabel ? detectedLangLabel.textContent.replace('→', '').trim().toLowerCase() : '';
+        let srcCode = 'en-US';
+        for (const [code, name] of Object.entries(langNames)) {
+          if (name.toLowerCase() === detLabel) {
+            srcCode = ttsLangMap[code] || 'en-US';
+            break;
+          }
+        }
+
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = srcCode;
+        utter.rate = 1.05;
+
+        const voice = getBestVoice(srcCode);
+        if (voice) utter.voice = voice;
+
+        utter.onstart  = () => { setSrcListenActive(true); setListenActive(false); };
+        utter.onend    = () => setSrcListenActive(false);
+        utter.onerror  = () => setSrcListenActive(false);
+
+        synth.speak(utter);
+        setTimeout(() => { if (synth.paused) synth.resume(); }, 100);
+      });
+    }
 
     // Stop TTS when switching language
     document.addEventListener('click', (e) => {
       if (e.target.closest('#dropdownMenu')) {
         window.speechSynthesis.cancel();
         setListenActive(false);
+        setSrcListenActive(false);
       }
     });
 
