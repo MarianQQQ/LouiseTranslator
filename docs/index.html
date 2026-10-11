@@ -271,8 +271,8 @@
     /* Specs Cards */
     .specs-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
       margin: 2px 0;
     }
 
@@ -1162,16 +1162,6 @@
         </div>
 
         <div class="header-actions">
-          <button class="btn-gh" id="btnHeaderOcr" type="button" onclick="openOcrModal(event)" style="border-color: rgba(0, 192, 240, 0.35); color: #00c0f0; cursor: pointer;" title="View all 30 Windows OCR language pack commands">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
-              <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
-              <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
-              <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
-              <line x1="8" y1="12" x2="16" y2="12"></line>
-            </svg>
-            <span>OCR Packs (30)</span>
-          </button>
           <a href="https://github.com/MarianQQQ/LouiseTranslator" target="_blank" class="btn-gh">
             <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
               <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
@@ -1199,22 +1189,22 @@
             Discreet, keyboard-first desktop translator for Windows. Instant selection capture (<kbd>Alt+C</kbd>), offline screen OCR (<kbd>Alt+S</kbd>), and deep neural translations with zero cloud latency.
           </p>
 
-          <!-- Screen OCR Feature Spotlight Card -->
+          <!-- Feature Spotlight Card: Offline Screen OCR -->
           <div class="ocr-spotlight" id="ocrSpotlightCard" onclick="openOcrModal(event)" title="Click to view all 30 Windows OCR Language Packs">
             <div class="ocr-spotlight-top">
               <div class="ocr-tag-group">
                 <span class="ocr-pulse-dot"></span>
-                <span class="ocr-tag-text">NEW IN V1.3 · SOURCE & TARGET TTS</span>
+                <span class="ocr-tag-text">OFFLINE SCREEN OCR · 100% NATIVE</span>
               </div>
               <span class="ocr-hotkey-badge"><kbd>Alt</kbd>+<kbd>S</kbd></span>
             </div>
             <div class="ocr-spotlight-main">
               <div class="ocr-spotlight-left">
                 <div class="ocr-spotlight-head">Instant Freeze & Snip Recognition</div>
-                <div class="ocr-spotlight-sub">Snip text from YouTube videos, PDFs, games & images. 100% offline via native Windows Media OCR with zero cloud tokens.</div>
+                <div class="ocr-spotlight-sub">Snip text from videos, PDFs, games & images. Powered by Windows.Media.Ocr with zero cloud latency.</div>
               </div>
               <button class="ocr-spotlight-btn" id="btnHeroOpenOcr" type="button" onclick="openOcrModal(event)">
-                <span>30 Langs</span>
+                <span>30+ Lang Packs</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
             </div>
@@ -1223,12 +1213,16 @@
           <!-- Specs Metrics -->
           <div class="specs-grid">
             <div class="spec-card">
-              <div class="spec-val">~60 MB</div>
-              <div class="spec-lbl">RAM Footprint</div>
+              <div class="spec-val">Dual TTS</div>
+              <div class="spec-lbl">Source & Target</div>
             </div>
             <div class="spec-card">
-              <div class="spec-val">Native OCR</div>
-              <div class="spec-lbl">Zero Cloud Delay</div>
+              <div class="spec-val">Offline OCR</div>
+              <div class="spec-lbl">Native & Zero Cloud</div>
+            </div>
+            <div class="spec-card">
+              <div class="spec-val">~60 MB</div>
+              <div class="spec-lbl">RAM Footprint</div>
             </div>
             <div class="spec-card">
               <div class="spec-val">100% DPAPI</div>
