@@ -1,0 +1,40 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ android ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Gradle Wrapper
+        working-directory: android-app
+        run: |
+          gradle wrapper --gradle-version 8.7
+
+      - name: Make gradlew executable
+        working-directory: android-app
+        run: chmod +x gradlew
+
+      - name: Build Debug APK
+        working-directory: android-app
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Louise-Translator-Android-Debug
+          path: android-app/app/build/outputs/apk/debug/*.apk
+          retention-days: 14
